@@ -1,89 +1,90 @@
-# OncologyOrchestrator
+# Aetheris Oncology
 
-Multi-agent AI pipeline that turns a tumor genomic **VCF** into a ranked,
-citation-backed cancer **treatment plan** in under ~45 s. Built for Blair Hacks 8
-(Healthcare track).
+**Multi-agent precision-oncology orchestrator: a tumor genome in, a ranked set of evidence-backed treatment options out.**
 
-6 specialized agents, each with a distinct mechanism — the orchestrator is the
-only one that *reasons*; the rest fetch or compute.
+Aetheris connects scattered cancer data — variants, evidence, literature, and trials — into a single navigable pattern. Like stars resolving into a constellation, each point means little alone; the value is in the connections between them.
 
-| Agent | Mechanism | Source |
-|-------|-----------|--------|
-| Genomic | MCP (HTTP) | OncoKB + ClinVar |
-| Literature | RAG | ChromaDB + BioBERT |
-| Outcome | Local PyTorch | `SurvivalScorer` |
-| Trial | MCP (HTTP) | ClinicalTrials.gov |
-| Toxicity | MCP (HTTP) | OpenFDA |
-| Orchestrator | LLM reasoning | Claude Sonnet |
+> ⚠️ **Demonstration project — not for clinical use.** A hackathon prototype illustrating an architecture for precision-oncology decision support, not a validated medical device. See Scope & Limitations.
 
-## Quick start
+🔗 **Live demo:** _add URL_
+🎥 **Demo video:** _add link_
+
+Built for **BlairHacks** — theme: *constellation*.
+
+## The problem
+
+A sequenced tumor produces a list of mutations — sometimes hundreds. Buried in it is one question: what treatment will actually work for this patient? Today that means a molecular tumor board manually cross-referencing knowledge bases, trials, and research, one patient at a time — slow, inconsistent, and concentrated at major cancer centers. The data already exists but is fragmented; the bottleneck is synthesis.
+
+## What it does
+
+Upload a patient's VCF and a pipeline of specialized agents runs end-to-end:
+
+1. **VCF Parser** — extracts the mutations.
+2. **Genomic Analyzer** — annotates oncogenicity, identifies actionable drivers.
+3. **Literature RAG** — embeds the variant profile with BioBERT, semantic-searches a research vector index.
+4. **Outcome Predictor** — scores candidate therapies by evidence, variant match, and toxicity.
+5. **Trial Matcher** — surfaces relevant recruiting trials.
+6. **Toxicity Agent** — checks adverse-event signals.
+
+The result is a ranked, traceable set of options, each tied to the variant, evidence level, literature (PMIDs), and trials (NCT IDs) that justify it. Everything is computed live from the genome — nothing is hardcoded to one demo file. The orchestrator graph renders this as a constellation that assembles in real time: as each agent resolves, its connection lights up and the full pattern forms.
+
+## Why it's cancer-type aware
+
+The same mutation can mean different things in different cancers. BRAF V600E in melanoma is treated with a BRAF/MEK inhibitor combination — but in colorectal cancer that underperforms, and the standard of care pairs a BRAF inhibitor with an anti-EGFR antibody. Aetheris resolves therapies through a (variant × cancer type) mapping, so recommendations reflect clinical context, not a naive gene-to-drug lookup.
+
+## Tech stack
+
+- **Frontend:** Next.js, TypeScript, Tailwind
+- **Backend:** FastAPI, Server-Sent Events
+- **Agents/LLM:** multi-agent orchestration over MCP, Groq `gpt-oss-120b`
+- **Retrieval:** BioBERT embeddings, ChromaDB vector store
+- **Knowledge sources:** OncoKB, ClinVar, ClinicalTrials.gov, openFDA (via MCP) + curated local KB
+- **Scoring:** PyTorch (local), evidence-weighted heuristic
+
+## Running locally
+
+**Prerequisites:** Python 3.10+ (developed on 3.14) and Node.js 20+.
 
 ```bash
-pip install -r requirements.txt           # ML deps may already be present
-# (optional) put real keys in .env — runs without them via graceful fallbacks
+# 1. Python deps
+pip install -r requirements.txt
 
-# launch everything (MCP servers :8001-8004, API :8000, UI :3000)
-pwsh ./start.ps1          # Windows
-./start.sh                # bash
+# 2. Frontend deps
+cd frontend && npm install && cd ..
+
+# 3. (optional) API keys — runs with zero paid keys via graceful fallbacks.
+#    In .env, add GROQ_API_KEY for live LLM synthesis and/or ONCOKB_API_KEY
+#    for licensed OncoKB treatment data. Without them the pipeline still runs.
 ```
 
-Then open **http://localhost:3000**, drop in `demo_patient.vcf` (or click the
-demo quick-load), and watch the 6 agents light up in real time.
+The vector store (`chromadb_store/`, collection `pubmed_cancer`) and the PyTorch `SurvivalScorer` (`survival_model.py`) ship pre-built in the repo — no build step needed. To rebuild the index from PubMed: `python setup_chroma.py`.
 
-### Run pieces individually
+**Start everything** (MCP servers `:8001–8004`, API `:8000`, UI `:3000`):
+
 ```bash
-python mcp_servers/oncokb_server.py     # :8001
-python mcp_servers/clinvar_server.py    # :8002
-python mcp_servers/trials_server.py     # :8003
-python mcp_servers/fda_server.py        # :8004
-python -m uvicorn api.main:app --port 8000
-cd frontend && npm run dev              # :3000
+pwsh ./start.ps1     # Windows
+./start.sh           # macOS / Linux
 ```
 
-## API
-| Method | Path | Purpose |
-|--------|------|---------|
-| POST | `/analyze` | multipart `.vcf` upload → `{job_id}` |
-| GET | `/stream/{job_id}` | Server-Sent Events of agent activity |
-| GET | `/result/{job_id}` | final treatment plan JSON |
-| GET | `/agents` | all 6 agent cards (A2A demo view) |
+Or run each piece individually:
 
-SSE event order: `PIPELINE_START → GENOMIC → LITERATURE → OUTCOME → TRIAL →
-TOXICITY → ORCHESTRATOR → PIPELINE_COMPLETE`. Pipeline runs Genomic first, then
-Literature+Outcome in parallel, then Trial+Toxicity in parallel, then the
-orchestrator.
-
-## Design notes
-- **All LLM reasoning runs on Groq `openai/gpt-oss-120b`** — sub-agents and the
-  orchestrator. No Anthropic dependency.
-- **OncoKB uses the public API** (`https://public.api.oncokb.org/api/v1`). The
-  public tier returns oncogenicity/mutation-effect with no token but gates
-  treatments + evidence levels behind a licensed key, so the OncoKB server runs a
-  hybrid: live oncogenicity, with drug + evidence level enriched from the curated
-  KB when absent. Add a real `ONCOKB_API_KEY` to unlock live treatment data.
-- **Runs with zero paid keys.** ClinVar and OpenFDA are keyless public APIs; the
-  OncoKB public tier is keyless for oncogenicity. The LLMs use `GROQ_API_KEY` when
-  present, else fall back to deterministic assembly. `offline_data.py` is the
-  curated KB used for OncoKB enrichment and as the offline fallback everywhere.
-- **Graceful degradation everywhere** (Section 15): if an MCP server is down the
-  agent uses the same offline data in-process, so the demo never crashes.
-- **Pre-built assets are never overwritten:** `survival_model.py` (PyTorch
-  `SurvivalScorer`) and `chromadb_store/` (collection `pubmed_cancer`, 1466
-  PubMed abstracts).
-- Python **3.14** — dependency pins are relaxed to `>=` for wheel availability;
-  the heavy ML stack (torch / chromadb / sentence-transformers / transformers)
-  installs and runs fine.
-- ClinicalTrials.gov v2 can return **403** from datacenter IPs (CDN bot filter);
-  the trial agent then falls back to the offline trial set. Works from a normal
-  residential network.
-
-## Layout
+```bash
+python mcp_servers/oncokb_server.py     # :8001  OncoKB
+python mcp_servers/clinvar_server.py    # :8002  ClinVar
+python mcp_servers/trials_server.py     # :8003  ClinicalTrials.gov
+python mcp_servers/fda_server.py        # :8004  openFDA
+python -m uvicorn api.main:app --port 8000   # :8000  API + SSE
+cd frontend && npm run dev              # :3000  UI
 ```
-agents/        6 agents (genomic, literature, outcome, trial, toxicity, orchestrator)
-mcp_servers/   4 FastAPI MCP wrappers + shared _base.py
-rag/           BioBERT embedder + ChromaDB retriever
-schemas/       Pydantic models + 5 agent-card JSONs
-api/           FastAPI app (SSE) + VCF parser
-frontend/      Next.js Bloomberg-terminal UI
-config.py      central .env loader     offline_data.py  fallback knowledge base
-```
+
+Then open **http://localhost:3000**, click **New Analysis**, and upload a sample VCF from the repo root — `glioblastoma.vcf`, `colorectal_msi_patient.vcf`, or `demo_patient.vcf`. The constellation forms as each agent resolves.
+
+## Scope & limitations
+
+- **Not clinically validated. Not for patient care.** It demonstrates an architecture, not a medical device.
+- **The drug knowledge base is curated, not exhaustive.** Variants outside the covered set fall back to standard-of-care or generic handling.
+- **"Match Confidence" is a heuristic, not a survival prediction** — it combines evidence level, variant match, and toxicity into an explainable ranking signal.
+- **The literature index is a bounded corpus** of pre-embedded abstracts, not a live PubMed query.
+- **Sample VCFs are synthetic** demonstration files.
+
+Genuinely dynamic: VCF parsing, variant detection, oncogenicity annotation, literature retrieval, trial matching, and cancer-type-aware therapy resolution all run live per file — different inputs produce different drivers, drugs, papers, and trials.
