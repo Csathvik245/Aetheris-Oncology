@@ -1,0 +1,30 @@
+##fileformat=VCFv4.2
+##fileDate=20250518
+##source=OncologyOrchestrator_Demo
+##reference=GRCh38
+##INFO=<ID=GENE,Number=1,Type=String,Description="Hugo gene symbol">
+##INFO=<ID=AA_CHANGE,Number=1,Type=String,Description="Amino acid change">
+##INFO=<ID=TRANSCRIPT,Number=1,Type=String,Description="Ensembl transcript ID">
+##INFO=<ID=VARIANT_CLASS,Number=1,Type=String,Description="Variant classification">
+##INFO=<ID=CANCER_TYPE,Number=1,Type=String,Description="Associated cancer type">
+##INFO=<ID=ALLELE_FREQ,Number=1,Type=Float,Description="Variant allele frequency">
+##FILTER=<ID=PASS,Description="All filters passed">
+##FILTER=<ID=LowQual,Description="Low quality variant">
+##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
+##FORMAT=<ID=AD,Number=R,Type=Integer,Description="Allelic depths">
+##FORMAT=<ID=DP,Number=1,Type=Integer,Description="Total read depth">
+##patient_id=CRC_MSI_002
+##cancer_type=Colorectal_Adenocarcinoma
+##sample_date=2025-05-18
+##sequencing_platform=Illumina_NovaSeq
+##tumor_purity=0.71
+##msi_status=MSI-High
+##notes=MSI-high (MLH1/MSH2 loss) right-sided colorectal adenocarcinoma with BRAF V600E. BRAF V600E in CRC requires EGFR co-blockade (Encorafenib + Cetuximab); BRAF/MEK alone underperforms. Checkpoint inhibition relevant given MSI-H.
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	TUMOR
+7	140753336	rs113488022	A	T	.	PASS	GENE=BRAF;AA_CHANGE=V600E;TRANSCRIPT=ENST00000288602;VARIANT_CLASS=Missense_Mutation;CANCER_TYPE=Colorectal;ALLELE_FREQ=0.41	GT:AD:DP	0/1:45:110
+5	112839514	rs121913332	C	T	.	PASS	GENE=APC;AA_CHANGE=R1450X;TRANSCRIPT=ENST00000257430;VARIANT_CLASS=Nonsense_Mutation;CANCER_TYPE=Colorectal;ALLELE_FREQ=0.55	GT:AD:DP	0/1:61:111
+17	7675088	rs28934578	G	A	.	PASS	GENE=TP53;AA_CHANGE=R175H;TRANSCRIPT=ENST00000269305;VARIANT_CLASS=Missense_Mutation;CANCER_TYPE=Colorectal;ALLELE_FREQ=0.38	GT:AD:DP	0/1:42:110
+3	179218303	rs104886003	G	A	.	PASS	GENE=PIK3CA;AA_CHANGE=E545K;TRANSCRIPT=ENST00000263967;VARIANT_CLASS=Missense_Mutation;CANCER_TYPE=Colorectal;ALLELE_FREQ=0.29	GT:AD:DP	0/1:32:110
+3	37006994	rs63750449	C	T	.	PASS	GENE=MLH1;AA_CHANGE=R226X;TRANSCRIPT=ENST00000231790;VARIANT_CLASS=Nonsense_Mutation;CANCER_TYPE=Colorectal;ALLELE_FREQ=0.47	GT:AD:DP	0/1:52:111
+18	51065497	rs377767347	G	A	.	PASS	GENE=SMAD4;AA_CHANGE=R361H;TRANSCRIPT=ENST00000342988;VARIANT_CLASS=Missense_Mutation;CANCER_TYPE=Colorectal;ALLELE_FREQ=0.22	GT:AD:DP	0/1:24:109
+2	47410158	rs63749938	C	T	.	LowQual	GENE=MSH2;AA_CHANGE=R359X;TRANSCRIPT=ENST00000233146;VARIANT_CLASS=Nonsense_Mutation;CANCER_TYPE=Colorectal;ALLELE_FREQ=0.08	GT:AD:DP	0/1:9:108

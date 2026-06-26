@@ -1,0 +1,10 @@
+##fileformat=VCFv4.2
+##source=OncologyOrchestrator-demo
+##INFO=<ID=GENE,Number=1,Type=String,Description="Gene symbol">
+##INFO=<ID=AA_CHANGE,Number=1,Type=String,Description="Protein change">
+##cancer_type=melanoma
+##patient_id=DEMO-001
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO
+7	140453136	.	A	T	.	PASS	GENE=BRAF;AA_CHANGE=V600E
+17	7674220	.	C	T	.	PASS	GENE=TP53;AA_CHANGE=R273C
+12	25398284	.	C	A	.	PASS	GENE=KRAS;AA_CHANGE=G12D

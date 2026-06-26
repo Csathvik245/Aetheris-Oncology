@@ -1,0 +1,112 @@
+{
+  "bodyFontFamily": "ibmPlexMono",
+  "colorMode": "DARK",
+  "colorVariant": "FIDELITY",
+  "customColor": "#00e5ff",
+  "headlineFontFamily": "ibmPlexMono",
+  "labelFontFamily": "ibmPlexMono",
+  "namedColors": {
+    "background": "#0d1516",
+    "error": "#ffb4ab",
+    "error_container": "#93000a",
+    "inverse_on_surface": "#2a3233",
+    "inverse_primary": "#006875",
+    "inverse_surface": "#dce4e5",
+    "on_background": "#dce4e5",
+    "on_error": "#690005",
+    "on_error_container": "#ffdad6",
+    "on_primary": "#00363d",
+    "on_primary_container": "#00626e",
+    "on_primary_fixed": "#001f24",
+    "on_primary_fixed_variant": "#004f58",
+    "on_secondary": "#303031",
+    "on_secondary_container": "#b5b5b5",
+    "on_secondary_fixed": "#1b1c1c",
+    "on_secondary_fixed_variant": "#464747",
+    "on_surface": "#dce4e5",
+    "on_surface_variant": "#bac9cc",
+    "on_tertiary": "#303030",
+    "on_tertiary_container": "#595959",
+    "on_tertiary_fixed": "#1b1b1b",
+    "on_tertiary_fixed_variant": "#474747",
+    "outline": "#849396",
+    "outline_variant": "#3b494c",
+    "primary": "#c3f5ff",
+    "primary_container": "#00e5ff",
+    "primary_fixed": "#9cf0ff",
+    "primary_fixed_dim": "#00daf3",
+    "secondary": "#c7c6c6",
+    "secondary_container": "#464747",
+    "secondary_fixed": "#e3e2e2",
+    "secondary_fixed_dim": "#c7c6c6",
+    "surface": "#0d1516",
+    "surface_bright": "#333a3c",
+    "surface_container": "#192122",
+    "surface_container_high": "#242b2d",
+    "surface_container_highest": "#2e3638",
+    "surface_container_low": "#151d1e",
+    "surface_container_lowest": "#080f11",
+    "surface_dim": "#0d1516",
+    "surface_tint": "#00daf3",
+    "surface_variant": "#2e3638",
+    "tertiary": "#ececec",
+    "tertiary_container": "#d0d0d0",
+    "tertiary_fixed": "#e2e2e2",
+    "tertiary_fixed_dim": "#c6c6c6"
+  },
+  "overridePrimaryColor": "#00e5ff",
+  "overrideSecondaryColor": "#888888",
+  "overrideTertiaryColor": "#000000",
+  "spacing": {
+    "container-padding": "12px",
+    "gutter": "1px",
+    "margin-md": "16px",
+    "margin-sm": "8px",
+    "unit": "4px"
+  },
+  "spacingScale": 2,
+  "typography": {
+    "body-base": {
+      "fontFamily": "IBM Plex Mono",
+      "fontSize": "13px",
+      "fontWeight": "400",
+      "letterSpacing": "0em",
+      "lineHeight": "18px"
+    },
+    "body-sm": {
+      "fontFamily": "IBM Plex Mono",
+      "fontSize": "11px",
+      "fontWeight": "400",
+      "letterSpacing": "0em",
+      "lineHeight": "14px"
+    },
+    "data-mono": {
+      "fontFamily": "IBM Plex Mono",
+      "fontSize": "12px",
+      "fontWeight": "500",
+      "letterSpacing": "-0.02em",
+      "lineHeight": "16px"
+    },
+    "display-lg": {
+      "fontFamily": "IBM Plex Mono",
+      "fontSize": "24px",
+      "fontWeight": "700",
+      "letterSpacing": "0.1em",
+      "lineHeight": "32px"
+    },
+    "headline-md": {
+      "fontFamily": "IBM Plex Mono",
+      "fontSize": "18px",
+      "fontWeight": "600",
+      "letterSpacing": "0.05em",
+      "lineHeight": "24px"
+    },
+    "label-caps": {
+      "fontFamily": "IBM Plex Mono",
+      "fontSize": "10px",
+      "fontWeight": "600",
+      "letterSpacing": "0.15em",
+      "lineHeight": "12px"
+    }
+  }
+}

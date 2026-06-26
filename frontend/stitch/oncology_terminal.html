@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>OncologyOrchestrator Terminal</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-primary": "#00363d",
+                      "surface-container-high": "#242b2d",
+                      "error": "#ffb4ab",
+                      "primary-fixed": "#9cf0ff",
+                      "primary": "#c3f5ff",
+                      "on-secondary-fixed-variant": "#464747",
+                      "surface-container-low": "#151d1e",
+                      "outline": "#849396",
+                      "secondary": "#c7c6c6",
+                      "background": "#0d1516",
+                      "on-tertiary-container": "#595959",
+                      "on-tertiary-fixed-variant": "#474747",
+                      "on-primary-fixed": "#001f24",
+                      "on-surface": "#dce4e5",
+                      "outline-variant": "#3b494c",
+                      "on-secondary-fixed": "#1b1c1c",
+                      "on-tertiary": "#303030",
+                      "surface-dim": "#0d1516",
+                      "on-primary-fixed-variant": "#004f58",
+                      "primary-container": "#00e5ff",
+                      "on-secondary": "#303031",
+                      "on-error-container": "#ffdad6",
+                      "on-primary-container": "#00626e",
+                      "surface-tint": "#00daf3",
+                      "on-tertiary-fixed": "#1b1b1b",
+                      "on-secondary-container": "#b5b5b5",
+                      "inverse-on-surface": "#2a3233",
+                      "tertiary": "#ececec",
+                      "secondary-container": "#464747",
+                      "inverse-surface": "#dce4e5",
+                      "on-surface-variant": "#bac9cc",
+                      "primary-fixed-dim": "#00daf3",
+                      "inverse-primary": "#006875",
+                      "tertiary-fixed-dim": "#c6c6c6",
+                      "surface-container-highest": "#2e3638",
+                      "on-error": "#690005",
+                      "secondary-fixed-dim": "#c7c6c6",
+                      "on-background": "#dce4e5",
+                      "secondary-fixed": "#e3e2e2",
+                      "surface-bright": "#333a3c",
+                      "error-container": "#93000a",
+                      "tertiary-fixed": "#e2e2e2",
+                      "surface": "#0d1516",
+                      "tertiary-container": "#d0d0d0",
+                      "surface-variant": "#2e3638",
+                      "surface-container": "#192122",
+                      "surface-container-lowest": "#080f11",
+                      "terminal-cyan": "#00E5FF",
+                      "terminal-black": "#000000",
+                      "terminal-gray": "#888888",
+                      "terminal-green": "#00FF00",
+                      "terminal-red": "#FF0000",
+                      "terminal-amber": "#FFB300"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0px",
+                      "lg": "0px",
+                      "xl": "0px",
+                      "full": "0px"
+              },
+              "spacing": {
+                      "container-padding": "12px",
+                      "unit": "4px",
+                      "margin-sm": "8px",
+                      "gutter": "1px",
+                      "margin-md": "16px"
+              },
+              "fontFamily": {
+                      "label-caps": [
+                              "IBM Plex Mono"
+                      ],
+                      "data-mono": [
+                              "IBM Plex Mono"
+                      ],
+                      "headline-md": [
+                              "IBM Plex Mono"
+                      ],
+                      "body-base": [
+                              "IBM Plex Mono"
+                      ],
+                      "display-lg": [
+                              "IBM Plex Mono"
+                      ],
+                      "body-sm": [
+                              "IBM Plex Mono"
+                      ]
+              },
+              "fontSize": {
+                      "label-caps": [
+                              "10px",
+                              {
+                                      "lineHeight": "12px",
+                                      "letterSpacing": "0.15em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "data-mono": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "headline-md": [
+                              "18px",
+                              {
+                                      "lineHeight": "24px",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-base": [
+                              "13px",
+                              {
+                                      "lineHeight": "18px",
+                                      "letterSpacing": "0em",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "display-lg": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "letterSpacing": "0.1em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "body-sm": [
+                              "11px",
+                              {
+                                      "lineHeight": "14px",
+                                      "letterSpacing": "0em",
+                                      "fontWeight": "400"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+    </script>
+<style>
+        body {
+            background-color: #000000;
+            color: #dce4e5;
+            font-family: 'IBM Plex Mono', monospace;
+            overflow: hidden; /* Prevent body scroll, handle internally */
+        }
+        
+        /* Scanline Overlay */
+        body::before {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            background: linear-gradient(
+                to bottom,
+                rgba(255,255,255,0),
+                rgba(255,255,255,0) 50%,
+                rgba(0,0,0,0.1) 50%,
+                rgba(0,0,0,0.1)
+            );
+            background-size: 100% 4px;
+            z-index: 50;
+            pointer-events: none;
+        }
+
+        /* Tonal Outlines & Structure */
+        .term-border { border: 1px solid #888888; }
+        .term-border-active { border: 1px solid #00E5FF; }
+        .term-border-b { border-bottom: 1px solid #888888; }
+        .term-border-t { border-top: 1px solid #888888; }
+        .term-border-r { border-right: 1px solid #888888; }
+        
+        .term-bg-dark { background-color: #0d1516; }
+        .term-bg-header { background-color: #242b2d; color: #000000; }
+        
+        .text-cyan { color: #00E5FF; }
+        .bg-cyan { background-color: #00E5FF; color: #000000; }
+        
+        /* Specific Component Styles */
+        .log-container::-webkit-scrollbar {
+            width: 8px;
+        }
+        .log-container::-webkit-scrollbar-track {
+            background: #000000;
+            border-left: 1px solid #888888;
+        }
+        .log-container::-webkit-scrollbar-thumb {
+            background: #888888;
+        }
+
+        .pulse-cyan {
+            animation: pulse-border 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse-border {
+            0%, 100% { border-color: #00E5FF; box-shadow: 0 0 0px #00E5FF; }
+            50% { border-color: #0088AA; box-shadow: 0 0 5px #00E5FF; }
+        }
+        
+        .blink {
+            animation: blinker 1s linear infinite;
+        }
+        @keyframes blinker {
+            50% { opacity: 0; }
+        }
+
+        .button-hover:hover {
+            background-color: #00E5FF;
+            color: #000000;
+        }
+    </style>
+</head>
+<body class="h-screen w-full flex flex-col uppercase font-data-mono">
+<!-- TOP NAVBAR (Shared Component Logic) -->
+<header class="flex justify-between items-center w-full px-container-padding h-12 term-border-b term-bg-dark shrink-0">
+<div class="flex items-center gap-4">
+<span class="font-display-lg text-display-lg text-cyan tracking-widest">ONCOLOGY//ORCHESTRATOR</span>
+</div>
+<div class="flex items-center gap-6">
+<span class="font-data-mono text-data-mono text-on-surface-variant flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">schedule</span>
+<span id="live-clock">21:30:05 UTC</span>
+</span>
+<div class="flex items-center gap-2 text-cyan font-headline-md text-headline-md">
+<span class="text-xs blink">●</span>
+<span>LIVE</span>
+<span class="material-symbols-outlined ml-2">sensors</span>
+</div>
+</div>
+</header>
+<!-- MAIN GRID CONTAINER -->
+<main class="flex-1 w-full flex overflow-hidden bg-black p-gutter gap-gutter">
+<!-- LEFT SIDEBAR -->
+<aside class="w-64 flex flex-col gap-gutter shrink-0 h-full">
+<!-- AGENT STATUS PANEL -->
+<div class="term-border flex-1 flex flex-col bg-black">
+<div class="term-bg-header font-label-caps text-label-caps px-2 py-1 term-border-b">AGENT STATUS</div>
+<div class="flex flex-col p-2 gap-2 font-data-mono text-data-mono">
+<div class="flex justify-between items-center">
+<span class="text-on-surface">GENOMIC</span>
+<span class="bg-cyan px-2 py-0.5 text-black border border-cyan pulse-cyan">RUNNING</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-surface-container-high">LITERATURE</span>
+<span class="term-border px-2 py-0.5 text-surface-container-high">IDLE</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-surface-container-high">OUTCOME</span>
+<span class="term-border px-2 py-0.5 text-surface-container-high">IDLE</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-surface-container-high">TRIAL</span>
+<span class="term-border px-2 py-0.5 text-surface-container-high">IDLE</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-surface-container-high">TOXICITY</span>
+<span class="term-border px-2 py-0.5 text-surface-container-high">IDLE</span>
+</div>
+<div class="flex justify-between items-center mt-4 pt-2 term-border-t">
+<span class="text-on-surface font-headline-md">ORCHESTRATOR</span>
+<span class="bg-surface-container-high text-on-surface px-2 py-0.5 term-border">ACTIVE</span>
+</div>
+</div>
+</div>
+<!-- VCF INTAKE PANEL -->
+<div class="term-border h-48 flex flex-col bg-black shrink-0">
+<div class="term-bg-header font-label-caps text-label-caps px-2 py-1 term-border-b">VCF INTAKE</div>
+<div class="p-2 flex-1 flex flex-col gap-2">
+<div class="flex-1 border border-dashed border-cyan flex items-center justify-center text-cyan bg-cyan/5 cursor-pointer hover:bg-cyan/10 transition-none">
+<div class="flex flex-col items-center gap-1">
+<span class="material-symbols-outlined">upload_file</span>
+<span class="font-data-mono">DROP .VCF</span>
+</div>
+</div>
+<button class="w-full term-border border-cyan text-cyan py-1 font-headline-md button-hover transition-none">LOAD DEMO</button>
+</div>
+</div>
+</aside>
+<!-- CENTER MAIN -->
+<section class="flex-1 flex flex-col gap-gutter min-w-[600px] h-full">
+<!-- AGENT LOG -->
+<div class="term-border h-64 flex flex-col bg-black shrink-0">
+<div class="term-bg-header font-label-caps text-label-caps px-2 py-1 term-border-b flex justify-between">
+<span>AGENT LOG</span>
+<span>AUTO-SCROLL</span>
+</div>
+<div class="p-2 flex-1 overflow-y-auto log-container font-data-mono text-body-sm text-on-surface-variant flex flex-col gap-1">
+<div class="flex gap-2"><span class="text-terminal-gray">[21:29:58]</span> <span class="text-cyan">SYS</span> <span>&gt; INITIALIZING WORKFLOW...</span></div>
+<div class="flex gap-2"><span class="text-terminal-gray">[21:29:59]</span> <span class="text-cyan">SYS</span> <span>&gt; ALLOCATING COMPUTE NODES... OK</span></div>
+<div class="flex gap-2"><span class="text-terminal-gray">[21:30:00]</span> <span class="text-cyan">SYS</span> <span>&gt; MOUNTING VCF VOLUMES... OK</span></div>
+<div class="flex gap-2"><span class="text-terminal-gray">[21:30:02]</span> <span class="text-terminal-green">GENOMIC</span> <span>&gt; EXTRACTING VARIANTS...</span></div>
+<div class="flex gap-2"><span class="text-terminal-gray">[21:30:03]</span> <span class="text-terminal-green">GENOMIC</span> <span>&gt; IDENTIFIED 3 ACTIONABLE ALTERATIONS</span></div>
+<div class="flex gap-2"><span class="text-terminal-gray">[21:30:04]</span> <span class="text-terminal-amber">LITERATURE</span> <span>&gt; QUERYING PUBMED/CIVIC FOR BRAF V600E...</span></div>
+<div class="flex gap-2"><span class="text-terminal-gray">[21:30:05]</span> <span class="text-terminal-green">GENOMIC</span> <span>&gt; RUNNING PATHWAY ANALYSIS...</span></div>
+</div>
+</div>
+<!-- TREATMENT PLAN -->
+<div class="term-border flex-1 flex flex-col bg-black overflow-hidden">
+<div class="term-bg-header font-label-caps text-label-caps px-2 py-1 term-border-b">TREATMENT PLAN RANKING</div>
+<div class="p-2 flex flex-col gap-2 overflow-y-auto log-container">
+<!-- Rank 1 -->
+<div class="term-border-active bg-cyan/5 p-2 flex flex-col gap-2">
+<div class="flex justify-between items-start">
+<div class="flex gap-2 items-center">
+<span class="bg-cyan text-black px-2 py-1 font-headline-md">#1</span>
+<span class="font-headline-md text-cyan">DABRAFENIB + TRAMETINIB</span>
+</div>
+<div class="text-right">
+<span class="font-label-caps text-terminal-gray block">SURVIVAL SCORE</span>
+<span class="font-headline-md text-terminal-green block">94.2%</span>
+</div>
+</div>
+<div class="flex gap-4 font-data-mono text-body-sm text-on-surface">
+<div><span class="text-terminal-gray">EVIDENCE:</span> <span class="bg-surface-container-high px-1 term-border border-terminal-gray">TIER 1 (NCCN)</span></div>
+<div><span class="text-terminal-gray">REFS:</span> PMID 3512345, 2987654</div>
+<div><span class="text-terminal-gray">TRIAL:</span> <span class="text-cyan underline">NCT04567890</span></div>
+</div>
+<div class="flex gap-2 items-center mt-1 pt-1 term-border-t border-terminal-gray/30 font-data-mono text-body-sm">
+<span class="text-terminal-gray">TOXICITY RISK:</span>
+<div class="h-2 w-32 bg-surface-container-high flex">
+<div class="h-full w-1/4 bg-terminal-amber"></div>
+</div>
+<span class="text-terminal-amber">LOW-MOD (PYREXIA)</span>
+</div>
+</div>
+<!-- Rank 2 -->
+<div class="term-border p-2 flex flex-col gap-2">
+<div class="flex justify-between items-start">
+<div class="flex gap-2 items-center">
+<span class="bg-surface-container-high text-on-surface px-2 py-1 font-headline-md">#2</span>
+<span class="font-headline-md text-on-surface">VEMURAFENIB</span>
+</div>
+<div class="text-right">
+<span class="font-label-caps text-terminal-gray block">SURVIVAL SCORE</span>
+<span class="font-headline-md text-terminal-amber block">78.5%</span>
+</div>
+</div>
+<div class="flex gap-4 font-data-mono text-body-sm text-on-surface">
+<div><span class="text-terminal-gray">EVIDENCE:</span> <span class="bg-surface-container-high px-1 term-border border-terminal-gray">TIER 1</span></div>
+<div><span class="text-terminal-gray">REFS:</span> PMID 2121345</div>
+<div><span class="text-terminal-gray">TRIAL:</span> NONE MATCHED</div>
+</div>
+<div class="flex gap-2 items-center mt-1 pt-1 term-border-t border-terminal-gray/30 font-data-mono text-body-sm">
+<span class="text-terminal-gray">TOXICITY RISK:</span>
+<div class="h-2 w-32 bg-surface-container-high flex">
+<div class="h-full w-2/4 bg-terminal-red"></div>
+</div>
+<span class="text-terminal-red">HIGH (RASH, ARTHRALGIA)</span>
+</div>
+</div>
+<!-- Rank 3 -->
+<div class="term-border p-2 flex flex-col gap-2">
+<div class="flex justify-between items-start">
+<div class="flex gap-2 items-center">
+<span class="bg-surface-container-high text-on-surface px-2 py-1 font-headline-md">#3</span>
+<span class="font-headline-md text-on-surface-variant">ENCORAFENIB + BINIMETINIB</span>
+</div>
+<div class="text-right">
+<span class="font-label-caps text-terminal-gray block">SURVIVAL SCORE</span>
+<span class="font-headline-md text-on-surface-variant block">72.1%</span>
+</div>
+</div>
+<div class="flex gap-4 font-data-mono text-body-sm text-on-surface-variant">
+<div><span class="text-terminal-gray">EVIDENCE:</span> <span class="bg-surface-container-high px-1 term-border border-terminal-gray">TIER 2</span></div>
+<div><span class="text-terminal-gray">REFS:</span> PMID 412355</div>
+<div><span class="text-terminal-gray">TRIAL:</span> <span class="text-cyan underline">NCT032345</span></div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- RIGHT SIDEBAR -->
+<aside class="w-96 flex flex-col gap-gutter shrink-0 h-full">
+<!-- MUTATIONS TABLE -->
+<div class="term-border flex-1 flex flex-col bg-black">
+<div class="term-bg-header font-label-caps text-label-caps px-2 py-1 term-border-b">MUTATIONS (3)</div>
+<div class="flex-1 overflow-auto log-container">
+<table class="w-full font-data-mono text-body-sm text-left border-collapse">
+<thead class="bg-surface-container-high text-on-surface">
+<tr>
+<th class="font-normal px-2 py-1 term-border-b term-border-r">GENE</th>
+<th class="font-normal px-2 py-1 term-border-b term-border-r">VARIANT</th>
+<th class="font-normal px-2 py-1 term-border-b term-border-r">ONC.</th>
+<th class="font-normal px-2 py-1 term-border-b term-border-r">EVID.</th>
+<th class="font-normal px-2 py-1 term-border-b">DRUG</th>
+</tr>
+</thead>
+<tbody class="text-on-surface-variant">
+<tr class="term-border-b border-cyan/30 bg-cyan/5">
+<td class="px-2 py-1 term-border-r text-cyan">BRAF</td>
+<td class="px-2 py-1 term-border-r">V600E</td>
+<td class="px-2 py-1 term-border-r text-terminal-red">YES</td>
+<td class="px-2 py-1 term-border-r">L1</td>
+<td class="px-2 py-1">DAB+TRAM</td>
+</tr>
+<tr class="term-border-b border-terminal-gray/30">
+<td class="px-2 py-1 term-border-r">TP53</td>
+<td class="px-2 py-1 term-border-r">R273C</td>
+<td class="px-2 py-1 term-border-r">YES</td>
+<td class="px-2 py-1 term-border-r text-terminal-gray">L4</td>
+<td class="px-2 py-1 text-terminal-gray">N/A</td>
+</tr>
+<tr class="border-terminal-gray/30">
+<td class="px-2 py-1 term-border-r">KRAS</td>
+<td class="px-2 py-1 term-border-r">G12D</td>
+<td class="px-2 py-1 term-border-r">YES</td>
+<td class="px-2 py-1 term-border-r text-terminal-gray">L4</td>
+<td class="px-2 py-1 text-terminal-gray">N/A</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- LITERATURE PANEL -->
+<div class="term-border h-32 flex flex-col bg-black shrink-0">
+<div class="term-bg-header font-label-caps text-label-caps px-2 py-1 term-border-b">LITERATURE SIMILARITY</div>
+<div class="p-2 flex flex-col gap-2 font-data-mono text-body-sm">
+<div class="flex items-center gap-2">
+<span class="w-24 text-cyan underline">PMID 3512345</span>
+<div class="flex-1 h-3 bg-surface-container-high term-border border-terminal-gray">
+<div class="h-full w-[94%] bg-cyan"></div>
+</div>
+<span class="w-8 text-right">.94</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="w-24 text-on-surface underline">PMID 2987654</span>
+<div class="flex-1 h-3 bg-surface-container-high term-border border-terminal-gray">
+<div class="h-full w-[82%] bg-terminal-gray"></div>
+</div>
+<span class="w-8 text-right text-terminal-gray">.82</span>
+</div>
+</div>
+</div>
+<!-- SURVIVAL PREDICT CHART (Mock) -->
+<div class="term-border h-40 flex flex-col bg-black shrink-0">
+<div class="term-bg-header font-label-caps text-label-caps px-2 py-1 term-border-b">SURVIVAL PREDICT (MONTHS)</div>
+<div class="p-4 flex-1 flex items-end gap-4 font-data-mono text-body-sm justify-around pt-8">
+<div class="flex flex-col items-center justify-end h-full gap-1">
+<span class="text-cyan">24.5</span>
+<div class="w-12 h-full bg-cyan/20 term-border border-cyan flex items-end">
+<div class="w-full h-full bg-cyan/40"></div>
+</div>
+<span class="text-[9px] text-center w-16">DAB+TRAM</span>
+</div>
+<div class="flex flex-col items-center justify-end h-full gap-1">
+<span class="text-on-surface">14.2</span>
+<div class="w-12 h-[60%] bg-surface-container-high term-border border-terminal-gray flex items-end">
+</div>
+<span class="text-[9px] text-center w-16">VEMURAFENIB</span>
+</div>
+<div class="flex flex-col items-center justify-end h-full gap-1">
+<span class="text-terminal-gray">8.1</span>
+<div class="w-12 h-[35%] bg-surface-container-highest term-border border-terminal-gray/50 flex items-end">
+</div>
+<span class="text-[9px] text-center w-16 text-terminal-gray">CTRL</span>
+</div>
+</div>
+</div>
+<!-- MATCHED TRIALS -->
+<div class="term-border flex-1 flex flex-col bg-black">
+<div class="term-bg-header font-label-caps text-label-caps px-2 py-1 term-border-b">MATCHED TRIALS (1)</div>
+<div class="p-2 font-data-mono text-body-sm flex flex-col gap-2">
+<div class="term-border p-2 bg-surface-container-lowest">
+<div class="flex justify-between items-start mb-1">
+<span class="text-cyan underline font-headline-md text-sm">NCT04567890</span>
+<span class="bg-terminal-green text-black px-1 text-[10px]">RECRUITING</span>
+</div>
+<p class="text-on-surface-variant leading-tight">PHASE II STUDY OF DABRAFENIB AND TRAMETINIB IN PATIENTS WITH BRAF V600E-MUTATED METASTATIC MELANOMA.</p>
+<div class="mt-2 text-terminal-gray text-[10px]">LOC: 12 SITES | DIST: 45 MI</div>
+</div>
+</div>
+</div>
+</aside>
+</main>
+<script>
+        // Simple live clock update
+        function updateClock() {
+            const now = new Date();
+            const timeString = now.toISOString().substr(11, 8) + ' UTC';
+            document.getElementById('live-clock').textContent = timeString;
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+    </script>
+</body></html>

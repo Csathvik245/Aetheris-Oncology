@@ -1,0 +1,121 @@
+{
+  "designSystem": {
+    "displayName": "ONCOLOGY//ORCHESTRATOR",
+    "styleGuidelines": "## Brand & Style\nThis design system implements a high-density, terminal-inspired aesthetic optimized for cancer-genomics analysis. The personality is strictly utilitarian, prioritizing data throughput and clinical precision over decorative aesthetics. \n\nThe style is a hybridization of **Brutalism** and **Modern Information Architecture**, utilizing a \"low-latency\" visual language. It rejects all depth cues like shadows or blurs in favor of a flat, grid-based hierarchy. The interface mimics the functional intensity of a Bloomberg Terminal, designed for expert users who require immediate access to complex genomic sequences and diagnostic datasets without visual friction.\n\n## Layout & Spacing\nThe layout is governed by a strict **1px Data Grid**. Elements are separated by thin 1px lines rather than whitespace to maximize the number of visible data points.\n\n- **Grid Model:** A 24-column fluid grid system. Components \"snap\" to the grid with no internal margins between adjacent modules.\n- **Scanline Overlay:** A persistent, low-opacity (2%) horizontal repeating linear gradient should be applied to the top layer of the UI to simulate a CRT/Terminal scanline effect.\n- **Breakpoints:** \n  - Mobile: Not supported (system requires high-resolution desktop environments).\n  - Standard: 1440px+ width.\n  - Large: 2560px+ (supports 4-column sequencing panes).\n\n## Elevation & Depth\nDepth is non-existent in this design system. There are no shadows, blurs, or Z-axis simulations.\n\n- **Stacking Logic:** Visual hierarchy is achieved through **Tonal Outlines**. \n- **Borders:** Every container must have a 1px solid border. Use `#888888` for standard containers and `#00E5FF` for active or focused modules.\n- **Layers:** If a modal or pop-over is required, it must have a solid `#000000` background and a thick 2px `#00E5FF` border to punch through the underlying data grid.\n\n## Components\n- **Buttons:** Solid 1px Cyan border. Text is Uppercase. Hover state: Invert colors (Cyan background, Black text). No transition timing; state changes must be instantaneous.\n- **Input Fields:** Bottom-border only (1px Gray). Active state: Full 1px Cyan box. Text cursor should be a solid Cyan block.\n- **Data Tables:** The core component. 1px Gray borders between all cells. Header row has a Dim Gray background with Black text. \n- **Genomic Sequence Readout:** Monospace characters with colored backgrounds for bases: A (Green), C (Cyan), G (Amber), T (Red).\n- **Chips/Status Tags:** Square corners. Solid background of the semantic color with Black text.\n- **Command Palette:** A permanent command-line interface (CLI) bar at the bottom of the screen for keyboard-driven navigation and filtering.",
+    "theme": {
+      "bodyFontFamily": "ibmPlexMono",
+      "colorMode": "DARK",
+      "colorVariant": "FIDELITY",
+      "customColor": "#00e5ff",
+      "designMd": "---\nname: ONCOLOGY//ORCHESTRATOR\ncolors:\n  surface: '#0d1516'\n  surface-dim: '#0d1516'\n  surface-bright: '#333a3c'\n  surface-container-lowest: '#080f11'\n  surface-container-low: '#151d1e'\n  surface-container: '#192122'\n  surface-container-high: '#242b2d'\n  surface-container-highest: '#2e3638'\n  on-surface: '#dce4e5'\n  on-surface-variant: '#bac9cc'\n  inverse-surface: '#dce4e5'\n  inverse-on-surface: '#2a3233'\n  outline: '#849396'\n  outline-variant: '#3b494c'\n  surface-tint: '#00daf3'\n  primary: '#c3f5ff'\n  on-primary: '#00363d'\n  primary-container: '#00e5ff'\n  on-primary-container: '#00626e'\n  inverse-primary: '#006875'\n  secondary: '#c7c6c6'\n  on-secondary: '#303031'\n  secondary-container: '#464747'\n  on-secondary-container: '#b5b5b5'\n  tertiary: '#ececec'\n  on-tertiary: '#303030'\n  tertiary-container: '#d0d0d0'\n  on-tertiary-container: '#595959'\n  error: '#ffb4ab'\n  on-error: '#690005'\n  error-container: '#93000a'\n  on-error-container: '#ffdad6'\n  primary-fixed: '#9cf0ff'\n  primary-fixed-dim: '#00daf3'\n  on-primary-fixed: '#001f24'\n  on-primary-fixed-variant: '#004f58'\n  secondary-fixed: '#e3e2e2'\n  secondary-fixed-dim: '#c7c6c6'\n  on-secondary-fixed: '#1b1c1c'\n  on-secondary-fixed-variant: '#464747'\n  tertiary-fixed: '#e2e2e2'\n  tertiary-fixed-dim: '#c6c6c6'\n  on-tertiary-fixed: '#1b1b1b'\n  on-tertiary-fixed-variant: '#474747'\n  background: '#0d1516'\n  on-background: '#dce4e5'\n  surface-variant: '#2e3638'\ntypography:\n  display-lg:\n    fontFamily: IBM Plex Mono\n    fontSize: 24px\n    fontWeight: '700'\n    lineHeight: 32px\n    letterSpacing: 0.1em\n  headline-md:\n    fontFamily: IBM Plex Mono\n    fontSize: 18px\n    fontWeight: '600'\n    lineHeight: 24px\n    letterSpacing: 0.05em\n  body-base:\n    fontFamily: IBM Plex Mono\n    fontSize: 13px\n    fontWeight: '400'\n    lineHeight: 18px\n    letterSpacing: 0em\n  body-sm:\n    fontFamily: IBM Plex Mono\n    fontSize: 11px\n    fontWeight: '400'\n    lineHeight: 14px\n    letterSpacing: 0em\n  label-caps:\n    fontFamily: IBM Plex Mono\n    fontSize: 10px\n    fontWeight: '600'\n    lineHeight: 12px\n    letterSpacing: 0.15em\n  data-mono:\n    fontFamily: IBM Plex Mono\n    fontSize: 12px\n    fontWeight: '500'\n    lineHeight: 16px\n    letterSpacing: -0.02em\nspacing:\n  unit: 4px\n  gutter: 1px\n  margin-sm: 8px\n  margin-md: 16px\n  container-padding: 12px\n---\n\n## Brand & Style\nThis design system implements a high-density, terminal-inspired aesthetic optimized for cancer-genomics analysis. The personality is strictly utilitarian, prioritizing data throughput and clinical precision over decorative aesthetics. \n\nThe style is a hybridization of **Brutalism** and **Modern Information Architecture**, utilizing a \"low-latency\" visual language. It rejects all depth cues like shadows or blurs in favor of a flat, grid-based hierarchy. The interface mimics the functional intensity of a Bloomberg Terminal, designed for expert users who require immediate access to complex genomic sequences and diagnostic datasets without visual friction.\n\n## Colors\nThe palette is built on a \"True Black\" foundation to maximize contrast and reduce eye strain during prolonged clinical shifts. \n\n- **Primary (Electric Cyan):** Reserved for interactive elements, active states, and critical data highlights. \n- **Secondary (Dim Gray):** Used for structural borders, inactive text, and metadata to de-emphasize non-critical information.\n- **Semantic Accents:** Success Green, Warning Amber, and Danger Red are used strictly for status indicators (e.g., pathogenic variants vs. benign mutations).\n- **Background:** Pure `#000000` is mandatory for all surfaces to ensure the phosphor-like glow of the typography.\n\n## Typography\nAll text is rendered in **IBM Plex Mono** to ensure every character\u2014specifically genomic bases (A, C, G, T)\u2014occupies the same horizontal space for perfect alignment. \n\n- **Headlines & Labels:** Must be uppercase with increased letter-spacing to function as structural anchors.\n- **Data Densitiy:** Body text is set at a smaller-than-average scale (13px/11px) to accommodate the massive information density required for DNA sequencing readouts.\n- **Hierarchy:** Established through color (Cyan vs. Gray) and weight rather than significant changes in font size.\n\n## Layout & Spacing\nThe layout is governed by a strict **1px Data Grid**. Elements are separated by thin 1px lines rather than whitespace to maximize the number of visible data points.\n\n- **Grid Model:** A 24-column fluid grid system. Components \"snap\" to the grid with no internal margins between adjacent modules.\n- **Scanline Overlay:** A persistent, low-opacity (2%) horizontal repeating linear gradient should be applied to the top layer of the UI to simulate a CRT/Terminal scanline effect.\n- **Breakpoints:** \n  - Mobile: Not supported (system requires high-resolution desktop environments).\n  - Standard: 1440px+ width.\n  - Large: 2560px+ (supports 4-column sequencing panes).\n\n## Elevation & Depth\nDepth is non-existent in this design system. There are no shadows, blurs, or Z-axis simulations.\n\n- **Stacking Logic:** Visual hierarchy is achieved through **Tonal Outlines**. \n- **Borders:** Every container must have a 1px solid border. Use `#888888` for standard containers and `#00E5FF` for active or focused modules.\n- **Layers:** If a modal or pop-over is required, it must have a solid `#000000` background and a thick 2px `#00E5FF` border to punch through the underlying data grid.\n\n## Shapes\nGeometry is strictly **Rectilinear**. \n\n- **Corners:** All corners are 90 degrees. No exceptions for buttons, inputs, or cards.\n- **Icons:** Use sharp, pixel-aligned SVG icons. Avoid curves where possible.\n- **Visual Rhythm:** The repetition of sharp rectangles reinforces the \"Orchestrator\" narrative\u2014a tool of cold, calculating efficiency.\n\n## Components\n- **Buttons:** Solid 1px Cyan border. Text is Uppercase. Hover state: Invert colors (Cyan background, Black text). No transition timing; state changes must be instantaneous.\n- **Input Fields:** Bottom-border only (1px Gray). Active state: Full 1px Cyan box. Text cursor should be a solid Cyan block.\n- **Data Tables:** The core component. 1px Gray borders between all cells. Header row has a Dim Gray background with Black text. \n- **Genomic Sequence Readout:** Monospace characters with colored backgrounds for bases: A (Green), C (Cyan), G (Amber), T (Red).\n- **Chips/Status Tags:** Square corners. Solid background of the semantic color with Black text.\n- **Command Palette:** A permanent command-line interface (CLI) bar at the bottom of the screen for keyboard-driven navigation and filtering.",
+      "headlineFontFamily": "ibmPlexMono",
+      "labelFontFamily": "ibmPlexMono",
+      "namedColors": {
+        "background": "#0d1516",
+        "error": "#ffb4ab",
+        "error_container": "#93000a",
+        "inverse_on_surface": "#2a3233",
+        "inverse_primary": "#006875",
+        "inverse_surface": "#dce4e5",
+        "on_background": "#dce4e5",
+        "on_error": "#690005",
+        "on_error_container": "#ffdad6",
+        "on_primary": "#00363d",
+        "on_primary_container": "#00626e",
+        "on_primary_fixed": "#001f24",
+        "on_primary_fixed_variant": "#004f58",
+        "on_secondary": "#303031",
+        "on_secondary_container": "#b5b5b5",
+        "on_secondary_fixed": "#1b1c1c",
+        "on_secondary_fixed_variant": "#464747",
+        "on_surface": "#dce4e5",
+        "on_surface_variant": "#bac9cc",
+        "on_tertiary": "#303030",
+        "on_tertiary_container": "#595959",
+        "on_tertiary_fixed": "#1b1b1b",
+        "on_tertiary_fixed_variant": "#474747",
+        "outline": "#849396",
+        "outline_variant": "#3b494c",
+        "primary": "#c3f5ff",
+        "primary_container": "#00e5ff",
+        "primary_fixed": "#9cf0ff",
+        "primary_fixed_dim": "#00daf3",
+        "secondary": "#c7c6c6",
+        "secondary_container": "#464747",
+        "secondary_fixed": "#e3e2e2",
+        "secondary_fixed_dim": "#c7c6c6",
+        "surface": "#0d1516",
+        "surface_bright": "#333a3c",
+        "surface_container": "#192122",
+        "surface_container_high": "#242b2d",
+        "surface_container_highest": "#2e3638",
+        "surface_container_low": "#151d1e",
+        "surface_container_lowest": "#080f11",
+        "surface_dim": "#0d1516",
+        "surface_tint": "#00daf3",
+        "surface_variant": "#2e3638",
+        "tertiary": "#ececec",
+        "tertiary_container": "#d0d0d0",
+        "tertiary_fixed": "#e2e2e2",
+        "tertiary_fixed_dim": "#c6c6c6"
+      },
+      "overridePrimaryColor": "#00e5ff",
+      "overrideSecondaryColor": "#888888",
+      "overrideTertiaryColor": "#000000",
+      "spacing": {
+        "container-padding": "12px",
+        "gutter": "1px",
+        "margin-md": "16px",
+        "margin-sm": "8px",
+        "unit": "4px"
+      },
+      "spacingScale": 2,
+      "typography": {
+        "body-base": {
+          "fontFamily": "IBM Plex Mono",
+          "fontSize": "13px",
+          "fontWeight": "400",
+          "letterSpacing": "0em",
+          "lineHeight": "18px"
+        },
+        "body-sm": {
+          "fontFamily": "IBM Plex Mono",
+          "fontSize": "11px",
+          "fontWeight": "400",
+          "letterSpacing": "0em",
+          "lineHeight": "14px"
+        },
+        "data-mono": {
+          "fontFamily": "IBM Plex Mono",
+          "fontSize": "12px",
+          "fontWeight": "500",
+          "letterSpacing": "-0.02em",
+          "lineHeight": "16px"
+        },
+        "display-lg": {
+          "fontFamily": "IBM Plex Mono",
+          "fontSize": "24px",
+          "fontWeight": "700",
+          "letterSpacing": "0.1em",
+          "lineHeight": "32px"
+        },
+        "headline-md": {
+          "fontFamily": "IBM Plex Mono",
+          "fontSize": "18px",
+          "fontWeight": "600",
+          "letterSpacing": "0.05em",
+          "lineHeight": "24px"
+        },
+        "label-caps": {
+          "fontFamily": "IBM Plex Mono",
+          "fontSize": "10px",
+          "fontWeight": "600",
+          "letterSpacing": "0.15em",
+          "lineHeight": "12px"
+        }
+      }
+    }
+  },
+  "name": "assets/123b561fc6814630b9150124e3039c3b",
+  "version": "1"
+}

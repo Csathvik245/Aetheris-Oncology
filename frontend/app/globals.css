@@ -1,0 +1,314 @@
+@import "tailwindcss";
+
+/* ===== AETHERIS ONCOLOGY — Liquid Orchestrator design tokens ===== */
+:root {
+  --base: #0a0c10; /* neutral background */
+  --base-2: #0c0f14; /* app shell */
+  --panel: #0e1218; /* card surface */
+  --panel-2: #11161e; /* raised card */
+  --line: #1b2330; /* hairline border */
+  --line-2: #232d3c; /* stronger border */
+
+  --fg: #e6edf3; /* primary text */
+  --fg-dim: #9aa7b4; /* secondary text */
+  --fg-mute: #5b6776; /* labels / muted */
+
+  --cyan: #00ffe5; /* primary */
+  --cyan-dim: #0bbfae;
+  --purple: #7b61ff; /* secondary */
+  --violet: #3f00ff; /* tertiary */
+  --green: #34f5a6;
+  --amber: #ffc24b;
+  --red: #ff5d6c;
+}
+
+@theme inline {
+  --color-base: var(--base);
+  --color-base2: var(--base-2);
+  --color-panel: var(--panel);
+  --color-panel2: var(--panel-2);
+  --color-line: var(--line);
+  --color-line2: var(--line-2);
+
+  --color-fg: var(--fg);
+  --color-fgdim: var(--fg-dim);
+  --color-fgmute: var(--fg-mute);
+
+  --color-cyan: var(--cyan);
+  --color-cyandim: var(--cyan-dim);
+  --color-purple: var(--purple);
+  --color-violet: var(--violet);
+  --color-green: var(--green);
+  --color-amber: var(--amber);
+  --color-red: var(--red);
+
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-geist), var(--font-inter), sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  background: var(--base);
+  color: var(--fg);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* subtle radial vignette behind the canvas */
+.app-bg {
+  background:
+    radial-gradient(
+      1200px 700px at 50% 42%,
+      rgba(0, 255, 229, 0.05),
+      transparent 70%
+    ),
+    radial-gradient(
+      900px 600px at 85% 10%,
+      rgba(123, 97, 255, 0.05),
+      transparent 65%
+    ),
+    var(--base);
+}
+
+/* scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--line-2);
+  border-radius: 8px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--cyan-dim);
+}
+
+/* ===== utilities ===== */
+.label {
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  font-size: 10px;
+  font-weight: 600;
+  font-family: var(--font-display);
+  color: var(--fg-mute);
+}
+
+.card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+
+.card-cyan {
+  border-color: rgba(0, 255, 229, 0.35);
+  box-shadow:
+    0 0 0 1px rgba(0, 255, 229, 0.06),
+    0 0 24px -6px rgba(0, 255, 229, 0.25);
+}
+
+.glow-cyan {
+  box-shadow: 0 0 40px -4px rgba(0, 255, 229, 0.45);
+}
+
+.text-glow {
+  text-shadow: 0 0 14px rgba(0, 255, 229, 0.55);
+}
+
+/* pill badge */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 9999px;
+  padding: 2px 9px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+/* core nexus pulse ring */
+@keyframes nexus-pulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.55;
+  }
+  70% {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+}
+.nexus-ring {
+  animation: nexus-pulse 2.6s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+}
+
+/* slow rotation for orbit accents */
+@keyframes spin-slow {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.spin-slow {
+  animation: spin-slow 22s linear infinite;
+}
+
+/* node breathing for active agents */
+@keyframes node-breathe {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(0, 255, 229, 0);
+    border-color: rgba(0, 255, 229, 0.55);
+  }
+  50% {
+    box-shadow: 0 0 22px -2px rgba(0, 255, 229, 0.55);
+    border-color: rgba(0, 255, 229, 0.9);
+  }
+}
+.node-active {
+  animation: node-breathe 1.8s ease-in-out infinite;
+}
+
+/* blinking status dot */
+@keyframes blink {
+  50% {
+    opacity: 0.25;
+  }
+}
+.blink {
+  animation: blink 1.2s steps(2, start) infinite;
+}
+
+/* dashed flow on connectors */
+@keyframes dash-flow {
+  to {
+    stroke-dashoffset: -24;
+  }
+}
+.flow {
+  stroke-dasharray: 3 6;
+  animation: dash-flow 1.2s linear infinite;
+}
+
+.tnum {
+  font-variant-numeric: tabular-nums;
+  font-family: var(--font-mono);
+}
+
+/* progress track */
+.track {
+  height: 4px;
+  border-radius: 9999px;
+  background: var(--line-2);
+  overflow: hidden;
+}
+.track > span {
+  display: block;
+  height: 100%;
+  border-radius: 9999px;
+  background: linear-gradient(90deg, var(--cyan-dim), var(--cyan));
+}
+
+/* ===== skeleton shimmer ===== */
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background: var(--panel-2);
+  border-radius: 6px;
+}
+.skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(0, 255, 229, 0.08),
+    transparent
+  );
+  animation: shimmer 1.4s infinite;
+}
+
+/* ===== small spinner (running state) ===== */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.spinner {
+  width: 12px;
+  height: 12px;
+  border-radius: 9999px;
+  border: 1.5px solid rgba(0, 255, 229, 0.25);
+  border-top-color: var(--cyan);
+  animation: spin 0.7s linear infinite;
+}
+
+/* ===== modal ===== */
+@keyframes overlay-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes sheet-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+.overlay-in {
+  animation: overlay-in 0.16s ease-out;
+}
+.sheet-in {
+  animation: sheet-in 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* fade/slide for new activity rows */
+@keyframes row-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.row-in {
+  animation: row-in 0.25s ease-out;
+}
+
+/* clickable lift */
+.lift {
+  transition:
+    transform 0.12s ease,
+    border-color 0.12s ease,
+    box-shadow 0.12s ease;
+}
+.lift:hover {
+  transform: translateY(-2px);
+  border-color: rgba(0, 255, 229, 0.4);
+  box-shadow: 0 8px 30px -12px rgba(0, 255, 229, 0.35);
+}

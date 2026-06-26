@@ -1,0 +1,47 @@
+# ===== secrets =====
+.env
+.env.*
+!.env.example
+!frontend/.env.local.example
+**/.env
+**/.env.local
+
+# ===== python =====
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+.mypy_cache/
+.pytest_cache/
+.ipynb_checkpoints/
+
+# ===== node / next (frontend) =====
+node_modules/
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/.turbo/
+frontend/next-env.d.ts
+.eslintcache
+
+# ===== logs / os / editor =====
+*.log
+npm-debug.log*
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# ===== model / cache artifacts =====
+# NOTE: do NOT ignore *.bin / *.pt globally — chromadb_store/ ships HNSW .bin
+# index files that must be committed (per PRD pre-flight checklist).
+.cache/
+huggingface/
+
+# external cloned skill (re-clone per PRD section 13)
+ui-ux-pro-max-skill/
+
+# local machine settings
+.claude/settings.local.json

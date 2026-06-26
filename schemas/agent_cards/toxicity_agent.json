@@ -1,0 +1,14 @@
+{
+  "name": "Toxicity Assessment Agent",
+  "description": "Cross-checks top-ranked drugs against the live OpenFDA adverse-event database to assign risk levels and flag interactions",
+  "version": "1.0.0",
+  "endpoint": "http://localhost:8004/run",
+  "input_schema": {
+    "drug_scores": "array of {drug, survival_benefit_score, rank}"
+  },
+  "output_schema": {
+    "risk_assessments": "array of {drug, risk_level, adverse_events, interaction_flags}"
+  },
+  "capabilities": ["adverse_event_lookup", "risk_classification", "interaction_flagging"],
+  "data_sources": ["OpenFDA"]
+}

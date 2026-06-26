@@ -1,0 +1,31 @@
+##fileformat=VCFv4.2
+##fileDate=20250518
+##source=OncologyOrchestrator_Demo
+##reference=GRCh38
+##INFO=<ID=GENE,Number=1,Type=String,Description="Hugo gene symbol">
+##INFO=<ID=AA_CHANGE,Number=1,Type=String,Description="Amino acid change">
+##INFO=<ID=TRANSCRIPT,Number=1,Type=String,Description="Ensembl transcript ID">
+##INFO=<ID=VARIANT_CLASS,Number=1,Type=String,Description="Variant classification">
+##INFO=<ID=CANCER_TYPE,Number=1,Type=String,Description="Associated cancer type">
+##INFO=<ID=ALLELE_FREQ,Number=1,Type=Float,Description="Variant allele frequency">
+##FILTER=<ID=PASS,Description="All filters passed">
+##FILTER=<ID=LowQual,Description="Low quality variant">
+##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
+##FORMAT=<ID=AD,Number=R,Type=Integer,Description="Allelic depths">
+##FORMAT=<ID=DP,Number=1,Type=Integer,Description="Total read depth">
+##patient_id=GBM_001
+##cancer_type=Glioblastoma_Multiforme
+##sample_date=2025-05-18
+##sequencing_platform=Illumina_NovaSeq
+##tumor_purity=0.66
+##notes=IDH wildtype GBM with EGFR amplification and PTEN loss. MGMT promoter methylation status critical for temozolomide response. EGFRvIII variant present suggesting rindopepimut eligibility. Bevacizumab indicated for VEGF pathway.
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	TUMOR
+7	55191822	rs121913500	C	T	.	PASS	GENE=EGFR;AA_CHANGE=A289V;TRANSCRIPT=ENST00000275493;VARIANT_CLASS=Missense_Mutation;CANCER_TYPE=Glioblastoma;ALLELE_FREQ=0.59	GT:AD:DP	0/1:64:108
+10	89692905	rs121913254	T	A	.	PASS	GENE=PTEN;AA_CHANGE=R130X;TRANSCRIPT=ENST00000371953;VARIANT_CLASS=Nonsense_Mutation;CANCER_TYPE=Glioblastoma;ALLELE_FREQ=0.47	GT:AD:DP	0/1:51:108
+17	7674220	rs28934578	C	T	.	PASS	GENE=TP53;AA_CHANGE=R273C;TRANSCRIPT=ENST00000269305;VARIANT_CLASS=Missense_Mutation;CANCER_TYPE=Glioblastoma;ALLELE_FREQ=0.38	GT:AD:DP	0/1:41:108
+9	21974698	rs3088440	C	T	.	PASS	GENE=CDKN2A;AA_CHANGE=R58X;TRANSCRIPT=ENST00000304494;VARIANT_CLASS=Nonsense_Mutation;CANCER_TYPE=Glioblastoma;ALLELE_FREQ=0.33	GT:AD:DP	0/1:35:106
+12	69745145	rs121913501	G	A	.	PASS	GENE=MDM2;AA_CHANGE=S166F;TRANSCRIPT=ENST00000265773;VARIANT_CLASS=Missense_Mutation;CANCER_TYPE=Glioblastoma;ALLELE_FREQ=0.24	GT:AD:DP	0/1:26:108
+13	49038466	rs121913502	A	G	.	PASS	GENE=RB1;AA_CHANGE=R552X;TRANSCRIPT=ENST00000267163;VARIANT_CLASS=Nonsense_Mutation;CANCER_TYPE=Glioblastoma;ALLELE_FREQ=0.18	GT:AD:DP	0/1:19:106
+2	209113113	rs121913503	G	A	.	LowQual	GENE=IDH1;AA_CHANGE=R132H;TRANSCRIPT=ENST00000345146;VARIANT_CLASS=Missense_Mutation;CANCER_TYPE=Glioblastoma;ALLELE_FREQ=0.09	GT:AD:DP	0/1:10:111
+4	55141055	rs121913504	A	T	.	LowQual	GENE=KIT;AA_CHANGE=D816V;TRANSCRIPT=ENST00000288135;VARIANT_CLASS=Missense_Mutation;CANCER_TYPE=Glioblastoma;ALLELE_FREQ=0.06	GT:AD:DP	0/1:6:100
+19	11022317	rs28897727	G	A	.	LowQual	GENE=STK11;AA_CHANGE=G163D;TRANSCRIPT=ENST00000326873;VARIANT_CLASS=Missense_Mutation;CANCER_TYPE=Glioblastoma;ALLELE_FREQ=0.04	GT:AD:DP	0/1:4:100

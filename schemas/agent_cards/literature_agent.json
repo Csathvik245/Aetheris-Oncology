@@ -1,0 +1,14 @@
+{
+  "name": "Literature Retrieval Agent",
+  "description": "Performs semantic RAG search over pre-loaded PubMed abstracts in ChromaDB using BioBERT embeddings to surface supporting evidence",
+  "version": "1.0.0",
+  "endpoint": "http://localhost:8000/agents/literature",
+  "input_schema": {
+    "mutations": "array of Mutation schema"
+  },
+  "output_schema": {
+    "citations": "array of {pmid, title, similarity_score, abstract_snippet}"
+  },
+  "capabilities": ["semantic_search", "evidence_retrieval", "biobert_embedding"],
+  "data_sources": ["ChromaDB", "PubMed"]
+}

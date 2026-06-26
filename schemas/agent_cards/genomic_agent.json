@@ -1,0 +1,14 @@
+{
+  "name": "Genomic Interpreter Agent",
+  "description": "Annotates tumor mutations using OncoKB and ClinVar to identify actionable oncogenic drivers",
+  "version": "1.0.0",
+  "endpoint": "http://localhost:8001/run",
+  "input_schema": {
+    "mutations": "array of {gene, variant, chromosome, position}"
+  },
+  "output_schema": {
+    "actionable_mutations": "array of Mutation schema"
+  },
+  "capabilities": ["mutation_annotation", "drug_matching", "evidence_grading"],
+  "data_sources": ["OncoKB", "ClinVar"]
+}

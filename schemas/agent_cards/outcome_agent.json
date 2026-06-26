@@ -1,0 +1,14 @@
+{
+  "name": "Survival Outcome Agent",
+  "description": "Scores candidate drugs against the mutation profile using a local PyTorch survival model (BioBERT encoder + MLP head)",
+  "version": "1.0.0",
+  "endpoint": "http://localhost:8000/agents/outcome",
+  "input_schema": {
+    "mutations": "array of Mutation schema"
+  },
+  "output_schema": {
+    "drug_scores": "array of {drug, survival_benefit_score, rank}"
+  },
+  "capabilities": ["survival_prediction", "drug_ranking", "local_inference"],
+  "data_sources": ["PyTorch SurvivalScorer (local)"]
+}

@@ -1,0 +1,15 @@
+{
+  "name": "Clinical Trial Matching Agent",
+  "description": "Finds open, recruiting clinical trials matching the patient's cancer type and actionable mutation genes via the live ClinicalTrials.gov API",
+  "version": "1.0.0",
+  "endpoint": "http://localhost:8003/run",
+  "input_schema": {
+    "mutations": "array of Mutation schema",
+    "cancer_type": "string"
+  },
+  "output_schema": {
+    "trials": "array of {nct_id, title, status, phase, eligibility_summary}"
+  },
+  "capabilities": ["trial_matching", "eligibility_screening", "recruiting_filter"],
+  "data_sources": ["ClinicalTrials.gov"]
+}
