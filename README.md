@@ -6,9 +6,6 @@ Aetheris connects scattered cancer data (variants, evidence, literature, and tri
 
 > ⚠️ **Demonstration project. Not for clinical use.** A hackathon prototype illustrating an architecture for precision-oncology decision support, not a validated medical device. See Scope & Limitations.
 
-🔗 **Live demo:** _add URL_
-🎥 **Demo video:** _add link_
-
 Built for **BlairHacks**, theme: *constellation*.
 
 ## The problem
