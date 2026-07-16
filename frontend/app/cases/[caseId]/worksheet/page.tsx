@@ -48,7 +48,7 @@ export default function WorksheetPage({
   const packet = getPacket(caseId);
   const router = useRouter();
 
-  const [step, setStep] = useState(2); // land on Treatment Planning, matching the reference screen
+  const [step, setStep] = useState(0);
   const [phase, setPhase] = useState<Phase>("second");
   const [drugs, setDrugs] = useState<DrugEntry[]>(
     WORKSHEET_DRUGS.map((d) => ({ ...d, rationale: "", citation: "" }))
@@ -61,12 +61,56 @@ export default function WorksheetPage({
   const [biomarkerChecks, setBiomarkerChecks] = useState<Record<string, boolean>>(
     Object.fromEntries(packet.pathology.genomicProfile.map((g) => [g, true]))
   );
+  const [showErrors, setShowErrors] = useState(false);
 
   function removeDrug(key: string) {
     setDrugs((d) => d.filter((x) => x.key !== key));
   }
   function toggleTag(tag: string) {
     setTags((t) => (t.includes(tag) ? t.filter((x) => x !== tag) : [...t, tag]));
+  }
+
+  function stepErrors(s: number): string[] {
+    switch (s) {
+      case 0:
+        return diagnosisNote.trim() ? [] : ["Staging rationale is required."];
+      case 1:
+        return Object.values(biomarkerChecks).some(Boolean)
+          ? []
+          : ["Select at least one biomarker to prioritize."];
+      case 2: {
+        const errs: string[] = [];
+        if (drugs.length === 0) errs.push("At least one drug is required in the regimen.");
+        if (drugs.some((d) => !d.rationale.trim() || !d.citation.trim())) {
+          errs.push("Every drug needs a clinical rationale and an evidence citation.");
+        }
+        if (!doseModification.trim()) errs.push("Dose modification protocol is required.");
+        return errs;
+      }
+      case 3:
+        return tags.length > 0 ? [] : ["Flag at least one toxicity concern."];
+      default:
+        return [];
+    }
+  }
+
+  const currentErrors = showErrors ? stepErrors(step) : [];
+  const allStepsValid = WORKSHEET_STEPS.every((_, i) => stepErrors(i).length === 0);
+
+  function goToStep(i: number) {
+    if (i > step) return; // forward jumps must go through validated Next
+    setShowErrors(false);
+    setStep(i);
+  }
+
+  function goNext() {
+    const errs = stepErrors(step);
+    if (errs.length > 0) {
+      setShowErrors(true);
+      return;
+    }
+    setShowErrors(false);
+    setStep((s) => Math.min(WORKSHEET_STEPS.length - 1, s + 1));
   }
 
   return (
@@ -80,8 +124,9 @@ export default function WorksheetPage({
             return (
               <div key={label} className="flex flex-1 items-center last:flex-none">
                 <button
-                  onClick={() => setStep(i)}
-                  className="flex flex-col items-center gap-1.5"
+                  onClick={() => goToStep(i)}
+                  disabled={i > step}
+                  className="flex flex-col items-center gap-1.5 disabled:cursor-not-allowed"
                 >
                   <span
                     className={`grid h-8 w-8 place-items-center rounded-full text-[12px] font-semibold transition-colors ${
@@ -344,12 +389,29 @@ export default function WorksheetPage({
               </Card>
             )}
 
+            {currentErrors.length > 0 && (
+              <div className="rounded-lg border border-coral-ring bg-coral-tint p-3">
+                {currentErrors.map((e) => (
+                  <p key={e} className="text-[12.5px] text-coral-text">
+                    {e}
+                  </p>
+                ))}
+              </div>
+            )}
+
             <div className="flex justify-between">
-              <Button variant="outline" disabled={step === 0} onClick={() => setStep((s) => Math.max(0, s - 1))}>
+              <Button
+                variant="outline"
+                disabled={step === 0}
+                onClick={() => {
+                  setShowErrors(false);
+                  setStep((s) => Math.max(0, s - 1));
+                }}
+              >
                 Back
               </Button>
               {step < WORKSHEET_STEPS.length - 1 && (
-                <Button className="bg-navy text-white hover:bg-navy/90" onClick={() => setStep((s) => Math.min(4, s + 1))}>
+                <Button className="bg-navy text-white hover:bg-navy/90" onClick={goNext}>
                   Next
                 </Button>
               )}
@@ -414,7 +476,8 @@ export default function WorksheetPage({
         <div className="flex gap-2">
           <Button variant="outline">Save Draft</Button>
           <Button
-            className="bg-navy text-white hover:bg-navy/90"
+            className="bg-navy text-white hover:bg-navy/90 disabled:opacity-50"
+            disabled={!allStepsValid || step !== WORKSHEET_STEPS.length - 1}
             onClick={() => router.push(`/cases/${caseId}/mission-control`)}
           >
             Submit to AI Orchestrator
