@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Repeat, Flame, Timer, Sparkles, ShieldCheck, Database, GraduationCap } from "lucide-react";
+import { Plus, Repeat, Flame, Timer, Sparkles, Info } from "lucide-react";
 import { Shell } from "../components/shell/Shell";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -10,7 +10,7 @@ import { Slider } from "@/components/ui/slider";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 
-const MARKERS = ["EGFR (L858R)", "KRAS (G12C)", "ALK Rearrangement", "BRAF (V600E)", "ROS1 Fusion"];
+const DEFAULT_MARKERS = ["EGFR (L858R)", "KRAS (G12C)", "ALK Rearrangement", "BRAF (V600E)", "ROS1 Fusion"];
 
 const SCENARIOS = [
   {
@@ -43,20 +43,27 @@ const COMPLEXITY_LABELS = ["Beginner", "Intermediate", "Level 3: Interdisciplina
 
 interface Preview {
   patientId: string;
-  summary: string;
-  confidence: number;
-  nodes: number;
+  cancerType: string;
+  metastaticSite: string;
+  markers: string[];
+  scenarioTitle: string;
+  complexityLabel: string;
+  objectiveTitles: string[];
 }
 
 export default function CaseGeneratorPage() {
-  const [cancerType, setCancerType] = useState("Non-Small Cell Lung Cancer");
-  const [metastaticSite, setMetastaticSite] = useState("Central Nervous System (Brain)");
-  const [markers, setMarkers] = useState<string[]>(["EGFR (L858R)"]);
-  const [scenario, setScenario] = useState("mutation-change");
-  const [complexity, setComplexity] = useState([62]);
-  const [objectives, setObjectives] = useState<string[]>(["variant-interpretation"]);
+  const [cancerType, setCancerType] = useState("");
+  const [metastaticSite, setMetastaticSite] = useState("");
+  const [availableMarkers, setAvailableMarkers] = useState<string[]>(DEFAULT_MARKERS);
+  const [markers, setMarkers] = useState<string[]>([]);
+  const [scenario, setScenario] = useState("");
+  const [complexity, setComplexity] = useState([50]);
+  const [objectives, setObjectives] = useState<string[]>([]);
   const [generating, setGenerating] = useState(false);
   const [preview, setPreview] = useState<Preview | null>(null);
+  const [showCustomMarkerInput, setShowCustomMarkerInput] = useState(false);
+  const [customMarkerText, setCustomMarkerText] = useState("");
+  const [triedSubmit, setTriedSubmit] = useState(false);
 
   function toggleMarker(m: string) {
     setMarkers((cur) => (cur.includes(m) ? cur.filter((x) => x !== m) : [...cur, m]));
@@ -65,20 +72,52 @@ export default function CaseGeneratorPage() {
     setObjectives((cur) => (cur.includes(k) ? cur.filter((x) => x !== k) : [...cur, k]));
   }
 
+  function addCustomMarker() {
+    const value = customMarkerText.trim();
+    if (!value) {
+      setShowCustomMarkerInput(false);
+      return;
+    }
+    if (!availableMarkers.includes(value)) {
+      setAvailableMarkers((cur) => [...cur, value]);
+    }
+    setMarkers((cur) => (cur.includes(value) ? cur : [...cur, value]));
+    setCustomMarkerText("");
+    setShowCustomMarkerInput(false);
+  }
+
+  const complexityLabel =
+    complexity[0] > 80 ? COMPLEXITY_LABELS[3] : complexity[0] > 55 ? COMPLEXITY_LABELS[2] : complexity[0] > 30 ? COMPLEXITY_LABELS[1] : COMPLEXITY_LABELS[0];
+
+  const errors = {
+    cancerType: cancerType.trim().length === 0,
+    metastaticSite: metastaticSite.trim().length === 0,
+    markers: markers.length === 0,
+    scenario: scenario.length === 0,
+    objectives: objectives.length === 0,
+  };
+  const isValid = !Object.values(errors).some(Boolean);
+
   function generate() {
+    if (!isValid) {
+      setTriedSubmit(true);
+      return;
+    }
     setGenerating(true);
     setTimeout(() => {
       const id = Math.floor(10000 + Math.random() * 90000);
+      const scenarioTitle = SCENARIOS.find((s) => s.key === scenario)?.title ?? scenario;
       setPreview({
         patientId: `Synthetic-${id}`,
-        summary: `The engine is synthesizing a 64-year-old patient profile with metastatic ${cancerType.toLowerCase()}, integrating NGS data showing ${
-          markers[0] ?? "an unspecified marker"
-        } with a ${scenario.replace("-", " ")} scenario layer.`,
-        confidence: 96 + Math.random() * 3,
-        nodes: 900 + Math.floor(Math.random() * 500),
+        cancerType,
+        metastaticSite,
+        markers: [...markers],
+        scenarioTitle,
+        complexityLabel,
+        objectiveTitles: objectives.map((k) => OBJECTIVES.find((o) => o.key === k)?.title ?? k),
       });
       setGenerating(false);
-    }, 900);
+    }, 600);
   }
 
   return (
@@ -91,8 +130,8 @@ export default function CaseGeneratorPage() {
               Configure a training case built to drill a specific competency. Not derived from real patient data.
             </p>
           </div>
-          <Badge className="gap-1.5 bg-teal-tint text-teal-deep">
-            <span className="pulse-dot h-1.5 w-1.5 rounded-full bg-teal-deep" /> Core Engine 4.2: Active
+          <Badge variant="outline" className="gap-1.5 text-muted-foreground">
+            <Info size={13} /> Mock preview — no generation backend connected
           </Badge>
         </div>
 
@@ -103,19 +142,41 @@ export default function CaseGeneratorPage() {
 
             <div className="mt-4 grid grid-cols-2 gap-4">
               <div>
-                <label className="label mb-1.5 block">Cancer Type</label>
-                <Input value={cancerType} onChange={(e) => setCancerType(e.target.value)} />
+                <label className="label mb-1.5 block">
+                  Cancer Type <span className="text-coral-text">*</span>
+                </label>
+                <Input
+                  value={cancerType}
+                  onChange={(e) => setCancerType(e.target.value)}
+                  placeholder="e.g. Non-Small Cell Lung Cancer"
+                  aria-invalid={triedSubmit && errors.cancerType}
+                />
+                {triedSubmit && errors.cancerType && (
+                  <p className="mt-1 text-[11.5px] text-coral-text">Cancer type is required.</p>
+                )}
               </div>
               <div>
-                <label className="label mb-1.5 block">Metastatic Site</label>
-                <Input value={metastaticSite} onChange={(e) => setMetastaticSite(e.target.value)} />
+                <label className="label mb-1.5 block">
+                  Metastatic Site <span className="text-coral-text">*</span>
+                </label>
+                <Input
+                  value={metastaticSite}
+                  onChange={(e) => setMetastaticSite(e.target.value)}
+                  placeholder="e.g. Central Nervous System (Brain)"
+                  aria-invalid={triedSubmit && errors.metastaticSite}
+                />
+                {triedSubmit && errors.metastaticSite && (
+                  <p className="mt-1 text-[11.5px] text-coral-text">Metastatic site is required.</p>
+                )}
               </div>
             </div>
 
             <div className="mt-5">
-              <label className="label mb-2 block">Mutation Profile Selection</label>
-              <div className="flex flex-wrap gap-2">
-                {MARKERS.map((m) => (
+              <label className="label mb-2 block">
+                Mutation Profile Selection <span className="text-coral-text">*</span>
+              </label>
+              <div className="flex flex-wrap items-center gap-2">
+                {availableMarkers.map((m) => (
                   <button
                     key={m}
                     onClick={() => toggleMarker(m)}
@@ -128,14 +189,44 @@ export default function CaseGeneratorPage() {
                     {m}
                   </button>
                 ))}
-                <button className="flex items-center gap-1 rounded-lg border border-dashed border-border px-3 py-1.5 text-[12.5px] text-muted-foreground hover:bg-muted">
-                  <Plus size={13} /> Custom Marker
-                </button>
+                {showCustomMarkerInput ? (
+                  <span className="flex items-center gap-1.5">
+                    <Input
+                      autoFocus
+                      value={customMarkerText}
+                      onChange={(e) => setCustomMarkerText(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") addCustomMarker();
+                        if (e.key === "Escape") {
+                          setShowCustomMarkerInput(false);
+                          setCustomMarkerText("");
+                        }
+                      }}
+                      placeholder="Gene (variant)"
+                      className="h-8 w-40 text-[12.5px]"
+                    />
+                    <Button size="sm" className="h-8 bg-navy text-white hover:bg-navy/90" onClick={addCustomMarker}>
+                      Add
+                    </Button>
+                  </span>
+                ) : (
+                  <button
+                    onClick={() => setShowCustomMarkerInput(true)}
+                    className="flex items-center gap-1 rounded-lg border border-dashed border-border px-3 py-1.5 text-[12.5px] text-muted-foreground hover:bg-muted"
+                  >
+                    <Plus size={13} /> Custom Marker
+                  </button>
+                )}
               </div>
+              {triedSubmit && errors.markers && (
+                <p className="mt-1.5 text-[11.5px] text-coral-text">Select at least one mutation marker.</p>
+              )}
             </div>
 
             <div className="mt-5">
-              <label className="label mb-2 block">Dynamic Scenario Layer</label>
+              <label className="label mb-2 block">
+                Dynamic Scenario Layer <span className="text-coral-text">*</span>
+              </label>
               <div className="grid grid-cols-3 gap-3">
                 {SCENARIOS.map((s) => (
                   <button
@@ -153,6 +244,9 @@ export default function CaseGeneratorPage() {
                   </button>
                 ))}
               </div>
+              {triedSubmit && errors.scenario && (
+                <p className="mt-1.5 text-[11.5px] text-coral-text">Select a scenario layer.</p>
+              )}
             </div>
           </Card>
 
@@ -171,13 +265,13 @@ export default function CaseGeneratorPage() {
                 max={100}
                 step={1}
               />
-              <p className="mt-3 text-[12px] leading-relaxed text-muted-foreground">
-                {complexity[0] > 80 ? COMPLEXITY_LABELS[3] : complexity[0] > 55 ? COMPLEXITY_LABELS[2] : complexity[0] > 30 ? COMPLEXITY_LABELS[1] : COMPLEXITY_LABELS[0]}
-              </p>
+              <p className="mt-3 text-[12px] leading-relaxed text-muted-foreground">{complexityLabel}</p>
             </Card>
 
             <Card className="p-5">
-              <label className="label mb-2 block">Clinical Learning Objective</label>
+              <label className="label mb-2 block">
+                Clinical Learning Objective <span className="text-coral-text">*</span>
+              </label>
               <div className="flex flex-col gap-3">
                 {OBJECTIVES.map((o) => (
                   <label key={o.key} className="flex cursor-pointer items-start gap-2.5">
@@ -193,45 +287,67 @@ export default function CaseGeneratorPage() {
                   </label>
                 ))}
               </div>
+              {triedSubmit && errors.objectives && (
+                <p className="mt-2 text-[11.5px] text-coral-text">Select at least one learning objective.</p>
+              )}
             </Card>
 
-            <Button onClick={generate} disabled={generating} className="w-full gap-2 bg-navy py-5 text-white hover:bg-navy/90">
+            <Button
+              onClick={generate}
+              disabled={generating}
+              className="w-full gap-2 bg-navy py-5 text-white hover:bg-navy/90 disabled:opacity-50"
+            >
               <Sparkles size={16} /> {generating ? "Generating…" : "Generate Synthetic Case"}
             </Button>
+            {triedSubmit && !isValid && (
+              <p className="text-center text-[11.5px] text-coral-text">
+                Fill in all required fields (marked *) before generating.
+              </p>
+            )}
           </div>
         </div>
 
         {preview && (
           <Card className="fade-up mt-6 overflow-hidden p-0">
             <div className="p-5">
-              <Badge className="bg-navy-tint text-navy">Pre-Generation Estimate</Badge>
+              <Badge variant="outline" className="text-muted-foreground">Mock Preview</Badge>
               <h3 className="mt-3 font-heading text-[19px] font-bold text-foreground">Patient {preview.patientId}</h3>
-              <p className="mt-2 max-w-2xl text-[13px] leading-relaxed text-muted-foreground">{preview.summary}</p>
-              <div className="mt-4 flex items-center gap-8">
+              <p className="mt-2 max-w-2xl text-[13px] leading-relaxed text-muted-foreground">
+                Synthetic case configured with the parameters below. No generation model has run — this is a
+                structured echo of your configuration for review before a real case-generation backend is connected.
+              </p>
+              <div className="mt-4 grid grid-cols-2 gap-4 text-[13px]">
                 <div>
-                  <div className="label">Confidence</div>
-                  <div className="font-heading text-2xl font-bold text-teal-deep tnum">{preview.confidence.toFixed(1)}%</div>
+                  <div className="label">Cancer Type</div>
+                  <div className="mt-0.5 font-semibold text-foreground">{preview.cancerType}</div>
                 </div>
                 <div>
-                  <div className="label">Nodes Generated</div>
-                  <div className="font-heading text-2xl font-bold text-navy tnum">{preview.nodes.toLocaleString()}</div>
+                  <div className="label">Metastatic Site</div>
+                  <div className="mt-0.5 font-semibold text-foreground">{preview.metastaticSite}</div>
+                </div>
+                <div>
+                  <div className="label">Scenario</div>
+                  <div className="mt-0.5 font-semibold text-foreground">{preview.scenarioTitle}</div>
+                </div>
+                <div>
+                  <div className="label">Complexity</div>
+                  <div className="mt-0.5 font-semibold text-foreground">{preview.complexityLabel}</div>
+                </div>
+                <div>
+                  <div className="label">Mutation Profile</div>
+                  <div className="mt-0.5 flex flex-wrap gap-1.5">
+                    {preview.markers.map((m) => (
+                      <span key={m} className="rounded-md bg-navy px-2 py-0.5 text-[11px] font-semibold text-white">
+                        {m}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <div className="label">Learning Objectives</div>
+                  <div className="mt-0.5 font-semibold text-foreground">{preview.objectiveTitles.join(", ")}</div>
                 </div>
               </div>
-              <p className="mt-4 max-w-lg rounded-lg bg-muted p-3 text-[12px] italic leading-relaxed text-muted-foreground">
-                &ldquo;Ready for deployment. This case will test longitudinal treatment transitions and secondary
-                resistance management.&rdquo;
-              </p>
-            </div>
-            <div className="flex items-center gap-5 border-t border-border bg-background px-5 py-3 text-[11px] text-muted-foreground">
-              <span className="flex items-center gap-1.5">
-                <ShieldCheck size={13} /> Clinically Validated Engine v4.2
-              </span>
-              <span className="flex items-center gap-1.5">
-                <Database size={13} /> Connected to SEER Database 2024
-              </span>
-              <span className="flex items-center gap-1.5">
-                <GraduationCap size={13} /> Compliant with ACGME Educational Standards
-              </span>
             </div>
           </Card>
         )}

@@ -17,6 +17,7 @@ export interface CaseSummary {
   mutation: string;
   tags: string[];
   cancerType: string;
+  organSystem: string;
 }
 
 export const CASES: CaseSummary[] = [
@@ -30,6 +31,7 @@ export const CASES: CaseSummary[] = [
     mutation: "EGFR L858R",
     tags: ["TKI RESISTANCE", "PRECISION ONCOLOGY"],
     cancerType: "Non-Small Cell Lung Cancer",
+    organSystem: "Thoracic / Pulmonary",
   },
   {
     id: "melanoma-1",
@@ -41,6 +43,7 @@ export const CASES: CaseSummary[] = [
     mutation: "BRAF V600E",
     tags: ["TOXICITY MGMT", "IMMUNO-ONCOLOGY"],
     cancerType: "Melanoma",
+    organSystem: "Dermatologic",
   },
   {
     id: "nsclc-egfr19",
@@ -52,6 +55,7 @@ export const CASES: CaseSummary[] = [
     mutation: "EGFR Exon 19",
     tags: ["TKI RESISTANCE", "STAGING"],
     cancerType: "Non-Small Cell Lung Cancer",
+    organSystem: "Thoracic / Pulmonary",
   },
   {
     id: "pancreatic-1",
@@ -63,6 +67,7 @@ export const CASES: CaseSummary[] = [
     mutation: "Germline BRCA2",
     tags: ["ADJUVANT CHEMO", "IMAGING"],
     cancerType: "Pancreatic Adenocarcinoma",
+    organSystem: "Gastrointestinal",
   },
   {
     id: "breast-1",
@@ -74,6 +79,7 @@ export const CASES: CaseSummary[] = [
     mutation: "ER+/PR+",
     tags: ["PATHOLOGY", "AI GUIDED"],
     cancerType: "Breast Carcinoma",
+    organSystem: "Breast",
   },
   {
     id: "aml-1",
@@ -85,6 +91,7 @@ export const CASES: CaseSummary[] = [
     mutation: "FLT3-ITD",
     tags: ["FLOW CYTOMETRY", "HEMATOLOGY"],
     cancerType: "Acute Myeloid Leukemia",
+    organSystem: "Hematologic",
   },
   {
     id: "rcc-1",
@@ -96,6 +103,7 @@ export const CASES: CaseSummary[] = [
     mutation: "VHL Loss",
     tags: ["TKI + IO", "NEPHROLOGY"],
     cancerType: "Renal Cell Carcinoma",
+    organSystem: "Genitourinary",
   },
 ];
 

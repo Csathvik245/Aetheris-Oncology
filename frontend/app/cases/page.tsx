@@ -6,6 +6,13 @@ import { Clock, ChevronDown } from "lucide-react";
 import { Shell } from "../components/shell/Shell";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { CASES, type Difficulty } from "../lib/mock";
 
 const DIFFICULTY_TONE: Record<Difficulty, string> = {
@@ -14,21 +21,77 @@ const DIFFICULTY_TONE: Record<Difficulty, string> = {
   Beginner: "bg-navy-tint text-navy",
 };
 
-function FilterSelect({ label, options }: { label: string; options: string[] }) {
+const ALL = "All";
+const CANCER_TYPES = [ALL, ...Array.from(new Set(CASES.map((c) => c.cancerType)))];
+const DIFFICULTIES = [ALL, "Beginner", "Intermediate", "Advanced"];
+const MUTATIONS = [ALL, ...Array.from(new Set(CASES.map((c) => c.mutation)))];
+const ORGAN_SYSTEMS = [ALL, ...Array.from(new Set(CASES.map((c) => c.organSystem)))];
+
+const PAGE_SIZE = 6;
+
+interface Filters {
+  cancerType: string;
+  difficulty: string;
+  mutation: string;
+  organSystem: string;
+}
+
+const DEFAULT_FILTERS: Filters = { cancerType: ALL, difficulty: ALL, mutation: ALL, organSystem: ALL };
+
+function FilterSelect({
+  label,
+  options,
+  value,
+  onChange,
+}: {
+  label: string;
+  options: string[];
+  value: string;
+  onChange: (v: string) => void;
+}) {
   return (
     <div className="flex-1">
       <label className="label mb-1.5 block">{label}</label>
-      <button className="flex w-full items-center justify-between rounded-lg border border-border bg-background px-3 py-2 text-[13px] text-foreground">
-        {options[0]}
-        <ChevronDown size={15} className="text-muted-foreground" />
-      </button>
+      <Select value={value} onValueChange={(v) => onChange(v ?? ALL)}>
+        <SelectTrigger className="w-full">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          {options.map((o) => (
+            <SelectItem key={o} value={o}>
+              {o === ALL ? `All ${label}` : o}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
     </div>
   );
 }
 
 export default function CaseLibraryPage() {
-  const [difficulty] = useState<string | null>(null);
-  const rows = useMemo(() => CASES, [difficulty]);
+  const [draft, setDraft] = useState<Filters>(DEFAULT_FILTERS);
+  const [applied, setApplied] = useState<Filters>(DEFAULT_FILTERS);
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+
+  const rows = useMemo(
+    () =>
+      CASES.filter(
+        (c) =>
+          (applied.cancerType === ALL || c.cancerType === applied.cancerType) &&
+          (applied.difficulty === ALL || c.difficulty === applied.difficulty) &&
+          (applied.mutation === ALL || c.mutation === applied.mutation) &&
+          (applied.organSystem === ALL || c.organSystem === applied.organSystem)
+      ),
+    [applied]
+  );
+
+  const visibleRows = rows.slice(0, visibleCount);
+  const hasMore = visibleCount < rows.length;
+
+  function applyFilters() {
+    setApplied(draft);
+    setVisibleCount(PAGE_SIZE);
+  }
 
   return (
     <Shell breadcrumb="Case Library">
@@ -47,16 +110,43 @@ export default function CaseLibraryPage() {
 
         <Card className="mt-6 p-5">
           <div className="flex items-end gap-4">
-            <FilterSelect label="Cancer Type" options={["All Types"]} />
-            <FilterSelect label="Difficulty" options={["All Levels"]} />
-            <FilterSelect label="Mutation" options={["Any Mutation"]} />
-            <FilterSelect label="Organ System" options={["All Systems"]} />
-            <Button className="bg-navy text-white hover:bg-navy/90">Apply Filters</Button>
+            <FilterSelect
+              label="Cancer Type"
+              options={CANCER_TYPES}
+              value={draft.cancerType}
+              onChange={(v) => setDraft((d) => ({ ...d, cancerType: v }))}
+            />
+            <FilterSelect
+              label="Difficulty"
+              options={DIFFICULTIES}
+              value={draft.difficulty}
+              onChange={(v) => setDraft((d) => ({ ...d, difficulty: v }))}
+            />
+            <FilterSelect
+              label="Mutation"
+              options={MUTATIONS}
+              value={draft.mutation}
+              onChange={(v) => setDraft((d) => ({ ...d, mutation: v }))}
+            />
+            <FilterSelect
+              label="Organ System"
+              options={ORGAN_SYSTEMS}
+              value={draft.organSystem}
+              onChange={(v) => setDraft((d) => ({ ...d, organSystem: v }))}
+            />
+            <Button onClick={applyFilters} className="bg-navy text-white hover:bg-navy/90">
+              Apply Filters
+            </Button>
           </div>
         </Card>
 
+        {rows.length === 0 ? (
+          <p className="mt-8 text-center text-[13px] text-muted-foreground">
+            No cases match the selected filters.
+          </p>
+        ) : (
         <div className="mt-6 grid grid-cols-3 gap-5">
-          {rows.map((c) => (
+          {visibleRows.map((c) => (
             <Link key={c.id} href={`/cases/${c.id}`}>
               <Card className="lift h-full p-5">
                 <div className="flex items-center justify-between">
@@ -94,12 +184,18 @@ export default function CaseLibraryPage() {
             </Link>
           ))}
         </div>
+        )}
 
-        <div className="mt-8 flex justify-center">
-          <button className="rounded-lg border border-border bg-card px-5 py-2.5 text-[13px] font-medium text-foreground hover:bg-muted">
-            Load More Cases
-          </button>
-        </div>
+        {hasMore && (
+          <div className="mt-8 flex justify-center">
+            <button
+              onClick={() => setVisibleCount((v) => v + PAGE_SIZE)}
+              className="rounded-lg border border-border bg-card px-5 py-2.5 text-[13px] font-medium text-foreground hover:bg-muted"
+            >
+              Load More Cases
+            </button>
+          </div>
+        )}
       </div>
     </Shell>
   );

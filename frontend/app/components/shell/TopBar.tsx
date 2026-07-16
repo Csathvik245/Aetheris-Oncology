@@ -1,32 +1,18 @@
 "use client";
 
-import { Search, Bell, HelpCircle, Flame } from "lucide-react";
-import { Input } from "@/components/ui/input";
+import { Bell, HelpCircle, Flame } from "lucide-react";
 
 export function TopBar({
   breadcrumb,
   streakDays,
 }: {
-  /** Breadcrumb-style title (e.g. "Aetheris > Case Generator"). Omit for the default global search bar. */
+  /** Breadcrumb-style title (e.g. "Aetheris > Case Generator"). */
   breadcrumb?: string;
   streakDays?: number;
 }) {
   return (
     <header className="flex h-16 shrink-0 items-center justify-between gap-4 border-b border-border bg-background px-6">
-      {breadcrumb ? (
-        <div className="font-heading text-[15px] font-semibold text-foreground">{breadcrumb}</div>
-      ) : (
-        <div className="relative w-full max-w-md">
-          <Search
-            size={16}
-            className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-          />
-          <Input
-            placeholder="Search medical cases, biomarkers, or organ systems..."
-            className="h-9 rounded-xl border-border bg-card pl-9 text-[13px] shadow-none"
-          />
-        </div>
-      )}
+      <div className="font-heading text-[15px] font-semibold text-foreground">{breadcrumb}</div>
 
       <div className="flex shrink-0 items-center gap-3">
         {streakDays != null && (

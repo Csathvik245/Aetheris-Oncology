@@ -4,7 +4,6 @@ import { Shell } from "./components/shell/Shell";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Button } from "@/components/ui/button";
 import { CompetencyRadar } from "./components/CompetencyRadar";
 import {
   RESIDENT,
@@ -133,14 +132,6 @@ export default function DashboardPage() {
                 &ldquo;{RECENT_FEEDBACK.quote}&rdquo;
               </blockquote>
               <div className="mt-3 text-[12px] font-medium text-foreground">{RECENT_FEEDBACK.author}</div>
-            </Card>
-
-            <Card className="bg-navy p-5 text-white">
-              <h3 className="font-heading text-[15px] font-semibold">Weekly Challenge</h3>
-              <p className="mt-2 text-[12.5px] leading-relaxed text-white/80">
-                Complete 3 rare hematology cases for the &lsquo;Precision Master&rsquo; badge.
-              </p>
-              <Button className="mt-4 w-full bg-white text-navy hover:bg-white/90">Start Challenge</Button>
             </Card>
           </div>
         </div>
