@@ -6,7 +6,8 @@ import { Shell } from "../../../components/shell/Shell";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { getPacket, COMPARISON_842 } from "../../../lib/mock";
+import { COMPARISON_842 } from "../../../lib/mock";
+import { usePacket } from "../../../lib/generatedCase";
 
 function ScoreCard({ label, value }: { label: string; value: number }) {
   const low = value < 70;
@@ -42,7 +43,7 @@ export default function ComparisonPage({
   params: Promise<{ caseId: string }>;
 }) {
   const { caseId } = use(params);
-  const packet = getPacket(caseId);
+  const packet = usePacket(caseId);
   const data = COMPARISON_842;
   const [whyOpen, setWhyOpen] = useState<"resident" | "ai" | null>(null);
 

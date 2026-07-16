@@ -17,7 +17,7 @@ import { Shell } from "../../components/shell/Shell";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { getPacket } from "../../lib/mock";
+import { usePacket } from "../../lib/generatedCase";
 
 const SECTIONS = [
   { key: "summary", label: "Patient Summary", icon: User },
@@ -34,7 +34,7 @@ export default function PatientPacketPage({
   params: Promise<{ caseId: string }>;
 }) {
   const { caseId } = use(params);
-  const packet = getPacket(caseId);
+  const packet = usePacket(caseId);
   const [section, setSection] = useState("summary");
 
   return (

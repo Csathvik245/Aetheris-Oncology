@@ -15,7 +15,8 @@ import { Shell } from "../../../components/shell/Shell";
 import { Card } from "@/components/ui/card";
 import type { AgentKey } from "../../../lib/api";
 import { useAgentPipeline, type AgentState } from "../../../lib/useAgentPipeline";
-import { getPacket } from "../../../lib/mock";
+import { usePacket } from "../../../lib/generatedCase";
+import { buildVcfFromPacket } from "../../../lib/vcf";
 
 const AGENT_META: Record<
   AgentKey,
@@ -81,7 +82,7 @@ export default function MissionControlPage({
   params: Promise<{ caseId: string }>;
 }) {
   const { caseId } = use(params);
-  const packet = getPacket(caseId);
+  const packet = usePacket(caseId);
   const pipeline = useAgentPipeline();
   const progress = useSimulatedProgress(pipeline.states);
   const triggeredRef = useRef(false);
@@ -90,19 +91,26 @@ export default function MissionControlPage({
 
   useEffect(() => {
     if (triggeredRef.current) return;
+    // usePacket resolves generated-case data asynchronously (localStorage read
+    // after mount); wait for it so we analyze this case's real mutations
+    // instead of the synchronous mock fallback.
+    if (packet.caseId !== caseId) return;
     triggeredRef.current = true;
     (async () => {
       try {
-        const res = await fetch("/demo_patient.vcf");
-        const blob = await res.blob();
-        const file = new File([blob], "demo_patient.vcf", { type: "text/plain" });
+        const vcfText = buildVcfFromPacket(packet);
+        const file = vcfText
+          ? new File([vcfText], `${caseId}.vcf`, { type: "text/plain" })
+          : await fetch("/demo_patient.vcf")
+              .then((r) => r.blob())
+              .then((b) => new File([b], "demo_patient.vcf", { type: "text/plain" }));
         pipeline.runFile(file);
       } catch {
         /* backend/demo file unavailable — UI still renders idle state */
       }
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [packet, caseId]);
 
   useEffect(() => {
     const id = setInterval(() => {

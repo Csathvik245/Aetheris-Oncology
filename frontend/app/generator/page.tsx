@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Repeat, Flame, Timer, Sparkles, Info } from "lucide-react";
+import Link from "next/link";
+import { Plus, Repeat, Flame, Timer, Sparkles, Info, AlertTriangle, GraduationCap } from "lucide-react";
 import { Shell } from "../components/shell/Shell";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,6 +10,8 @@ import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
+import type { Difficulty } from "../lib/mock";
+import { saveGeneratedCase, type GeneratedCase } from "../lib/generatedCase";
 
 const DEFAULT_MARKERS = ["EGFR (L858R)", "KRAS (G12C)", "ALK Rearrangement", "BRAF (V600E)", "ROS1 Fusion"];
 
@@ -40,15 +43,55 @@ const OBJECTIVES = [
 ];
 
 const COMPLEXITY_LABELS = ["Beginner", "Intermediate", "Level 3: Interdisciplinary coordination required.", "Expert"];
+const VALID_DIFFICULTIES: Difficulty[] = ["Beginner", "Intermediate", "Advanced"];
 
-interface Preview {
-  patientId: string;
-  cancerType: string;
-  metastaticSite: string;
-  markers: string[];
-  scenarioTitle: string;
-  complexityLabel: string;
-  objectiveTitles: string[];
+function str(v: unknown, fallback = ""): string {
+  return typeof v === "string" && v.trim() ? v : fallback;
+}
+function strArr(v: unknown): string[] {
+  return Array.isArray(v) ? v.filter((x): x is string => typeof x === "string" && x.trim().length > 0) : [];
+}
+
+/** Validates + normalizes the LLM's JSON into a GeneratedCase. Only fills structural
+ * gaps (empty arrays/defaults) — never invents clinical content the model didn't return. */
+function toGeneratedCase(raw: Record<string, unknown>, input: GeneratedCase["input"]): GeneratedCase {
+  const id = `gen-${Date.now()}-${Math.floor(Math.random() * 1e6)}`;
+  const pathologyRaw = (raw.pathology as Record<string, unknown>) ?? {};
+  const imagingRaw = Array.isArray(raw.imaging) ? (raw.imaging as Record<string, unknown>[]) : [];
+  const candidateDrugsRaw = Array.isArray(raw.candidateDrugs) ? (raw.candidateDrugs as Record<string, unknown>[]) : [];
+  const markersRaw = Array.isArray(pathologyRaw.markers) ? (pathologyRaw.markers as Record<string, unknown>[]) : [];
+
+  const difficulty = str(raw.difficulty);
+  return {
+    id,
+    createdAt: new Date().toISOString(),
+    input,
+    title: str(raw.title, `${input.cancerType} — ${input.scenarioTitle}`),
+    difficulty: VALID_DIFFICULTIES.includes(difficulty as Difficulty) ? (difficulty as Difficulty) : "Intermediate",
+    estMinutes: typeof raw.estMinutes === "number" ? raw.estMinutes : 25,
+    stage: str(raw.stage, "Unspecified"),
+    tags: strArr(raw.tags),
+    age: typeof raw.age === "number" ? raw.age : 60,
+    sex: str(raw.sex, "Unspecified"),
+    ecog: typeof raw.ecog === "number" ? raw.ecog : 1,
+    chiefComplaint: str(raw.chiefComplaint),
+    medicalHistory: strArr(raw.medicalHistory),
+    imaging: imagingRaw.map((i) => ({
+      study: str(i.study, "Imaging Study"),
+      date: str(i.date, "on file"),
+      finding: str(i.finding),
+    })),
+    pathology: {
+      diagnosis: str(pathologyRaw.diagnosis, input.cancerType),
+      markers: markersRaw.map((m) => ({ name: str(m.name), value: str(m.value) })),
+      genomicProfile: strArr(pathologyRaw.genomicProfile).length
+        ? strArr(pathologyRaw.genomicProfile)
+        : input.markers,
+    },
+    candidateDrugs: candidateDrugsRaw.map((d) => ({ name: str(d.name), subtitle: str(d.subtitle) })),
+    toxicityConcerns: strArr(raw.toxicityConcerns),
+    clinicalPearl: str(raw.clinicalPearl),
+  };
 }
 
 export default function CaseGeneratorPage() {
@@ -60,7 +103,8 @@ export default function CaseGeneratorPage() {
   const [complexity, setComplexity] = useState([50]);
   const [objectives, setObjectives] = useState<string[]>([]);
   const [generating, setGenerating] = useState(false);
-  const [preview, setPreview] = useState<Preview | null>(null);
+  const [generatedCase, setGeneratedCase] = useState<GeneratedCase | null>(null);
+  const [generationError, setGenerationError] = useState<string | null>(null);
   const [showCustomMarkerInput, setShowCustomMarkerInput] = useState(false);
   const [customMarkerText, setCustomMarkerText] = useState("");
   const [triedSubmit, setTriedSubmit] = useState(false);
@@ -98,26 +142,46 @@ export default function CaseGeneratorPage() {
   };
   const isValid = !Object.values(errors).some(Boolean);
 
-  function generate() {
+  async function generate() {
     if (!isValid) {
       setTriedSubmit(true);
       return;
     }
     setGenerating(true);
-    setTimeout(() => {
-      const id = Math.floor(10000 + Math.random() * 90000);
-      const scenarioTitle = SCENARIOS.find((s) => s.key === scenario)?.title ?? scenario;
-      setPreview({
-        patientId: `Synthetic-${id}`,
-        cancerType,
-        metastaticSite,
-        markers: [...markers],
-        scenarioTitle,
-        complexityLabel,
-        objectiveTitles: objectives.map((k) => OBJECTIVES.find((o) => o.key === k)?.title ?? k),
+    setGenerationError(null);
+    setGeneratedCase(null);
+
+    const scenarioTitle = SCENARIOS.find((s) => s.key === scenario)?.title ?? scenario;
+    const objectiveTitles = objectives.map((k) => OBJECTIVES.find((o) => o.key === k)?.title ?? k);
+    const input = {
+      cancerType,
+      metastaticSite,
+      markers: [...markers],
+      scenario,
+      scenarioTitle,
+      complexity: complexity[0],
+      objectives: [...objectives],
+    };
+
+    try {
+      const res = await fetch("/api/generate-case", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...input, objectiveTitles }),
       });
+      const data = await res.json();
+      if (!res.ok) {
+        setGenerationError(data.error ?? `Generation failed (${res.status}).`);
+        return;
+      }
+      const c = toGeneratedCase(data.case, input);
+      saveGeneratedCase(c);
+      setGeneratedCase(c);
+    } catch {
+      setGenerationError("Could not reach the generation service. Check your connection and try again.");
+    } finally {
       setGenerating(false);
-    }, 600);
+    }
   }
 
   return (
@@ -131,7 +195,7 @@ export default function CaseGeneratorPage() {
             </p>
           </div>
           <Badge variant="outline" className="gap-1.5 text-muted-foreground">
-            <Info size={13} /> Mock preview — no generation backend connected
+            <Info size={13} /> Live generation via Groq
           </Badge>
         </div>
 
@@ -304,50 +368,80 @@ export default function CaseGeneratorPage() {
                 Fill in all required fields (marked *) before generating.
               </p>
             )}
+            {generationError && (
+              <div className="flex items-start gap-2 rounded-lg border border-coral-ring bg-coral-tint p-3">
+                <AlertTriangle size={15} className="mt-0.5 shrink-0 text-coral-text" />
+                <p className="text-[12px] leading-relaxed text-coral-text">{generationError}</p>
+              </div>
+            )}
           </div>
         </div>
 
-        {preview && (
+        {generatedCase && (
           <Card className="fade-up mt-6 overflow-hidden p-0">
             <div className="p-5">
-              <Badge variant="outline" className="text-muted-foreground">Mock Preview</Badge>
-              <h3 className="mt-3 font-heading text-[19px] font-bold text-foreground">Patient {preview.patientId}</h3>
+              <div className="flex items-center gap-2">
+                <Badge className="bg-teal-tint text-teal-deep">Generated</Badge>
+                <Badge variant="outline" className="text-muted-foreground">{generatedCase.difficulty}</Badge>
+                <Badge variant="outline" className="text-muted-foreground">{generatedCase.estMinutes} min</Badge>
+              </div>
+              <h3 className="mt-3 font-heading text-[19px] font-bold text-foreground">{generatedCase.title}</h3>
               <p className="mt-2 max-w-2xl text-[13px] leading-relaxed text-muted-foreground">
-                Synthetic case configured with the parameters below. No generation model has run — this is a
-                structured echo of your configuration for review before a real case-generation backend is connected.
+                {generatedCase.chiefComplaint}
               </p>
-              <div className="mt-4 grid grid-cols-2 gap-4 text-[13px]">
+
+              <div className="mt-4 grid grid-cols-3 gap-4 text-[13px]">
                 <div>
-                  <div className="label">Cancer Type</div>
-                  <div className="mt-0.5 font-semibold text-foreground">{preview.cancerType}</div>
+                  <div className="label">Age / Sex</div>
+                  <div className="mt-0.5 font-semibold text-foreground">
+                    {generatedCase.age} / {generatedCase.sex}
+                  </div>
                 </div>
                 <div>
-                  <div className="label">Metastatic Site</div>
-                  <div className="mt-0.5 font-semibold text-foreground">{preview.metastaticSite}</div>
+                  <div className="label">Stage</div>
+                  <div className="mt-0.5 font-semibold text-foreground">{generatedCase.stage}</div>
                 </div>
                 <div>
-                  <div className="label">Scenario</div>
-                  <div className="mt-0.5 font-semibold text-foreground">{preview.scenarioTitle}</div>
+                  <div className="label">ECOG PS</div>
+                  <div className="mt-0.5 font-semibold text-foreground">{generatedCase.ecog}</div>
                 </div>
-                <div>
-                  <div className="label">Complexity</div>
-                  <div className="mt-0.5 font-semibold text-foreground">{preview.complexityLabel}</div>
-                </div>
-                <div>
-                  <div className="label">Mutation Profile</div>
+                <div className="col-span-3">
+                  <div className="label">Genomic Profile</div>
                   <div className="mt-0.5 flex flex-wrap gap-1.5">
-                    {preview.markers.map((m) => (
+                    {generatedCase.pathology.genomicProfile.map((m) => (
                       <span key={m} className="rounded-md bg-navy px-2 py-0.5 text-[11px] font-semibold text-white">
                         {m}
                       </span>
                     ))}
                   </div>
                 </div>
-                <div>
-                  <div className="label">Learning Objectives</div>
-                  <div className="mt-0.5 font-semibold text-foreground">{preview.objectiveTitles.join(", ")}</div>
-                </div>
+                {generatedCase.candidateDrugs.length > 0 && (
+                  <div className="col-span-3">
+                    <div className="label">Candidate Regimens</div>
+                    <div className="mt-0.5 flex flex-col gap-1">
+                      {generatedCase.candidateDrugs.map((d) => (
+                        <div key={d.name} className="text-[12.5px] text-foreground">
+                          <span className="font-semibold">{d.name}</span>
+                          {d.subtitle && <span className="text-muted-foreground"> — {d.subtitle}</span>}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {generatedCase.clinicalPearl && (
+                  <p className="col-span-3 rounded-lg bg-muted p-3 text-[12px] italic leading-relaxed text-muted-foreground">
+                    &ldquo;{generatedCase.clinicalPearl}&rdquo;
+                  </p>
+                )}
               </div>
+            </div>
+            <div className="flex items-center justify-between border-t border-border bg-background px-5 py-3">
+              <span className="text-[11px] text-muted-foreground">Generated live — saved to your device</span>
+              <Link href={`/cases/${generatedCase.id}`}>
+                <Button className="gap-1.5 bg-navy text-white hover:bg-navy/90">
+                  <GraduationCap size={15} /> Practice This Case
+                </Button>
+              </Link>
             </div>
           </Card>
         )}

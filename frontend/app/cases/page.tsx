@@ -1,11 +1,12 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { Clock, ChevronDown } from "lucide-react";
+import { Clock, ChevronDown, Sparkles } from "lucide-react";
 import { Shell } from "../components/shell/Shell";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import {
   Select,
   SelectContent,
@@ -14,6 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { CASES, type Difficulty } from "../lib/mock";
+import { listGeneratedCases, type GeneratedCase } from "../lib/generatedCase";
 
 const DIFFICULTY_TONE: Record<Difficulty, string> = {
   Advanced: "bg-cyan-tint-bg text-teal-deep",
@@ -93,6 +95,13 @@ export default function CaseLibraryPage() {
     setVisibleCount(PAGE_SIZE);
   }
 
+  const [generatedCases, setGeneratedCases] = useState<GeneratedCase[]>([]);
+  useEffect(() => {
+    // One-shot bootstrap read from localStorage (unavailable during SSR).
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setGeneratedCases(listGeneratedCases());
+  }, []);
+
   return (
     <Shell breadcrumb="Case Library">
       <div className="mx-auto max-w-6xl px-6 py-8">
@@ -107,6 +116,42 @@ export default function CaseLibraryPage() {
             Recently Added <ChevronDown size={14} />
           </button>
         </div>
+
+        {generatedCases.length > 0 && (
+          <div className="mt-6">
+            <h2 className="flex items-center gap-1.5 font-heading text-[14px] font-semibold text-foreground">
+              <Sparkles size={14} className="text-navy" /> My Generated Cases
+            </h2>
+            <div className="mt-3 grid grid-cols-3 gap-5">
+              {generatedCases.map((c) => (
+                <Link key={c.id} href={`/cases/${c.id}`}>
+                  <Card className="lift h-full p-5">
+                    <div className="flex items-center justify-between">
+                      <Badge className="bg-teal-tint text-teal-deep">Generated</Badge>
+                      <span className="flex items-center gap-1 text-[12px] text-muted-foreground">
+                        <Clock size={13} /> {c.estMinutes} mins
+                      </span>
+                    </div>
+                    <h3 className="mt-3 font-heading text-[16.5px] font-semibold leading-snug text-foreground">
+                      {c.title}
+                    </h3>
+                    <p className="mt-1.5 text-[13px] leading-relaxed text-muted-foreground">{c.chiefComplaint}</p>
+                    <div className="mt-4 flex flex-col gap-1.5 border-t border-border pt-3 text-[12.5px]">
+                      <div className="flex items-center justify-between">
+                        <span className="text-muted-foreground">Stage</span>
+                        <span className="font-semibold text-foreground">{c.stage}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-muted-foreground">Mutation</span>
+                        <span className="font-semibold text-foreground">{c.input.markers.join(", ")}</span>
+                      </div>
+                    </div>
+                  </Card>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
 
         <Card className="mt-6 p-5">
           <div className="flex items-end gap-4">

@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useState } from "react";
+import { use, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Check, Search, X, Plus, Lightbulb } from "lucide-react";
 import { Shell } from "../../../components/shell/Shell";
@@ -16,16 +16,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  getPacket,
-  WORKSHEET_DRUGS,
-  TOXICITY_TAGS,
-  WORKSHEET_TIP,
-  WORKSHEET_STEPS,
-} from "../../../lib/mock";
+import { WORKSHEET_DRUGS, TOXICITY_TAGS, WORKSHEET_TIP, WORKSHEET_STEPS } from "../../../lib/mock";
+import { usePacket, isGeneratedCaseId, getGeneratedCase } from "../../../lib/generatedCase";
 
-type DrugEntry = (typeof WORKSHEET_DRUGS)[number] & { rationale: string; citation: string };
+interface DrugEntry {
+  key: string;
+  name: string;
+  subtitle: string;
+  rationale: string;
+  citation: string;
+}
 type Phase = "first" | "second" | "maintenance";
+
+function slugify(s: string): string {
+  return s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+}
 
 const MONITORING_LABELS: Record<string, string> = {
   "weekly-cbc": "Weekly CBC + CMP",
@@ -45,7 +50,7 @@ export default function WorksheetPage({
   params: Promise<{ caseId: string }>;
 }) {
   const { caseId } = use(params);
-  const packet = getPacket(caseId);
+  const packet = usePacket(caseId);
   const router = useRouter();
 
   const [step, setStep] = useState(0);
@@ -55,13 +60,37 @@ export default function WorksheetPage({
   );
   const [monitoring, setMonitoring] = useState("weekly-cbc");
   const [doseModification, setDoseModification] = useState("");
+  const [toxicityOptions, setToxicityOptions] = useState<string[]>(TOXICITY_TAGS);
   const [tags, setTags] = useState<string[]>(["Neutropenia", "Pneumonitis"]);
   const [confidence, setConfidence] = useState([75]);
   const [diagnosisNote, setDiagnosisNote] = useState("");
   const [biomarkerChecks, setBiomarkerChecks] = useState<Record<string, boolean>>(
     Object.fromEntries(packet.pathology.genomicProfile.map((g) => [g, true]))
   );
+  const [tip, setTip] = useState(WORKSHEET_TIP);
   const [showErrors, setShowErrors] = useState(false);
+
+  // Once real generated-case data resolves (usePacket loads it from
+  // localStorage after mount), pull this specific case's own candidate
+  // regimens, toxicity concerns, and clinical pearl into the worksheet
+  // instead of the fixed mock defaults. One-shot bootstrap, not a subscription.
+  useEffect(() => {
+    if (!isGeneratedCaseId(caseId) || packet.caseId !== caseId) return;
+    const g = getGeneratedCase(caseId);
+    if (!g) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setBiomarkerChecks(Object.fromEntries(packet.pathology.genomicProfile.map((m) => [m, true])));
+    if (g.candidateDrugs.length > 0) {
+      setDrugs(
+        g.candidateDrugs.map((d) => ({ key: slugify(d.name), name: d.name, subtitle: d.subtitle, rationale: "", citation: "" }))
+      );
+    }
+    if (g.toxicityConcerns.length > 0) {
+      setToxicityOptions((cur) => Array.from(new Set([...cur, ...g.toxicityConcerns])));
+      setTags(g.toxicityConcerns);
+    }
+    if (g.clinicalPearl) setTip(g.clinicalPearl);
+  }, [caseId, packet]);
 
   function removeDrug(key: string) {
     setDrugs((d) => d.filter((x) => x.key !== key));
@@ -312,7 +341,7 @@ export default function WorksheetPage({
                   </div>
                   <label className="label mt-3 block">Major Concerns</label>
                   <div className="mt-1.5 flex flex-wrap gap-2">
-                    {TOXICITY_TAGS.map((tag) => (
+                    {toxicityOptions.map((tag) => (
                       <button
                         key={tag}
                         onClick={() => toggleTag(tag)}
@@ -460,7 +489,7 @@ export default function WorksheetPage({
                 <Lightbulb size={16} className="mt-0.5 shrink-0 text-coral-text" />
                 <div>
                   <div className="text-[12px] font-semibold text-foreground">Did you know?</div>
-                  <p className="mt-0.5 text-[12px] leading-relaxed text-muted-foreground">{WORKSHEET_TIP}</p>
+                  <p className="mt-0.5 text-[12px] leading-relaxed text-muted-foreground">{tip}</p>
                 </div>
               </div>
             </Card>
