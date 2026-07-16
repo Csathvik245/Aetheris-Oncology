@@ -18,9 +18,9 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Aetheris Oncology — Orchestrator",
+  title: "Aetheris — Oncology Training",
   description:
-    "Multi-agent oncology orchestrator — variants, evidence, and trials linked into a treatment constellation",
+    "AI-powered oncology resident training simulator — case review, structured decision worksheets, and multi-agent feedback for GME programs.",
 };
 
 export default function RootLayout({
@@ -39,7 +39,7 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className="h-full overflow-hidden bg-base font-sans text-fg antialiased">
+      <body className="h-full bg-background font-sans text-foreground antialiased">
         {children}
       </body>
     </html>
