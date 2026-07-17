@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { saveProfile } from "../lib/profile";
+import { resetAllProgress } from "../lib/session";
 
 const ROLES = [
   "Medical Student",
@@ -35,6 +36,10 @@ export default function OnboardingPage() {
       setTriedSubmit(true);
       return;
     }
+    // Onboarding only ever runs when no profile exists (see Shell's gate),
+    // so this is always a fresh account — clear any generated cases,
+    // submissions, drafts, and history left over from a previous profile.
+    resetAllProgress();
     saveProfile({ name: name.trim(), role, createdAt: new Date().toISOString() });
     router.replace("/");
   }

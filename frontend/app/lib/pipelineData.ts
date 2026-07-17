@@ -41,3 +41,8 @@ export function savePipelineData(caseId: string, data: Omit<PipelineData, "compl
 export function getPipelineData(caseId: string): PipelineData | null {
   return readStore()[caseId] ?? null;
 }
+
+export function clearPipelineData() {
+  if (typeof window === "undefined") return;
+  window.localStorage.removeItem(STORAGE_KEY);
+}

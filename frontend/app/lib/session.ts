@@ -6,8 +6,8 @@
  * never fabricated.
  */
 import { CASES, type Difficulty, type PatientPacket } from "./mock";
-import { isGeneratedCaseId, getGeneratedCase } from "./generatedCase";
-import { getPipelineData } from "./pipelineData";
+import { isGeneratedCaseId, getGeneratedCase, clearGeneratedCases } from "./generatedCase";
+import { getPipelineData, clearPipelineData } from "./pipelineData";
 
 export interface WorksheetSubmission {
   caseId: string;
@@ -55,6 +55,20 @@ export interface HistoryEntry {
 const SUBMISSION_KEY = "aetheris:submissions";
 const HISTORY_KEY = "aetheris:history";
 const DRAFT_KEY = "aetheris:drafts";
+
+/** Wipes every piece of case-generated/practice data (generated cases,
+ * submissions, drafts, history, pipeline runs) so a new account starts
+ * completely fresh instead of inheriting the previous profile's data —
+ * everything here lives in the same unscoped localStorage. Does NOT touch
+ * the profile itself; call this right before creating the new one. */
+export function resetAllProgress() {
+  if (typeof window === "undefined") return;
+  window.localStorage.removeItem(SUBMISSION_KEY);
+  window.localStorage.removeItem(HISTORY_KEY);
+  window.localStorage.removeItem(DRAFT_KEY);
+  clearGeneratedCases();
+  clearPipelineData();
+}
 
 function readJson<T>(key: string, fallback: T): T {
   if (typeof window === "undefined") return fallback;

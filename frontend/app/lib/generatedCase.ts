@@ -78,6 +78,11 @@ export function listGeneratedCases(): GeneratedCase[] {
   return Object.values(readStore()).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 }
 
+export function clearGeneratedCases() {
+  if (typeof window === "undefined") return;
+  window.localStorage.removeItem(STORAGE_KEY);
+}
+
 /** Resolves a caseId to its packet — real generated data from localStorage
  * for `gen-*` ids (loaded client-side after mount), mock data otherwise. */
 export function usePacket(caseId: string): PatientPacket {
