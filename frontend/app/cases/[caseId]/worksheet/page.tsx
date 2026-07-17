@@ -19,6 +19,7 @@ import {
 import { WORKSHEET_DRUGS, TOXICITY_TAGS, WORKSHEET_TIP, WORKSHEET_STEPS } from "../../../lib/mock";
 import { usePacket, isGeneratedCaseId, getGeneratedCase } from "../../../lib/generatedCase";
 import { saveSubmission } from "../../../lib/session";
+import { searchDrugCatalog } from "../../../lib/drugCatalog";
 
 interface DrugEntry {
   key: string;
@@ -70,6 +71,16 @@ export default function WorksheetPage({
   );
   const [tip, setTip] = useState(WORKSHEET_TIP);
   const [showErrors, setShowErrors] = useState(false);
+  const [drugQuery, setDrugQuery] = useState("");
+  const [activeMatch, setActiveMatch] = useState(0);
+  const drugMatches = searchDrugCatalog(drugQuery);
+
+  function addDrug(name: string, subtitle: string) {
+    const key = slugify(name);
+    setDrugs((cur) => (cur.some((d) => d.key === key) ? cur : [...cur, { key, name, subtitle, rationale: "", citation: "" }]));
+    setDrugQuery("");
+    setActiveMatch(0);
+  }
 
   // Once real generated-case data resolves (usePacket loads it from
   // localStorage after mount), pull this specific case's own candidate
@@ -258,7 +269,53 @@ export default function WorksheetPage({
                   <div className="label mb-2">Combination Strategy Builder</div>
                   <div className="relative">
                     <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                    <Input placeholder="Search drugs (e.g., Osimertinib, Carboplatin...)" className="pl-9" />
+                    <Input
+                      value={drugQuery}
+                      onChange={(e) => {
+                        setDrugQuery(e.target.value);
+                        setActiveMatch(0);
+                      }}
+                      onKeyDown={(e) => {
+                        if (drugMatches.length === 0) return;
+                        if (e.key === "ArrowDown") {
+                          e.preventDefault();
+                          setActiveMatch((i) => Math.min(i + 1, drugMatches.length - 1));
+                        } else if (e.key === "ArrowUp") {
+                          e.preventDefault();
+                          setActiveMatch((i) => Math.max(i - 1, 0));
+                        } else if (e.key === "Enter") {
+                          e.preventDefault();
+                          const m = drugMatches[activeMatch];
+                          if (m) addDrug(m.name, m.subtitle);
+                        } else if (e.key === "Escape") {
+                          setDrugQuery("");
+                        }
+                      }}
+                      placeholder="Search drugs (e.g., Letrozole, Carboplatin...)"
+                      className="pl-9"
+                    />
+                    {drugMatches.length > 0 && (
+                      <div className="absolute z-10 mt-1 w-full overflow-hidden rounded-lg border border-border bg-card shadow-lg">
+                        {drugMatches.map((m, i) => (
+                          <button
+                            key={m.name}
+                            onClick={() => addDrug(m.name, m.subtitle)}
+                            onMouseEnter={() => setActiveMatch(i)}
+                            className={`flex w-full items-center justify-between px-3 py-2 text-left text-[12.5px] ${
+                              i === activeMatch ? "bg-navy-tint text-navy" : "text-foreground hover:bg-muted"
+                            }`}
+                          >
+                            <span className="font-medium">{m.name}</span>
+                            <span className="text-[11px] text-muted-foreground">{m.subtitle}</span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                    {drugQuery.trim().length > 0 && drugMatches.length === 0 && (
+                      <div className="absolute z-10 mt-1 w-full rounded-lg border border-border bg-card p-3 text-[12px] text-muted-foreground shadow-lg">
+                        No match in the drug catalog for &ldquo;{drugQuery}&rdquo;.
+                      </div>
+                    )}
                   </div>
 
                   <div className="mt-3 flex flex-col gap-3">
