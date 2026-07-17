@@ -152,7 +152,6 @@ export default function MissionControlPage({
       date: formatDisplayDate(new Date()),
       agreement: computeAgreement(submission, aiDrugNames),
       difficulty: caseDifficultyFor(caseId),
-      source: "live",
     });
   }, [pipeline.complete, pipeline.mutations, pipeline.citations, pipeline.drugScores, pipeline.trials, pipeline.risks, pipeline.plan, caseId, packet]);
 

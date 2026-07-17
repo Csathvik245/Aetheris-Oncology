@@ -7,13 +7,23 @@ import {
   PolarAngleAxis,
   ResponsiveContainer,
 } from "recharts";
-import { COMPETENCY_SKILLS } from "@/app/lib/mock";
+import type { CompetencySkill } from "@/app/lib/session";
 
-export function CompetencyRadar({ size = 240 }: { size?: number }) {
+export function CompetencyRadar({ data, size = 240 }: { data: CompetencySkill[]; size?: number }) {
+  if (data.length === 0) {
+    return (
+      <div style={{ width: "100%", height: size }} className="grid place-items-center text-center">
+        <p className="max-w-[220px] text-[12.5px] text-muted-foreground">
+          Complete a case through Mission Control to start building your competency profile.
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div style={{ width: "100%", height: size }}>
       <ResponsiveContainer width="100%" height="100%">
-        <RadarChart data={COMPETENCY_SKILLS} outerRadius="70%">
+        <RadarChart data={data} outerRadius="70%">
           <PolarGrid stroke="var(--border)" />
           <PolarAngleAxis
             dataKey="skill"

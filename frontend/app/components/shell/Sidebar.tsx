@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -11,7 +12,7 @@ import {
   Settings,
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { RESIDENT } from "@/app/lib/mock";
+import { getProfile, initials, type Profile } from "@/app/lib/profile";
 
 const NAV = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard, match: (p: string) => p === "/" },
@@ -23,6 +24,15 @@ const NAV = [
 
 export function Sidebar() {
   const pathname = usePathname();
+  const [profile, setProfile] = useState<Profile | null>(null);
+
+  useEffect(() => {
+    // Shell already gates on a profile existing before mounting Sidebar,
+    // so this is just the client-side read (localStorage isn't available
+    // during SSR).
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setProfile(getProfile());
+  }, []);
 
   return (
     <aside className="flex h-full w-60 shrink-0 flex-col justify-between border-r border-border bg-background px-4 py-5">
@@ -63,22 +73,19 @@ export function Sidebar() {
           <Settings size={18} strokeWidth={2} />
           Settings
         </Link>
-        <div className="flex items-center gap-3 border-t border-border pt-4">
-          <Avatar className="h-9 w-9">
-            <AvatarFallback className="bg-navy text-[12px] font-semibold text-white">
-              {RESIDENT.name
-                .split(" ")
-                .filter((w) => w[0] === w[0]?.toUpperCase())
-                .map((w) => w[0])
-                .join("")
-                .slice(-2)}
-            </AvatarFallback>
-          </Avatar>
-          <div className="min-w-0">
-            <div className="truncate text-[13px] font-semibold text-foreground">{RESIDENT.name}</div>
-            <div className="truncate text-[11.5px] text-muted-foreground">{RESIDENT.role}</div>
+        {profile && (
+          <div className="flex items-center gap-3 border-t border-border pt-4">
+            <Avatar className="h-9 w-9">
+              <AvatarFallback className="bg-navy text-[12px] font-semibold text-white">
+                {initials(profile.name)}
+              </AvatarFallback>
+            </Avatar>
+            <div className="min-w-0">
+              <div className="truncate text-[13px] font-semibold text-foreground">{profile.name}</div>
+              <div className="truncate text-[11.5px] text-muted-foreground">{profile.role}</div>
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </aside>
   );

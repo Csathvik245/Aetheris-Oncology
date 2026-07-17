@@ -7,6 +7,7 @@
  */
 import { CASES, type Difficulty, type PatientPacket } from "./mock";
 import { isGeneratedCaseId, getGeneratedCase } from "./generatedCase";
+import { getPipelineData } from "./pipelineData";
 
 export interface WorksheetSubmission {
   caseId: string;
@@ -49,7 +50,6 @@ export interface HistoryEntry {
   date: string;
   agreement: number;
   difficulty: Difficulty;
-  source: "live" | "demo";
 }
 
 const SUBMISSION_KEY = "aetheris:submissions";
@@ -94,6 +94,12 @@ export function clearDraft(caseId: string) {
   const store = readJson<Record<string, WorksheetDraft>>(DRAFT_KEY, {});
   delete store[caseId];
   writeJson(DRAFT_KEY, store);
+}
+
+export function listDrafts(): WorksheetDraft[] {
+  return Object.values(readJson<Record<string, WorksheetDraft>>(DRAFT_KEY, {})).sort(
+    (a, b) => new Date(b.savedAt).getTime() - new Date(a.savedAt).getTime()
+  );
 }
 
 export function saveHistoryEntry(entry: HistoryEntry) {
@@ -188,4 +194,73 @@ export function caseDifficultyFor(caseId: string): Difficulty {
     if (g) return g.difficulty;
   }
   return "Intermediate";
+}
+
+/** Real consecutive-day streak ending today, from actual completed-session
+ * dates — 0 if there's no completed session today. */
+export function computeStreakDays(): number {
+  const days = new Set(listHistoryEntries().map((h) => new Date(h.date).toDateString()));
+  if (days.size === 0) return 0;
+  let streak = 0;
+  const cursor = new Date();
+  while (days.has(cursor.toDateString())) {
+    streak++;
+    cursor.setDate(cursor.getDate() - 1);
+  }
+  return streak;
+}
+
+export interface DashboardStats {
+  casesCompleted: number;
+  avgReasoningAgreement: number | null;
+  advancedCasesCompleted: number;
+}
+
+/** Real counts/averages from completed sessions — zero/null for a fresh
+ * account, never a placeholder number. */
+export function computeDashboardStats(): DashboardStats {
+  const history = listHistoryEntries();
+  const agreements = history.map((h) => h.agreement);
+  return {
+    casesCompleted: history.length,
+    avgReasoningAgreement:
+      agreements.length > 0 ? Math.round(agreements.reduce((a, b) => a + b, 0) / agreements.length) : null,
+    advancedCasesCompleted: history.filter((h) => h.difficulty === "Advanced").length,
+  };
+}
+
+export interface CompetencySkill {
+  skill: string;
+  score: number;
+}
+
+/** Averages the same real per-case agreement scores shown on Comparison
+ * Analysis across every completed session — not a fabricated skill matrix.
+ * Empty array for a fresh account with no completed runs. */
+export function computeCompetencyProfile(): CompetencySkill[] {
+  const history = listHistoryEntries();
+  const buckets = { biomarkers: [] as number[], treatment: [] as number[], toxicity: [] as number[], confidence: [] as number[] };
+
+  for (const h of history) {
+    const pd = getPipelineData(h.caseId);
+    const sub = getSubmission(h.caseId);
+    if (!pd || !sub) continue;
+    const aiDrugNames = pd.plan?.top_treatments.map((t) => t.drug) ?? [];
+    const aiGenes = pd.mutations.map((m) => m.gene).filter((g): g is string => !!g);
+    const aiEvents = pd.risks.flatMap((r) => r.adverse_events ?? []);
+    buckets.biomarkers.push(computeBiomarkerAgreement(sub, aiGenes));
+    buckets.treatment.push(computeAgreement(sub, aiDrugNames));
+    buckets.toxicity.push(computeToxicityAgreement(sub, aiEvents));
+    buckets.confidence.push(sub.confidence);
+  }
+
+  if (buckets.biomarkers.length === 0) return [];
+
+  const avg = (arr: number[]) => Math.round(arr.reduce((a, b) => a + b, 0) / arr.length);
+  return [
+    { skill: "Biomarker Interpretation", score: avg(buckets.biomarkers) },
+    { skill: "Treatment Selection", score: avg(buckets.treatment) },
+    { skill: "Toxicity Awareness", score: avg(buckets.toxicity) },
+    { skill: "Reported Confidence", score: avg(buckets.confidence) },
+  ];
 }

@@ -1,8 +1,9 @@
 /**
- * Static training-simulator content. Aetheris is education software — every
- * patient here is explicitly synthetic (never a real name/MRN-shaped ID).
- * Case Generator + Comparison Analysis have no backend yet, so their content
- * lives here as clearly-labeled mock data until those contracts exist.
+ * Curated training-simulator content. Aetheris is education software —
+ * every patient here is explicitly synthetic (never a real name/MRN-shaped
+ * ID). These are hand-authored library cases, not fabricated user stats —
+ * per-account progress, competency, and history all come from real
+ * completed sessions (see lib/session.ts) instead of living here.
  */
 
 export type Difficulty = "Beginner" | "Intermediate" | "Advanced";
@@ -111,61 +112,6 @@ export function findCase(id: string): CaseSummary {
   return CASES.find((c) => c.id === id) ?? CASES[0];
 }
 
-/* ---------------- Dashboard ---------------- */
-
-export const RESIDENT = {
-  name: "Dr. Aris Thorne",
-  role: "PGY-3 Resident",
-};
-
-export const DASHBOARD_STATS = {
-  casesCompleted: 42,
-  avgReasoningAgreement: 88,
-  clinicalTrialAccuracy: 91,
-};
-
-export const ASSIGNED_CASES = [
-  {
-    level: "L3",
-    title: "Stage IV Pancreatic Adenocarcinoma",
-    subtitle: "Complex germline/somatic interplay",
-    difficulty: "High Difficulty",
-    minutes: 45,
-    caseId: "pancreatic-1",
-  },
-  {
-    level: "L1",
-    title: "Early-Stage HR+ Breast Cancer",
-    subtitle: "Adjuvant endocrine selection",
-    difficulty: "Foundational",
-    minutes: 20,
-    caseId: "breast-1",
-  },
-  {
-    level: "L2",
-    title: "Renal Cell Carcinoma: Nivolumab Resistance",
-    subtitle: "Second-line TKI strategy",
-    difficulty: "Intermediate",
-    minutes: 35,
-    caseId: "rcc-1",
-  },
-];
-
-export const COMPETENCY_SKILLS = [
-  { skill: "Variant Interpretation", score: 92 },
-  { skill: "Evidence Synthesis", score: 81 },
-  { skill: "Trial Matching", score: 58 },
-  { skill: "Toxicity Management", score: 76 },
-  { skill: "Outcome Prediction", score: 84 },
-  { skill: "Patient Safety", score: 88 },
-];
-
-export const RECENT_FEEDBACK = {
-  quote:
-    "Excellent rationale on the MET amplification pathway. Consider reviewing the latest ASCO guidelines on PD-L1 expression thresholds for frontline combo therapy.",
-  author: "Dr. Sarah Chen, Attending",
-};
-
 /* ---------------- Patient Packet (Case #842) ---------------- */
 
 export const PATIENT_842 = {
@@ -259,63 +205,6 @@ export function getPacket(caseId: string): PatientPacket {
     },
   };
 }
-
-/* ---------------- Comparison Analysis (mock — no scoring backend yet) ---------------- */
-
-export const COMPARISON_842 = {
-  scores: {
-    biomarkers: 92,
-    treatment: 64,
-    toxicity: 88,
-  },
-  biomarkerPriority: {
-    resident: [
-      { label: "EGFR Exon 19 del", matched: true },
-      { label: "TP53 Mutation", matched: true },
-      { label: "PD-L1 (TPS < 1%)", matched: false },
-    ],
-    ai: [
-      { label: "EGFR Exon 19 del", tag: "Match (0.99)" },
-      { label: "TP53 Mutation", tag: "Match (0.84)" },
-      { label: "TMB-High (Exploratory)", tag: "New Insight" },
-    ],
-  },
-  treatment: {
-    resident: {
-      title: "Osimertinib + Chemotherapy",
-      rationale:
-        "Proposed based on high tumor burden and TP53 co-mutation to maximize initial response.",
-    },
-    ai: {
-      title: "Osimertinib Monotherapy",
-      rationale:
-        "AI suggests monotherapy as primary standard of care per FLAURA trial, noting potential for unnecessary toxicity with chemo addition in this specific patient profile.",
-    },
-  },
-  trials: {
-    residentFound: false,
-    aiMatches: [
-      { nctId: "NCT04035235", title: "Evaluation of Osimertinib + Savolitinib in EGFRm+ NSCLC.", label: "SAVANNAH", match: 95 },
-      { nctId: "NCT04863781", title: "Biomarker-directed platform study.", label: "ORCHARD", match: null },
-    ],
-  },
-  stats: {
-    timeToDecision: "14m 22s",
-    evidenceDepth: 42,
-    conflictResolution: "Pending",
-    learningProgress: "+120 XP",
-  },
-};
-
-/* ---------------- Practice History ---------------- */
-
-export const PRACTICE_HISTORY = [
-  { caseId: "melanoma-1", title: "Metastatic Melanoma", date: "Jul 12, 2026", agreement: 88, difficulty: "Advanced" as Difficulty },
-  { caseId: "nsclc-egfr19", title: "Non-Small Cell Lung Cancer", date: "Jul 9, 2026", agreement: 94, difficulty: "Intermediate" as Difficulty },
-  { caseId: "rcc-1", title: "Clear Cell Renal Cell Carcinoma", date: "Jul 3, 2026", agreement: 71, difficulty: "Intermediate" as Difficulty },
-  { caseId: "pancreatic-1", title: "Pancreatic Adenocarcinoma", date: "Jun 27, 2026", agreement: 65, difficulty: "Advanced" as Difficulty },
-  { caseId: "breast-1", title: "Invasive Ductal Carcinoma", date: "Jun 20, 2026", agreement: 97, difficulty: "Beginner" as Difficulty },
-];
 
 /* ---------------- Worksheet ---------------- */
 
