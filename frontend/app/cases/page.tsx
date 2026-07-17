@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/select";
 import { CASES, type Difficulty } from "../lib/mock";
 import { listGeneratedCases, type GeneratedCase } from "../lib/generatedCase";
+import { getPreferences } from "../lib/preferences";
 
 const DIFFICULTY_TONE: Record<Difficulty, string> = {
   Advanced: "bg-cyan-tint-bg text-teal-deep",
@@ -94,6 +95,16 @@ export default function CaseLibraryPage() {
     setApplied(draft);
     setVisibleCount(PAGE_SIZE);
   }
+
+  useEffect(() => {
+    // Apply the resident's saved default difficulty filter on first load.
+    const defaultDifficulty = getPreferences().defaultCaseDifficulty;
+    if (defaultDifficulty !== ALL) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setDraft((d) => ({ ...d, difficulty: defaultDifficulty }));
+      setApplied((a) => ({ ...a, difficulty: defaultDifficulty }));
+    }
+  }, []);
 
   const [generatedCases, setGeneratedCases] = useState<GeneratedCase[]>([]);
   useEffect(() => {

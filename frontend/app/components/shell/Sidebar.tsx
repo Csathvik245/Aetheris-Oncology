@@ -24,6 +24,7 @@ const NAV = [
 
 export function Sidebar() {
   const pathname = usePathname();
+  const settingsActive = pathname.startsWith("/settings");
   const [profile, setProfile] = useState<Profile | null>(null);
 
   useEffect(() => {
@@ -67,14 +68,21 @@ export function Sidebar() {
 
       <div className="flex flex-col gap-3">
         <Link
-          href="#"
-          className="flex items-center gap-3 rounded-xl px-3 py-2 text-[13px] text-muted-foreground hover:bg-muted hover:text-foreground"
+          href="/settings"
+          className={`flex items-center gap-3 rounded-xl px-3 py-2 text-[13px] transition-colors ${
+            settingsActive
+              ? "bg-navy-tint font-semibold text-navy"
+              : "text-muted-foreground hover:bg-muted hover:text-foreground"
+          }`}
         >
           <Settings size={18} strokeWidth={2} />
           Settings
         </Link>
         {profile && (
-          <div className="flex items-center gap-3 border-t border-border pt-4">
+          <Link
+            href="/settings"
+            className="flex items-center gap-3 rounded-xl border-t border-border px-3 pt-4 hover:bg-muted"
+          >
             <Avatar className="h-9 w-9">
               <AvatarFallback className="bg-navy text-[12px] font-semibold text-white">
                 {initials(profile.name)}
@@ -84,7 +92,7 @@ export function Sidebar() {
               <div className="truncate text-[13px] font-semibold text-foreground">{profile.name}</div>
               <div className="truncate text-[11.5px] text-muted-foreground">{profile.role}</div>
             </div>
-          </div>
+          </Link>
         )}
       </div>
     </aside>

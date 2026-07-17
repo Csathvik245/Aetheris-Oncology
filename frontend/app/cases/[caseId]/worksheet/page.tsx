@@ -20,6 +20,7 @@ import { TOXICITY_TAGS, WORKSHEET_TIP, WORKSHEET_STEPS } from "../../../lib/mock
 import { usePacket, isGeneratedCaseId, getGeneratedCase } from "../../../lib/generatedCase";
 import { saveSubmission, saveDraft, getDraft, clearDraft } from "../../../lib/session";
 import { searchDrugCatalog } from "../../../lib/drugCatalog";
+import { getPreferences } from "../../../lib/preferences";
 
 interface DrugEntry {
   key: string;
@@ -119,6 +120,14 @@ export default function WorksheetPage({
     setBiomarkerOrder(draft.biomarkerOrder);
     setBiomarkerChecks(draft.biomarkerChecks);
     setLastSavedAt(draft.savedAt);
+  }, [caseId]);
+
+  // No saved draft — apply the resident's preferred default monitoring
+  // strategy instead of always defaulting to weekly CBC.
+  useEffect(() => {
+    if (draftLoadedRef.current) return;
+    const preferred = getPreferences().defaultMonitoring;
+    setMonitoring(preferred);
   }, [caseId]);
 
   // Once real generated-case data resolves (usePacket loads it from
