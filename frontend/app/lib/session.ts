@@ -17,6 +17,10 @@ export interface WorksheetSubmission {
   tags: string[];
   confidence: number;
   diagnosisNote: string;
+  /** Biomarkers in the order the resident ranked them (index 0 = highest priority). */
+  biomarkerOrder: string[];
+  /** Which of those the resident flagged as actually driving the treatment decision. */
+  biomarkerChecks: Record<string, boolean>;
   submittedAt: string;
 }
 
@@ -78,6 +82,56 @@ export function computeAgreement(submission: WorksheetSubmission | null, aiDrugN
   const ai = aiDrugNames.map((d) => d.toLowerCase());
   const matched = resident.filter((rd) => ai.some((ad) => ad.includes(rd) || rd.includes(ad))).length;
   return Math.round((matched / resident.length) * 100);
+}
+
+/** Real % of the resident's prioritized biomarkers that the genomic agent
+ * also flagged as oncogenic — not a fabricated score. */
+export function computeBiomarkerAgreement(
+  submission: WorksheetSubmission | null,
+  aiGenes: string[]
+): number {
+  const resident = (submission?.biomarkerOrder ?? []).filter((g) => submission?.biomarkerChecks[g]);
+  if (resident.length === 0) return 0;
+  const ai = aiGenes.map((g) => g.toLowerCase());
+  const matched = resident.filter((rg) => {
+    const gene = rg.toLowerCase();
+    return ai.some((ag) => gene.includes(ag) || ag.includes(gene.split(" ")[0]));
+  }).length;
+  return Math.round((matched / resident.length) * 100);
+}
+
+/** Real % overlap between the resident's flagged toxicity concerns and the
+ * adverse events the toxicity agent actually reported — not fabricated. */
+export function computeToxicityAgreement(
+  submission: WorksheetSubmission | null,
+  aiAdverseEvents: string[]
+): number {
+  const resident = (submission?.tags ?? []).map((t) => t.toLowerCase());
+  if (resident.length === 0 || aiAdverseEvents.length === 0) return 0;
+  const ai = aiAdverseEvents.map((e) => e.toLowerCase());
+  const matched = resident.filter((t) => ai.some((e) => e.includes(t) || t.includes(e))).length;
+  return Math.round((matched / resident.length) * 100);
+}
+
+/** Real comparison of the resident's top drug pick against the AI's — not fabricated. */
+export function computeConflictResolution(
+  submission: WorksheetSubmission | null,
+  aiDrugNames: string[]
+): "Aligned" | "Divergent" | "Pending" {
+  const topResident = submission?.drugs[0]?.name.toLowerCase();
+  const topAi = aiDrugNames[0]?.toLowerCase();
+  if (!topResident || !topAi) return "Pending";
+  return topAi.includes(topResident) || topResident.includes(topAi) ? "Aligned" : "Divergent";
+}
+
+/** Real minutes:seconds between worksheet submission and pipeline completion. */
+export function computeTimeToDecision(submittedAt: string, completedAt: string): string {
+  const ms = new Date(completedAt).getTime() - new Date(submittedAt).getTime();
+  if (!Number.isFinite(ms) || ms < 0) return "—";
+  const totalSeconds = Math.round(ms / 1000);
+  const m = Math.floor(totalSeconds / 60);
+  const s = totalSeconds % 60;
+  return `${m}m ${s}s`;
 }
 
 export function caseTitleFor(caseId: string, packet: PatientPacket): string {

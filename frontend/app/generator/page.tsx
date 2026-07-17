@@ -161,6 +161,7 @@ export default function CaseGeneratorPage() {
       scenarioTitle,
       complexity: complexity[0],
       objectives: [...objectives],
+      objectiveTitles,
     };
 
     try {

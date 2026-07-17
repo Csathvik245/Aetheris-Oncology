@@ -15,6 +15,7 @@ export interface GeneratorInput {
   scenarioTitle: string;
   complexity: number;
   objectives: string[];
+  objectiveTitles: string[];
 }
 
 export interface GeneratedCase {

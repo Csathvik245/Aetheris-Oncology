@@ -319,11 +319,6 @@ export const PRACTICE_HISTORY = [
 
 /* ---------------- Worksheet ---------------- */
 
-export const WORKSHEET_DRUGS = [
-  { key: "osimertinib", name: "Osimertinib (Tagrisso)", subtitle: "3rd Generation EGFR TKI" },
-  { key: "pemetrexed", name: "Pemetrexed", subtitle: "Antifolate Chemotherapy" },
-];
-
 export const TOXICITY_TAGS = ["Neutropenia", "Cardiotoxicity", "Pneumonitis", "Skin Toxicity"];
 
 export const WORKSHEET_TIP =

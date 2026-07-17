@@ -2,7 +2,7 @@
 
 import { use, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Check, Search, X, Plus, Lightbulb } from "lucide-react";
+import { Check, Search, X, Plus, Lightbulb, ChevronUp, ChevronDown, Target } from "lucide-react";
 import { Shell } from "../../../components/shell/Shell";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -16,7 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { WORKSHEET_DRUGS, TOXICITY_TAGS, WORKSHEET_TIP, WORKSHEET_STEPS } from "../../../lib/mock";
+import { TOXICITY_TAGS, WORKSHEET_TIP, WORKSHEET_STEPS } from "../../../lib/mock";
 import { usePacket, isGeneratedCaseId, getGeneratedCase } from "../../../lib/generatedCase";
 import { saveSubmission } from "../../../lib/session";
 import { searchDrugCatalog } from "../../../lib/drugCatalog";
@@ -57,23 +57,27 @@ export default function WorksheetPage({
 
   const [step, setStep] = useState(0);
   const [phase, setPhase] = useState<Phase>("second");
-  const [drugs, setDrugs] = useState<DrugEntry[]>(
-    WORKSHEET_DRUGS.map((d) => ({ ...d, rationale: "", citation: "" }))
-  );
+  // No preloaded drugs — the resident finds and adds the correct regimen
+  // themselves via the Combination Strategy Builder search below.
+  const [drugs, setDrugs] = useState<DrugEntry[]>([]);
   const [monitoring, setMonitoring] = useState("weekly-cbc");
   const [doseModification, setDoseModification] = useState("");
   const [toxicityOptions, setToxicityOptions] = useState<string[]>(TOXICITY_TAGS);
   const [tags, setTags] = useState<string[]>(["Neutropenia", "Pneumonitis"]);
   const [confidence, setConfidence] = useState([75]);
   const [diagnosisNote, setDiagnosisNote] = useState("");
+  const [biomarkerOrder, setBiomarkerOrder] = useState<string[]>(packet.pathology.genomicProfile);
   const [biomarkerChecks, setBiomarkerChecks] = useState<Record<string, boolean>>(
     Object.fromEntries(packet.pathology.genomicProfile.map((g) => [g, true]))
   );
   const [tip, setTip] = useState(WORKSHEET_TIP);
+  const [objectiveTitles, setObjectiveTitles] = useState<string[]>([]);
   const [showErrors, setShowErrors] = useState(false);
   const [drugQuery, setDrugQuery] = useState("");
   const [activeMatch, setActiveMatch] = useState(0);
   const drugMatches = searchDrugCatalog(drugQuery);
+  const [showCustomTagInput, setShowCustomTagInput] = useState(false);
+  const [customTagText, setCustomTagText] = useState("");
 
   function addDrug(name: string, subtitle: string) {
     const key = slugify(name);
@@ -82,26 +86,34 @@ export default function WorksheetPage({
     setActiveMatch(0);
   }
 
+  function moveBiomarker(gene: string, dir: -1 | 1) {
+    setBiomarkerOrder((cur) => {
+      const i = cur.indexOf(gene);
+      const j = i + dir;
+      if (i < 0 || j < 0 || j >= cur.length) return cur;
+      const next = [...cur];
+      [next[i], next[j]] = [next[j], next[i]];
+      return next;
+    });
+  }
+
   // Once real generated-case data resolves (usePacket loads it from
-  // localStorage after mount), pull this specific case's own candidate
-  // regimens, toxicity concerns, and clinical pearl into the worksheet
-  // instead of the fixed mock defaults. One-shot bootstrap, not a subscription.
+  // localStorage after mount), pull this specific case's own biomarker
+  // list, toxicity concerns, clinical pearl, and learning objectives into
+  // the worksheet instead of the fixed mock defaults. One-shot bootstrap.
   useEffect(() => {
     if (!isGeneratedCaseId(caseId) || packet.caseId !== caseId) return;
     const g = getGeneratedCase(caseId);
     if (!g) return;
     // eslint-disable-next-line react-hooks/set-state-in-effect
+    setBiomarkerOrder(packet.pathology.genomicProfile);
     setBiomarkerChecks(Object.fromEntries(packet.pathology.genomicProfile.map((m) => [m, true])));
-    if (g.candidateDrugs.length > 0) {
-      setDrugs(
-        g.candidateDrugs.map((d) => ({ key: slugify(d.name), name: d.name, subtitle: d.subtitle, rationale: "", citation: "" }))
-      );
-    }
     if (g.toxicityConcerns.length > 0) {
       setToxicityOptions((cur) => Array.from(new Set([...cur, ...g.toxicityConcerns])));
       setTags(g.toxicityConcerns);
     }
     if (g.clinicalPearl) setTip(g.clinicalPearl);
+    if (g.input.objectiveTitles?.length) setObjectiveTitles(g.input.objectiveTitles);
   }, [caseId, packet]);
 
   function removeDrug(key: string) {
@@ -109,6 +121,17 @@ export default function WorksheetPage({
   }
   function toggleTag(tag: string) {
     setTags((t) => (t.includes(tag) ? t.filter((x) => x !== tag) : [...t, tag]));
+  }
+  function addCustomTag() {
+    const value = customTagText.trim();
+    if (!value) {
+      setShowCustomTagInput(false);
+      return;
+    }
+    setToxicityOptions((cur) => (cur.includes(value) ? cur : [...cur, value]));
+    setTags((cur) => (cur.includes(value) ? cur : [...cur, value]));
+    setCustomTagText("");
+    setShowCustomTagInput(false);
   }
 
   function stepErrors(s: number): string[] {
@@ -223,21 +246,41 @@ export default function WorksheetPage({
               <Card className="p-5">
                 <h3 className="font-heading text-[15px] font-semibold text-foreground">Biomarker Priority</h3>
                 <p className="mt-1 text-[13px] text-muted-foreground">
-                  Select and rank the biomarkers that should drive this treatment decision.
+                  Use the arrows to rank the biomarkers, and check the ones that should actually drive this treatment
+                  decision.
                 </p>
                 <div className="mt-4 flex flex-col gap-2">
-                  {packet.pathology.genomicProfile.map((g, i) => (
-                    <button
-                      key={g}
-                      onClick={() => setBiomarkerChecks((s) => ({ ...s, [g]: !s[g] }))}
-                      className="flex items-center gap-3 rounded-lg border border-border px-3 py-2.5 text-left"
-                    >
-                      <span className="grid h-6 w-6 place-items-center rounded-full bg-muted text-[11px] font-semibold text-muted-foreground">
+                  {biomarkerOrder.map((g, i) => (
+                    <div key={g} className="flex items-center gap-3 rounded-lg border border-border px-3 py-2.5">
+                      <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-muted text-[11px] font-semibold text-muted-foreground">
                         {i + 1}
                       </span>
-                      <span className="flex-1 text-[13.5px] font-medium text-foreground">{g}</span>
-                      {biomarkerChecks[g] && <Check size={16} className="text-teal-deep" />}
-                    </button>
+                      <button
+                        onClick={() => setBiomarkerChecks((s) => ({ ...s, [g]: !s[g] }))}
+                        className="flex flex-1 items-center gap-2 text-left text-[13.5px] font-medium text-foreground"
+                      >
+                        {g}
+                        {biomarkerChecks[g] && <Check size={16} className="text-teal-deep" />}
+                      </button>
+                      <div className="flex shrink-0 flex-col gap-0.5">
+                        <button
+                          onClick={() => moveBiomarker(g, -1)}
+                          disabled={i === 0}
+                          className="grid h-5 w-5 place-items-center rounded text-muted-foreground hover:bg-muted disabled:opacity-30"
+                          aria-label={`Move ${g} up`}
+                        >
+                          <ChevronUp size={13} />
+                        </button>
+                        <button
+                          onClick={() => moveBiomarker(g, 1)}
+                          disabled={i === biomarkerOrder.length - 1}
+                          className="grid h-5 w-5 place-items-center rounded text-muted-foreground hover:bg-muted disabled:opacity-30"
+                          aria-label={`Move ${g} down`}
+                        >
+                          <ChevronDown size={13} />
+                        </button>
+                      </div>
+                    </div>
                   ))}
                 </div>
               </Card>
@@ -412,9 +455,34 @@ export default function WorksheetPage({
                         {tag}
                       </button>
                     ))}
-                    <button className="flex items-center gap-1 rounded-full border border-dashed border-border px-3 py-1 text-[12px] text-muted-foreground hover:bg-muted">
-                      <Plus size={12} /> Add Tag
-                    </button>
+                    {showCustomTagInput ? (
+                      <span className="flex items-center gap-1.5">
+                        <Input
+                          autoFocus
+                          value={customTagText}
+                          onChange={(e) => setCustomTagText(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") addCustomTag();
+                            if (e.key === "Escape") {
+                              setShowCustomTagInput(false);
+                              setCustomTagText("");
+                            }
+                          }}
+                          placeholder="Toxicity concern"
+                          className="h-7 w-40 text-[12px]"
+                        />
+                        <Button size="sm" className="h-7 bg-navy text-white hover:bg-navy/90" onClick={addCustomTag}>
+                          Add
+                        </Button>
+                      </span>
+                    ) : (
+                      <button
+                        onClick={() => setShowCustomTagInput(true)}
+                        className="flex items-center gap-1 rounded-full border border-dashed border-border px-3 py-1 text-[12px] text-muted-foreground hover:bg-muted"
+                      >
+                        <Plus size={12} /> Add Tag
+                      </button>
+                    )}
                   </div>
                 </div>
               </Card>
@@ -424,9 +492,30 @@ export default function WorksheetPage({
               <Card className="p-5">
                 <h3 className="font-heading text-[15px] font-semibold text-foreground">Toxicity Planning</h3>
                 <p className="mt-1 text-[13px] text-muted-foreground">
-                  Confirm the monitoring cadence and flagged concerns before final review.
+                  Confirm which drugs this toxicity plan applies to, the monitoring cadence, and flagged concerns
+                  before final review.
                 </p>
-                <div className="mt-4 flex flex-wrap gap-2">
+
+                <div className="mt-4 rounded-lg border border-border p-3">
+                  <div className="label">Confirmed Regimen</div>
+                  {drugs.length === 0 ? (
+                    <div className="mt-1 text-[13px] text-muted-foreground">
+                      No drugs selected — return to Treatment Planning to add a regimen.
+                    </div>
+                  ) : (
+                    <div className="mt-1.5 flex flex-col gap-1">
+                      {drugs.map((d) => (
+                        <div key={d.key} className="flex items-center justify-between text-[13px]">
+                          <span className="font-semibold text-foreground">{d.name}</span>
+                          <span className="text-muted-foreground">{d.subtitle}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <label className="label mt-4 block">Major Concerns</label>
+                <div className="mt-1.5 flex flex-wrap gap-2">
                   {tags.length === 0 && (
                     <span className="text-[13px] text-muted-foreground">No concerns flagged yet — return to Treatment Planning to add tags.</span>
                   )}
@@ -436,14 +525,23 @@ export default function WorksheetPage({
                     </span>
                   ))}
                 </div>
-                <div className="mt-4 rounded-lg border border-border p-3">
-                  <div className="label">Monitoring Strategy</div>
-                  <div className="mt-1 text-[13.5px] font-semibold text-foreground">
-                    {monitoring === "weekly-cbc"
-                      ? "Weekly CBC + CMP"
-                      : monitoring === "biweekly-cbc"
-                        ? "Biweekly CBC + CMP"
-                        : "Monthly Restaging Imaging"}
+
+                <div className="mt-4 grid grid-cols-2 gap-3">
+                  <div className="rounded-lg border border-border p-3">
+                    <div className="label">Monitoring Strategy</div>
+                    <div className="mt-1 text-[13.5px] font-semibold text-foreground">
+                      {monitoring === "weekly-cbc"
+                        ? "Weekly CBC + CMP"
+                        : monitoring === "biweekly-cbc"
+                          ? "Biweekly CBC + CMP"
+                          : "Monthly Restaging Imaging"}
+                    </div>
+                  </div>
+                  <div className="rounded-lg border border-border p-3">
+                    <div className="label">Dose Modification Protocol</div>
+                    <div className="mt-1 text-[13px] text-foreground">
+                      {doseModification || "Not specified."}
+                    </div>
                   </div>
                 </div>
               </Card>
@@ -542,6 +640,24 @@ export default function WorksheetPage({
               <div className="mt-2 text-center font-heading text-2xl font-bold text-navy">{confidence[0]}%</div>
             </Card>
 
+            {objectiveTitles.length > 0 && (
+              <Card className="p-4">
+                <div className="flex items-start gap-2">
+                  <Target size={16} className="mt-0.5 shrink-0 text-navy" />
+                  <div>
+                    <div className="text-[12px] font-semibold text-foreground">Learning Objectives</div>
+                    <ul className="mt-1 flex flex-col gap-0.5">
+                      {objectiveTitles.map((o) => (
+                        <li key={o} className="text-[12px] text-muted-foreground">
+                          • {o}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              </Card>
+            )}
+
             <Card className="p-4">
               <div className="flex items-start gap-2">
                 <Lightbulb size={16} className="mt-0.5 shrink-0 text-coral-text" />
@@ -575,6 +691,8 @@ export default function WorksheetPage({
                 tags,
                 confidence: confidence[0],
                 diagnosisNote,
+                biomarkerOrder,
+                biomarkerChecks,
                 submittedAt: new Date().toISOString(),
               });
               router.push(`/cases/${caseId}/mission-control`);

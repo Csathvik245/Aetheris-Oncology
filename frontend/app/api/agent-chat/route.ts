@@ -18,7 +18,7 @@ const PERSONAS: Record<AgentKey, { label: string; role: string }> = {
   },
   outcome: {
     label: "Outcome / Survival Scoring Agent",
-    role: "You produce PyTorch-modeled survival-benefit scores that rank candidate drugs for this patient.",
+    role: "You produce PyTorch-modeled survival-benefit scores that rank candidate drugs for this patient, and you also carry the supporting PubMed literature (retrieved via semantic search over a ChromaDB corpus) that backs those rankings — you know both the resident's proposed regimen and the AI's ranked recommendation for this case, plus the evidence behind it.",
   },
   trial: {
     label: "Clinical Trial Matching Agent",
