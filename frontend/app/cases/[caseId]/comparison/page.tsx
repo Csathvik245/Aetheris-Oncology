@@ -1,19 +1,32 @@
 "use client";
 
-import { use, useState } from "react";
-import { Check, Circle, MessageSquare, SearchX, ChevronDown } from "lucide-react";
+import { use, useEffect, useState } from "react";
+import { Check, Circle, SearchX, ChevronDown } from "lucide-react";
 import { Shell } from "../../../components/shell/Shell";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { COMPARISON_842 } from "../../../lib/mock";
 import { usePacket } from "../../../lib/generatedCase";
+import { getPipelineData, type PipelineData } from "../../../lib/pipelineData";
+import { AgentChat } from "../../../components/AgentChat";
 
-function ScoreCard({ label, value }: { label: string; value: number }) {
+function ScoreCard({
+  label,
+  value,
+  chat,
+}: {
+  label: string;
+  value: number;
+  chat?: React.ReactNode;
+}) {
   const low = value < 70;
   return (
     <Card className="p-5">
-      <div className="label">{label}</div>
+      <div className="flex items-start justify-between gap-2">
+        <div className="label">{label}</div>
+        {chat}
+      </div>
       <div className={`mt-1 font-heading text-3xl font-bold tnum ${low ? "text-coral-text" : "text-navy"}`}>
         {value}%
       </div>
@@ -27,16 +40,6 @@ function ScoreCard({ label, value }: { label: string; value: number }) {
   );
 }
 
-function ChatPill() {
-  return (
-    <div className="my-5 flex justify-center">
-      <button className="flex items-center gap-2 rounded-full bg-navy px-4 py-2 text-[12.5px] font-semibold text-white hover:bg-navy/90">
-        <MessageSquare size={14} /> Chat with Agent
-      </button>
-    </div>
-  );
-}
-
 export default function ComparisonPage({
   params,
 }: {
@@ -46,6 +49,16 @@ export default function ComparisonPage({
   const packet = usePacket(caseId);
   const data = COMPARISON_842;
   const [whyOpen, setWhyOpen] = useState<"resident" | "ai" | null>(null);
+  const [pipelineData, setPipelineData] = useState<PipelineData | null>(null);
+
+  useEffect(() => {
+    // One-shot bootstrap read from localStorage (unavailable during SSR).
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setPipelineData(getPipelineData(caseId));
+  }, [caseId]);
+
+  const caseSummary = `${packet.displayId} — ${packet.pathology.diagnosis}`;
+  const live = pipelineData !== null;
 
   return (
     <Shell breadcrumb="Comparison Analysis">
@@ -53,15 +66,34 @@ export default function ComparisonPage({
         <div className="mb-1 flex items-center gap-2">
           <h1 className="font-heading text-[22px] font-bold text-foreground">Comparison Analysis</h1>
           <Badge className="bg-muted text-muted-foreground">{packet.displayId}</Badge>
+          {live && <Badge className="bg-teal-tint text-teal-deep">Live Agent Data</Badge>}
         </div>
         <p className="mb-6 text-[13px] text-muted-foreground">
-          Illustrative scoring — decision-agreement modeling is under active development.
+          {live
+            ? "Scores below are illustrative — each agent's chat reflects its real output from this case's completed run."
+            : "Illustrative scoring — run this case through Mission Control to unlock each agent's real findings in chat."}
         </p>
 
         <div className="grid grid-cols-3 gap-5">
           <ScoreCard label="Biomarkers Agreement" value={data.scores.biomarkers} />
           <ScoreCard label="Treatment Agreement" value={data.scores.treatment} />
-          <ScoreCard label="Toxicity Analysis" value={data.scores.toxicity} />
+          <ScoreCard
+            label="Toxicity Analysis"
+            value={data.scores.toxicity}
+            chat={
+              <AgentChat
+                agentKey="toxicity"
+                triggerLabel="Chat"
+                caseSummary={caseSummary}
+                scopeNote={
+                  live
+                    ? "This agent only sees adverse-event risk data it computed per drug — nothing about mutations, literature, trials, or survival scores."
+                    : "No live toxicity run yet for this case."
+                }
+                agentData={live ? pipelineData!.risks : { note: "No live run completed yet." }}
+              />
+            }
+          />
         </div>
 
         <div className="mt-8 grid grid-cols-2 gap-6">
@@ -118,7 +150,18 @@ export default function ComparisonPage({
           </Card>
         </div>
 
-        <ChatPill />
+        <div className="my-5 flex justify-center">
+          <AgentChat
+            agentKey="genomic"
+            caseSummary={caseSummary}
+            scopeNote={
+              live
+                ? "This agent only sees this case's annotated mutations — not literature, outcome scores, trials, or toxicity data."
+                : "No live genomic run yet for this case — it only has the mutation list from the patient packet."
+            }
+            agentData={live ? pipelineData!.mutations : { genomicProfile: packet.pathology.genomicProfile, note: "No live run completed yet." }}
+          />
+        </div>
 
         {/* treatment comparison */}
         <div className="grid grid-cols-2 gap-6">
@@ -160,7 +203,28 @@ export default function ComparisonPage({
           </Card>
         </div>
 
-        <ChatPill />
+        <div className="my-5 flex justify-center gap-3">
+          <AgentChat
+            agentKey="outcome"
+            caseSummary={caseSummary}
+            scopeNote={
+              live
+                ? "This agent only sees its own survival-benefit drug scores — not mutations, citations, trials, or toxicity data."
+                : "No live outcome run yet — it only has the resident-vs-AI treatment summary shown here."
+            }
+            agentData={live ? pipelineData!.drugScores : { resident: data.treatment.resident, ai: data.treatment.ai, note: "No live run completed yet." }}
+          />
+          <AgentChat
+            agentKey="literature"
+            caseSummary={caseSummary}
+            scopeNote={
+              live
+                ? "This agent only sees the PubMed citations it retrieved for this case — nothing about mutations, scores, trials, or toxicity."
+                : "No live literature run yet for this case."
+            }
+            agentData={live ? pipelineData!.citations : { citationCount: data.stats.evidenceDepth, note: "No live run completed yet — citation list unavailable." }}
+          />
+        </div>
 
         {/* trial matching */}
         <div className="grid grid-cols-2 gap-6">
@@ -196,7 +260,18 @@ export default function ComparisonPage({
           </Card>
         </div>
 
-        <ChatPill />
+        <div className="my-5 flex justify-center">
+          <AgentChat
+            agentKey="trial"
+            caseSummary={caseSummary}
+            scopeNote={
+              live
+                ? "This agent only sees the clinical trials it matched for this case — not mutations, citations, scores, or toxicity data."
+                : "No live trial-matching run yet — it only has the trial list shown here."
+            }
+            agentData={live ? pipelineData!.trials : { aiMatches: data.trials.aiMatches, note: "No live run completed yet." }}
+          />
+        </div>
 
         {/* stat strip */}
         <Card className="mt-2 grid grid-cols-4 divide-x divide-border p-0">

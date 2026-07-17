@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/select";
 import { WORKSHEET_DRUGS, TOXICITY_TAGS, WORKSHEET_TIP, WORKSHEET_STEPS } from "../../../lib/mock";
 import { usePacket, isGeneratedCaseId, getGeneratedCase } from "../../../lib/generatedCase";
+import { saveSubmission } from "../../../lib/session";
 
 interface DrugEntry {
   key: string;
@@ -507,7 +508,20 @@ export default function WorksheetPage({
           <Button
             className="bg-navy text-white hover:bg-navy/90 disabled:opacity-50"
             disabled={!allStepsValid || step !== WORKSHEET_STEPS.length - 1}
-            onClick={() => router.push(`/cases/${caseId}/mission-control`)}
+            onClick={() => {
+              saveSubmission({
+                caseId,
+                phase,
+                drugs: drugs.map((d) => ({ name: d.name, rationale: d.rationale, citation: d.citation })),
+                monitoring,
+                doseModification,
+                tags,
+                confidence: confidence[0],
+                diagnosisNote,
+                submittedAt: new Date().toISOString(),
+              });
+              router.push(`/cases/${caseId}/mission-control`);
+            }}
           >
             Submit to AI Orchestrator
           </Button>

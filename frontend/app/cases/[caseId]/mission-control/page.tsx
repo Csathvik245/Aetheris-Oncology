@@ -17,6 +17,8 @@ import type { AgentKey } from "../../../lib/api";
 import { useAgentPipeline, type AgentState } from "../../../lib/useAgentPipeline";
 import { usePacket } from "../../../lib/generatedCase";
 import { buildVcfFromPacket } from "../../../lib/vcf";
+import { savePipelineData } from "../../../lib/pipelineData";
+import { getSubmission, computeAgreement, saveHistoryEntry, caseTitleFor, caseDifficultyFor, formatDisplayDate } from "../../../lib/session";
 
 const AGENT_META: Record<
   AgentKey,
@@ -86,6 +88,7 @@ export default function MissionControlPage({
   const pipeline = useAgentPipeline();
   const progress = useSimulatedProgress(pipeline.states);
   const triggeredRef = useRef(false);
+  const historySavedRef = useRef(false);
   const timelineRef = useRef<HTMLDivElement | null>(null);
   const [elapsed, setElapsed] = useState("00:00:00");
 
@@ -127,6 +130,31 @@ export default function MissionControlPage({
   useEffect(() => {
     timelineRef.current?.scrollTo({ top: timelineRef.current.scrollHeight, behavior: "smooth" });
   }, [pipeline.events]);
+
+  // Only fires once the orchestrator has genuinely finished a real run —
+  // never fabricated, and never recorded for an offline/failed pipeline.
+  useEffect(() => {
+    if (!pipeline.complete || historySavedRef.current) return;
+    historySavedRef.current = true;
+    savePipelineData(caseId, {
+      mutations: pipeline.mutations,
+      citations: pipeline.citations,
+      drugScores: pipeline.drugScores,
+      trials: pipeline.trials,
+      risks: pipeline.risks,
+      plan: pipeline.plan,
+    });
+    const submission = getSubmission(caseId);
+    const aiDrugNames = (pipeline.plan?.top_treatments ?? []).map((t) => t.drug);
+    saveHistoryEntry({
+      caseId,
+      title: caseTitleFor(caseId, packet),
+      date: formatDisplayDate(new Date()),
+      agreement: computeAgreement(submission, aiDrugNames),
+      difficulty: caseDifficultyFor(caseId),
+      source: "live",
+    });
+  }, [pipeline.complete, pipeline.mutations, pipeline.citations, pipeline.drugScores, pipeline.trials, pipeline.risks, pipeline.plan, caseId, packet]);
 
   const statusPill = pipeline.anyError
     ? "Pipeline Error"
