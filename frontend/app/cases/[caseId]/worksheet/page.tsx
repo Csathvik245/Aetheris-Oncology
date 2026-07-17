@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useEffect, useState } from "react";
+import { use, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Check, Search, X, Plus, Lightbulb, ChevronUp, ChevronDown, Target } from "lucide-react";
 import { Shell } from "../../../components/shell/Shell";
@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/select";
 import { TOXICITY_TAGS, WORKSHEET_TIP, WORKSHEET_STEPS } from "../../../lib/mock";
 import { usePacket, isGeneratedCaseId, getGeneratedCase } from "../../../lib/generatedCase";
-import { saveSubmission } from "../../../lib/session";
+import { saveSubmission, saveDraft, getDraft, clearDraft } from "../../../lib/session";
 import { searchDrugCatalog } from "../../../lib/drugCatalog";
 
 interface DrugEntry {
@@ -78,6 +78,9 @@ export default function WorksheetPage({
   const drugMatches = searchDrugCatalog(drugQuery);
   const [showCustomTagInput, setShowCustomTagInput] = useState(false);
   const [customTagText, setCustomTagText] = useState("");
+  const [lastSavedAt, setLastSavedAt] = useState<string | null>(null);
+  const [justSaved, setJustSaved] = useState(false);
+  const draftLoadedRef = useRef(false);
 
   function addDrug(name: string, subtitle: string) {
     const key = slugify(name);
@@ -97,11 +100,35 @@ export default function WorksheetPage({
     });
   }
 
+  // Restore a saved draft, if one exists, before anything else runs —
+  // one-shot bootstrap read from localStorage (unavailable during SSR).
+  useEffect(() => {
+    const draft = getDraft(caseId);
+    if (!draft) return;
+    draftLoadedRef.current = true;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setStep(draft.step);
+    setPhase(draft.phase as Phase);
+    setDrugs(draft.drugs.map((d) => ({ ...d, key: slugify(d.name) })));
+    setMonitoring(draft.monitoring);
+    setDoseModification(draft.doseModification);
+    setToxicityOptions(draft.toxicityOptions);
+    setTags(draft.tags);
+    setConfidence([draft.confidence]);
+    setDiagnosisNote(draft.diagnosisNote);
+    setBiomarkerOrder(draft.biomarkerOrder);
+    setBiomarkerChecks(draft.biomarkerChecks);
+    setLastSavedAt(draft.savedAt);
+  }, [caseId]);
+
   // Once real generated-case data resolves (usePacket loads it from
   // localStorage after mount), pull this specific case's own biomarker
   // list, toxicity concerns, clinical pearl, and learning objectives into
   // the worksheet instead of the fixed mock defaults. One-shot bootstrap.
+  // Skipped if a draft was already restored above, so it never clobbers
+  // the resident's in-progress work.
   useEffect(() => {
+    if (draftLoadedRef.current) return;
     if (!isGeneratedCaseId(caseId) || packet.caseId !== caseId) return;
     const g = getGeneratedCase(caseId);
     if (!g) return;
@@ -132,6 +159,28 @@ export default function WorksheetPage({
     setTags((cur) => (cur.includes(value) ? cur : [...cur, value]));
     setCustomTagText("");
     setShowCustomTagInput(false);
+  }
+
+  function saveDraftNow() {
+    const savedAt = new Date().toISOString();
+    saveDraft({
+      caseId,
+      step,
+      phase,
+      drugs: drugs.map((d) => ({ name: d.name, subtitle: d.subtitle, rationale: d.rationale, citation: d.citation })),
+      monitoring,
+      doseModification,
+      toxicityOptions,
+      tags,
+      confidence: confidence[0],
+      diagnosisNote,
+      biomarkerOrder,
+      biomarkerChecks,
+      savedAt,
+    });
+    setLastSavedAt(savedAt);
+    setJustSaved(true);
+    setTimeout(() => setJustSaved(false), 1800);
   }
 
   function stepErrors(s: number): string[] {
@@ -674,10 +723,15 @@ export default function WorksheetPage({
       {/* sticky action bar */}
       <div className="sticky bottom-0 flex items-center justify-between border-t border-border bg-card px-6 py-3">
         <span className="flex items-center gap-1.5 text-[12px] text-muted-foreground">
-          <span className="h-1.5 w-1.5 rounded-full bg-teal" /> Last autosaved 2m ago
+          <span className={`h-1.5 w-1.5 rounded-full ${lastSavedAt ? "bg-teal" : "bg-border"}`} />
+          {lastSavedAt
+            ? `Last saved at ${new Date(lastSavedAt).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}`
+            : "Not saved yet"}
         </span>
         <div className="flex gap-2">
-          <Button variant="outline">Save Draft</Button>
+          <Button variant="outline" onClick={saveDraftNow}>
+            {justSaved ? "Saved ✓" : "Save Draft"}
+          </Button>
           <Button
             className="bg-navy text-white hover:bg-navy/90 disabled:opacity-50"
             disabled={!allStepsValid || step !== WORKSHEET_STEPS.length - 1}
@@ -695,6 +749,7 @@ export default function WorksheetPage({
                 biomarkerChecks,
                 submittedAt: new Date().toISOString(),
               });
+              clearDraft(caseId);
               router.push(`/cases/${caseId}/mission-control`);
             }}
           >

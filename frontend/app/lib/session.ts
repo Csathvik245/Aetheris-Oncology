@@ -24,6 +24,25 @@ export interface WorksheetSubmission {
   submittedAt: string;
 }
 
+/** In-progress worksheet state, saved by the "Save Draft" button and
+ * restored the next time the resident opens this case's worksheet. Unlike
+ * WorksheetSubmission, a draft doesn't need to satisfy step validation. */
+export interface WorksheetDraft {
+  caseId: string;
+  step: number;
+  phase: string;
+  drugs: { name: string; subtitle: string; rationale: string; citation: string }[];
+  monitoring: string;
+  doseModification: string;
+  toxicityOptions: string[];
+  tags: string[];
+  confidence: number;
+  diagnosisNote: string;
+  biomarkerOrder: string[];
+  biomarkerChecks: Record<string, boolean>;
+  savedAt: string;
+}
+
 export interface HistoryEntry {
   caseId: string;
   title: string;
@@ -35,6 +54,7 @@ export interface HistoryEntry {
 
 const SUBMISSION_KEY = "aetheris:submissions";
 const HISTORY_KEY = "aetheris:history";
+const DRAFT_KEY = "aetheris:drafts";
 
 function readJson<T>(key: string, fallback: T): T {
   if (typeof window === "undefined") return fallback;
@@ -58,6 +78,22 @@ export function saveSubmission(sub: WorksheetSubmission) {
 
 export function getSubmission(caseId: string): WorksheetSubmission | null {
   return readJson<Record<string, WorksheetSubmission>>(SUBMISSION_KEY, {})[caseId] ?? null;
+}
+
+export function saveDraft(draft: WorksheetDraft) {
+  const store = readJson<Record<string, WorksheetDraft>>(DRAFT_KEY, {});
+  store[draft.caseId] = draft;
+  writeJson(DRAFT_KEY, store);
+}
+
+export function getDraft(caseId: string): WorksheetDraft | null {
+  return readJson<Record<string, WorksheetDraft>>(DRAFT_KEY, {})[caseId] ?? null;
+}
+
+export function clearDraft(caseId: string) {
+  const store = readJson<Record<string, WorksheetDraft>>(DRAFT_KEY, {});
+  delete store[caseId];
+  writeJson(DRAFT_KEY, store);
 }
 
 export function saveHistoryEntry(entry: HistoryEntry) {
