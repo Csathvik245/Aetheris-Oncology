@@ -1,7 +1,8 @@
 "use client";
 
 import { use, useEffect, useState } from "react";
-import { Check, Circle, SearchX, ChevronDown } from "lucide-react";
+import Link from "next/link";
+import { Check, Circle, SearchX, ChevronDown, Users } from "lucide-react";
 import { Shell } from "../../../components/shell/Shell";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -85,10 +86,20 @@ export default function ComparisonPage({
   return (
     <Shell breadcrumb="Comparison Analysis">
       <div className="mx-auto max-w-6xl px-6 py-8">
-        <div className="mb-1 flex items-center gap-2">
-          <h1 className="font-heading text-[22px] font-bold text-foreground">Comparison Analysis</h1>
-          <Badge className="bg-muted text-muted-foreground">{packet.displayId}</Badge>
-          {live && <Badge className="bg-teal-tint text-teal-deep">Live Agent Data</Badge>}
+        <div className="mb-1 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <h1 className="font-heading text-[22px] font-bold text-foreground">Comparison Analysis</h1>
+            <Badge className="bg-muted text-muted-foreground">{packet.displayId}</Badge>
+            {live && <Badge className="bg-teal-tint text-teal-deep">Live Agent Data</Badge>}
+          </div>
+          {live && (
+            <Link
+              href={`/cases/${caseId}/tumor-board`}
+              className="flex items-center gap-1.5 rounded-full border border-navy px-3.5 py-1.5 text-[12.5px] font-semibold text-navy hover:bg-navy-tint"
+            >
+              <Users size={14} /> Ask the Tumor Board
+            </Link>
+          )}
         </div>
         <p className="mb-6 text-[13px] text-muted-foreground">
           {live && hasSubmission

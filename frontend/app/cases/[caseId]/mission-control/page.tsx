@@ -10,6 +10,7 @@ import {
   ShieldAlert,
   Share2,
   ChevronRight,
+  Users,
 } from "lucide-react";
 import { Shell } from "../../../components/shell/Shell";
 import { Card } from "@/components/ui/card";
@@ -302,14 +303,22 @@ export default function MissionControlPage({
         </Card>
       </div>
 
-      <div className="pointer-events-none sticky bottom-0 flex justify-end px-6 pb-5">
+      <div className="pointer-events-none sticky bottom-0 flex justify-end gap-2.5 px-6 pb-5">
         {pipeline.complete ? (
-          <Link
-            href={`/cases/${caseId}/comparison`}
-            className="pointer-events-auto flex items-center gap-2 rounded-full bg-navy px-5 py-2.5 text-[13px] font-semibold text-white shadow-lg hover:bg-navy/90"
-          >
-            View Comparison Analysis <ChevronRight size={15} />
-          </Link>
+          <>
+            <Link
+              href={`/cases/${caseId}/tumor-board`}
+              className="pointer-events-auto flex items-center gap-2 rounded-full border border-navy bg-white px-5 py-2.5 text-[13px] font-semibold text-navy shadow-lg hover:bg-navy-tint"
+            >
+              <Users size={15} /> Ask the Tumor Board
+            </Link>
+            <Link
+              href={`/cases/${caseId}/comparison`}
+              className="pointer-events-auto flex items-center gap-2 rounded-full bg-navy px-5 py-2.5 text-[13px] font-semibold text-white shadow-lg hover:bg-navy/90"
+            >
+              View Comparison Analysis <ChevronRight size={15} />
+            </Link>
+          </>
         ) : (
           <span className="pointer-events-auto flex items-center gap-2 rounded-full bg-navy px-5 py-2.5 text-[13px] font-semibold text-white shadow-lg">
             <span className="spinner border-white/30 [border-top-color:white]" />
