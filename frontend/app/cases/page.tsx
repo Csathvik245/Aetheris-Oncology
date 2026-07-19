@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { Clock, ChevronDown, Sparkles } from "lucide-react";
+import { Clock, ChevronDown, Sparkles, GraduationCap } from "lucide-react";
 import { Shell } from "../components/shell/Shell";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -15,7 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { CASES, type Difficulty } from "../lib/mock";
-import { listGeneratedCases, type GeneratedCase } from "../lib/generatedCase";
+import { listGeneratedCases, listInstitutionFacultyCases, type GeneratedCase, type FacultyCaseSummary } from "../lib/generatedCase";
 import { getPreferences } from "../lib/preferences";
 
 const DIFFICULTY_TONE: Record<Difficulty, string> = {
@@ -107,8 +107,10 @@ export default function CaseLibraryPage() {
   }, []);
 
   const [generatedCases, setGeneratedCases] = useState<GeneratedCase[]>([]);
+  const [facultyCases, setFacultyCases] = useState<FacultyCaseSummary[]>([]);
   useEffect(() => {
     listGeneratedCases().then(setGeneratedCases);
+    listInstitutionFacultyCases().then(setFacultyCases);
   }, []);
 
   return (
@@ -153,6 +155,40 @@ export default function CaseLibraryPage() {
                       <div className="flex items-center justify-between">
                         <span className="text-muted-foreground">Mutation</span>
                         <span className="font-semibold text-foreground">{c.input.markers.join(", ")}</span>
+                      </div>
+                    </div>
+                  </Card>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {facultyCases.length > 0 && (
+          <div className="mt-6">
+            <h2 className="flex items-center gap-1.5 font-heading text-[14px] font-semibold text-foreground">
+              <GraduationCap size={14} className="text-teal-deep" /> Faculty-Authored Cases
+            </h2>
+            <div className="mt-3 grid grid-cols-3 gap-5">
+              {facultyCases.map((c) => (
+                <Link key={c.id} href={`/cases/${c.id}`}>
+                  <Card className="lift h-full p-5">
+                    <div className="flex items-center justify-between">
+                      <Badge className="bg-navy-tint text-navy">Faculty</Badge>
+                      <span className="flex items-center gap-1 text-[12px] text-muted-foreground">
+                        <Clock size={13} /> {c.estMinutes} mins
+                      </span>
+                    </div>
+                    <h3 className="mt-3 font-heading text-[16.5px] font-semibold leading-snug text-foreground">{c.title}</h3>
+                    <p className="mt-1.5 text-[13px] leading-relaxed text-muted-foreground">{c.chiefComplaint}</p>
+                    <div className="mt-4 flex flex-col gap-1.5 border-t border-border pt-3 text-[12.5px]">
+                      <div className="flex items-center justify-between">
+                        <span className="text-muted-foreground">Stage</span>
+                        <span className="font-semibold text-foreground">{c.stage}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-muted-foreground">Genomic Profile</span>
+                        <span className="font-semibold text-foreground">{c.genomicProfile.join(", ") || "—"}</span>
                       </div>
                     </div>
                   </Card>

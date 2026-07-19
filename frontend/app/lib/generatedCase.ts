@@ -92,8 +92,12 @@ function rowToGeneratedCase(row: CaseRow): GeneratedCase {
 const CASE_ROW_COLUMNS =
   "id, created_at, generator_input, title, difficulty, est_minutes, stage, tags, age, sex, ecog, chief_complaint, medical_history, imaging, pathology, candidate_drugs, toxicity_concerns, clinical_pearl";
 
+// Despite the name (kept for the many existing call sites that gate
+// "fetch this case's packet from Supabase" on it), this also matches
+// faculty-authored case ids ("faculty-...") — both are `cases` table rows
+// fetched the same way, as opposed to a static id from mock.ts.
 export function isGeneratedCaseId(id: string): boolean {
-  return id.startsWith("gen-");
+  return id.startsWith("gen-") || id.startsWith("faculty-");
 }
 
 export async function saveGeneratedCase(c: GeneratedCase) {
@@ -155,6 +159,36 @@ export async function listGeneratedCases(): Promise<GeneratedCase[]> {
   return (data ?? []).map(rowToGeneratedCase);
 }
 
+export interface FacultyCaseSummary {
+  id: string;
+  title: string;
+  chiefComplaint: string;
+  stage: string;
+  estMinutes: number;
+  genomicProfile: string[];
+}
+
+/** Faculty-authored cases visible to the signed-in resident/faculty's own
+ * institution (RLS: `visibility='institution' and institution_id` match). */
+export async function listInstitutionFacultyCases(): Promise<FacultyCaseSummary[]> {
+  const supabase = createClient();
+  const { data } = await supabase
+    .from("cases")
+    .select("id, title, chief_complaint, stage, est_minutes, pathology")
+    .eq("source", "faculty_authored")
+    .order("created_at", { ascending: false })
+    .returns<{ id: string; title: string; chief_complaint: string; stage: string; est_minutes: number; pathology: { genomicProfile?: string[] } }[]>();
+
+  return (data ?? []).map((row) => ({
+    id: row.id,
+    title: row.title,
+    chiefComplaint: row.chief_complaint,
+    stage: row.stage,
+    estMinutes: row.est_minutes,
+    genomicProfile: row.pathology?.genomicProfile ?? [],
+  }));
+}
+
 export async function clearGeneratedCases() {
   const supabase = createClient();
   const {
@@ -187,9 +221,10 @@ export function usePacket(caseId: string): PatientPacket {
 }
 
 export function generatedCaseToPacket(c: GeneratedCase): PatientPacket {
+  const shortId = c.id.replace(/^gen-/, "G-").replace(/^faculty-/, "F-").slice(0, 10);
   return {
     caseId: c.id,
-    displayId: `Patient ${c.id.replace("gen-", "#G-")}`,
+    displayId: `Patient #${shortId}`,
     age: c.age,
     sex: c.sex,
     ecog: c.ecog,
