@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { createClient as createServerClient } from "@/app/lib/supabase/server";
+import { checkAndIncrementCaseGenUsage } from "@/app/lib/limits";
 
 export const runtime = "nodejs";
 
@@ -58,6 +60,18 @@ export async function POST(request: Request) {
   const { cancerType, metastaticSite, markers, scenarioTitle, complexity, objectiveTitles } = body;
   if (!cancerType?.trim() || !metastaticSite?.trim() || !markers?.length || !scenarioTitle || !objectiveTitles?.length) {
     return NextResponse.json({ error: "Missing required generation parameters." }, { status: 400 });
+  }
+
+  const supabase = await createServerClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+
+  const { data: profile } = await supabase.from("profiles").select("institution_id").eq("id", user.id).single();
+  if (profile?.institution_id) {
+    const limitError = await checkAndIncrementCaseGenUsage(profile.institution_id);
+    if (limitError) return NextResponse.json({ error: limitError }, { status: 429 });
   }
 
   const userPrompt = `Generate one synthetic oncology resident-training case with these exact configured parameters:
