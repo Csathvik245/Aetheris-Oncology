@@ -1,6 +1,7 @@
 "use client";
 
 import { use, useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   User,
@@ -12,12 +13,29 @@ import {
   Printer,
   Share2,
   Eye,
+  GitBranch,
 } from "lucide-react";
 import { Shell } from "../../components/shell/Shell";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { usePacket } from "../../lib/generatedCase";
+
+const VARIATIONS = [
+  { value: "older_patient", label: "Older Patient" },
+  { value: "new_mutation", label: "New Resistance Mutation" },
+  { value: "pregnancy", label: "Pregnancy" },
+  { value: "renal_failure", label: "Renal Failure" },
+  { value: "brain_mets", label: "New Brain Metastases" },
+  { value: "trial_closed", label: "Trial Closed" },
+];
 
 const SECTIONS = [
   { key: "summary", label: "Patient Summary", icon: User },
@@ -35,7 +53,40 @@ export default function PatientPacketPage({
 }) {
   const { caseId } = use(params);
   const packet = usePacket(caseId);
+  const router = useRouter();
   const [section, setSection] = useState("summary");
+  const [variationType, setVariationType] = useState("");
+  const [branching, setBranching] = useState(false);
+  const [branchError, setBranchError] = useState<string | null>(null);
+
+  async function branchCase() {
+    if (!variationType) return;
+    setBranching(true);
+    setBranchError(null);
+    const res = await fetch("/api/case-variations", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        baseCaseId: caseId,
+        variationType,
+        packet: {
+          age: packet.age,
+          sex: packet.sex,
+          ecog: packet.ecog,
+          chiefComplaint: packet.chiefComplaint,
+          medicalHistory: packet.medicalHistory,
+          pathology: packet.pathology,
+        },
+      }),
+    });
+    const data = await res.json();
+    setBranching(false);
+    if (!res.ok) {
+      setBranchError(data.error ?? "Could not create variation.");
+      return;
+    }
+    router.push(`/cases/${data.caseId}`);
+  }
 
   return (
     <Shell breadcrumb="Patient Packet">
@@ -68,7 +119,22 @@ export default function PatientPacketPage({
               </div>
             </div>
           </div>
-          <div className="flex shrink-0 gap-2">
+          <div className="flex shrink-0 items-center gap-2">
+            <Select value={variationType} onValueChange={(v) => v && setVariationType(v)}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Branch this case…" />
+              </SelectTrigger>
+              <SelectContent>
+                {VARIATIONS.map((v) => (
+                  <SelectItem key={v.value} value={v.value}>
+                    {v.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Button variant="outline" onClick={branchCase} disabled={!variationType || branching} className="gap-1.5">
+              <GitBranch size={15} /> {branching ? "Branching…" : "Branch"}
+            </Button>
             <Button variant="outline" className="gap-1.5">
               <Printer size={15} /> Print Packet
             </Button>
@@ -79,6 +145,7 @@ export default function PatientPacketPage({
             </Link>
           </div>
         </div>
+        {branchError && <p className="mt-2 text-[12.5px] text-coral-text">{branchError}</p>}
 
         <div className="mt-8 grid grid-cols-4 gap-6">
           <nav className="col-span-1 flex flex-col gap-1">

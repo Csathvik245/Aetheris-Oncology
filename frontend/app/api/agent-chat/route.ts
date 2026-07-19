@@ -37,6 +37,15 @@ const PERSONAS: Record<AgentKey, { label: string; role: string }> = {
 const VALID_AGENTS = new Set(Object.keys(PERSONAS));
 const MAX_TURNS = 12;
 
+const AUDIENCE_CALIBRATION: Record<string, string> = {
+  medical_student: "Explain for a medical student on their oncology rotation — define any jargon or abbreviation the first time you use it, and keep the underlying mechanism concrete and simple.",
+  pgy1: "Explain for a PGY-1 resident — assume basic oncology terminology but spell out reasoning chains step by step; don't assume prior exposure to this regimen.",
+  pgy2: "Explain for a PGY-2 resident — assume comfort with standard terminology and common regimens; focus on the specific reasoning for this case rather than background definitions.",
+  fellow: "Explain for a hematology/oncology fellow — assume deep familiarity with mechanisms and guidelines; go straight to the nuance, trade-offs, and edge cases relevant to this decision.",
+  attending: "Explain for an attending oncologist — be maximally concise and precise, cite the specific evidence level or trial by name where relevant, skip any background explanation.",
+  research_scientist: "Explain for a research scientist (not necessarily clinical) — emphasize the underlying biological/statistical mechanism and evidence quality over clinical workflow.",
+};
+
 interface ChatMessage {
   role: "user" | "assistant";
   content: string;
@@ -47,6 +56,7 @@ interface ChatRequestBody {
   agentData: unknown;
   caseSummary?: string;
   messages: ChatMessage[];
+  audience?: string;
 }
 
 export async function POST(request: Request) {
@@ -65,7 +75,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid JSON body." }, { status: 400 });
   }
 
-  const { agentKey, agentData, caseSummary, messages } = body;
+  const { agentKey, agentData, caseSummary, messages, audience } = body;
   if (!VALID_AGENTS.has(agentKey)) {
     return NextResponse.json({ error: `Unknown agent "${agentKey}".` }, { status: 400 });
   }
@@ -84,7 +94,9 @@ YOUR DATA:
 ${JSON.stringify(agentData ?? null)}
 ${caseSummary ? `\nCase context: ${caseSummary}` : ""}
 
-Answer the resident's questions concisely (2-4 sentences unless asked for detail), using only the data above.`;
+Answer the resident's questions concisely (2-4 sentences unless asked for detail), using only the data above.${
+    audience && AUDIENCE_CALIBRATION[audience] ? `\n\nAUDIENCE CALIBRATION: ${AUDIENCE_CALIBRATION[audience]}` : ""
+  }`;
 
   let groqRes: Response;
   try {

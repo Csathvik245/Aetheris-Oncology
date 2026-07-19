@@ -5,6 +5,7 @@ import { Shell } from "../components/shell/Shell";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { CompetencyRadar } from "../components/CompetencyRadar";
+import { CompetencyPassport } from "../components/CompetencyPassport";
 import { computeCompetencyProfile, type CompetencySkill } from "../lib/session";
 
 export default function CompetencyProfilePage() {
@@ -66,6 +67,16 @@ export default function CompetencyProfilePage() {
             )}
           </Card>
         </div>
+
+        <Card className="mt-6 p-5">
+          <h3 className="font-heading text-[14px] font-semibold text-foreground">Competency Passport</h3>
+          <p className="mt-1 text-[12px] text-muted-foreground">
+            Bronze at 60%, Silver at 85%, Gold at 95% average agreement — same scores as above, per skill.
+          </p>
+          <div className="mt-4">
+            <CompetencyPassport data={skills} />
+          </div>
+        </Card>
       </div>
     </Shell>
   );

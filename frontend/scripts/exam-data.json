@@ -1,0 +1,306 @@
+{
+  "exams": [
+    {
+      "title": "Melanoma & BRAF-Targeted Therapy",
+      "specialtyTag": "Melanoma",
+      "timeLimitMinutes": 25,
+      "questions": [
+        {
+          "stem": "A 54-year-old with newly diagnosed metastatic melanoma has a BRAF V600E mutation confirmed by NGS. Which class of agents is most appropriate as a targeted first-line option?",
+          "choices": [
+            { "key": "A", "label": "BRAF inhibitor + MEK inhibitor combination" },
+            { "key": "B", "label": "Single-agent MEK inhibitor" },
+            { "key": "C", "label": "EGFR tyrosine kinase inhibitor" },
+            { "key": "D", "label": "PARP inhibitor" }
+          ],
+          "correctChoice": "A",
+          "explanation": "Combined BRAF/MEK inhibition (e.g. dabrafenib + trametinib, or vemurafenib + cobimetinib) is standard for BRAF V600E/K-mutant metastatic melanoma — combination therapy delays resistance and reduces the paradoxical MAPK-pathway activation (cutaneous squamous cell carcinoma risk) seen with BRAF-inhibitor monotherapy.",
+          "citation": "COMBI-d/COMBI-v trials"
+        },
+        {
+          "stem": "A patient on dabrafenib + trametinib develops recurrent high-grade fevers (pyrexia) without evidence of infection. What is the most appropriate next step?",
+          "choices": [
+            { "key": "A", "label": "Permanently discontinue both drugs" },
+            { "key": "B", "label": "Hold therapy, treat symptomatically, and rechallenge with dose modification once resolved" },
+            { "key": "C", "label": "Continue at full dose and add prophylactic antipyretics only" },
+            { "key": "D", "label": "Switch immediately to single-agent BRAF inhibitor" }
+          ],
+          "correctChoice": "B",
+          "explanation": "Dabrafenib-associated pyrexia is a well-recognized, usually reversible class effect. Standard management is to hold the drug(s), rule out infection, treat symptomatically, and resume at the same or reduced dose once the fever resolves — permanent discontinuation is reserved for recurrent/severe cases refractory to dose modification.",
+          "citation": "NCCN Melanoma Guidelines — toxicity management"
+        },
+        {
+          "stem": "Which adverse event requires baseline and on-treatment cardiac monitoring (echocardiogram/ejection fraction) during BRAF/MEK combination therapy?",
+          "choices": [
+            { "key": "A", "label": "QT prolongation only" },
+            { "key": "B", "label": "Left ventricular dysfunction from MEK inhibition" },
+            { "key": "C", "label": "Pericardial effusion from BRAF inhibition" },
+            { "key": "D", "label": "Atrial fibrillation from combined therapy" }
+          ],
+          "correctChoice": "B",
+          "explanation": "MEK inhibitors (trametinib, cobimetinib) carry a risk of decreased left ventricular ejection fraction. Guidelines recommend baseline LVEF assessment and periodic monitoring (e.g. every ~2-3 months) during treatment.",
+          "citation": "NCCN Melanoma Guidelines"
+        },
+        {
+          "stem": "A patient progresses on BRAF/MEK inhibitor therapy after 14 months. Repeat biopsy shows a NRAS Q61K mutation. This is best explained by which mechanism?",
+          "choices": [
+            { "key": "A", "label": "MAPK pathway reactivation via an alternative upstream driver" },
+            { "key": "B", "label": "Loss of BRAF V600E entirely" },
+            { "key": "C", "label": "PD-L1 upregulation causing immune escape" },
+            { "key": "D", "label": "MDR1 efflux pump overexpression" }
+          ],
+          "correctChoice": "A",
+          "explanation": "Acquired NRAS mutations are a classic mechanism of resistance to BRAF/MEK inhibition — they reactivate MAPK signaling downstream of RAS despite continued BRAF inhibition, one of several described resistance pathways (others include MEK mutations, BRAF splice variants, and amplification).",
+          "citation": "Long GV et al., resistance mechanisms in BRAF-mutant melanoma"
+        },
+        {
+          "stem": "For a treatment-naive patient with BRAF V600E metastatic melanoma, high disease burden, and rapidly progressive symptomatic disease, which first-line approach is most appropriate?",
+          "choices": [
+            { "key": "A", "label": "Single-agent ipilimumab" },
+            { "key": "B", "label": "BRAF/MEK combination therapy for rapid disease control, with immunotherapy considered on progression or after debulking" },
+            { "key": "C", "label": "Watchful waiting" },
+            { "key": "D", "label": "Cytotoxic chemotherapy (dacarbazine) alone" }
+          ],
+          "correctChoice": "B",
+          "explanation": "In BRAF-mutant, high-burden, rapidly symptomatic disease, targeted therapy typically produces faster responses than immunotherapy, making it a reasonable first choice for symptom control; both targeted and immunotherapy sequencing are considered based on the disease pace, and combination immunotherapy is preferred when disease is more indolent.",
+          "citation": "NCCN Melanoma Guidelines — sequencing considerations"
+        },
+        {
+          "stem": "Which statement about combination nivolumab + ipilimumab versus BRAF/MEK inhibition in BRAF-mutant metastatic melanoma is most accurate?",
+          "choices": [
+            { "key": "A", "label": "Immunotherapy combinations tend to produce more durable long-term responses in responders, while targeted therapy produces faster but often less durable responses" },
+            { "key": "B", "label": "Targeted therapy always produces more durable responses" },
+            { "key": "C", "label": "The two approaches have identical toxicity profiles" },
+            { "key": "D", "label": "BRAF/MEK inhibition is contraindicated in BRAF-mutant disease" }
+          ],
+          "correctChoice": "A",
+          "explanation": "Long-term follow-up of checkpoint inhibitor combinations shows a plateau in survival curves suggesting durable disease control in a subset of responders, whereas BRAF/MEK therapy typically produces rapid initial responses that are more likely to be followed by eventual resistance.",
+          "citation": "CheckMate 067 long-term follow-up"
+        },
+        {
+          "stem": "A patient with resected stage IIIB BRAF V600E melanoma is being considered for adjuvant therapy. Which of the following is an appropriate adjuvant option?",
+          "choices": [
+            { "key": "A", "label": "Adjuvant dabrafenib + trametinib" },
+            { "key": "B", "label": "Adjuvant dacarbazine" },
+            { "key": "C", "label": "Adjuvant erlotinib" },
+            { "key": "D", "label": "No adjuvant therapy is ever indicated in resected melanoma" }
+          ],
+          "correctChoice": "A",
+          "explanation": "Adjuvant dabrafenib + trametinib is FDA-approved for resected stage III BRAF V600E/K melanoma based on the COMBI-AD trial, which showed improved relapse-free survival versus placebo. Adjuvant anti-PD-1 therapy is another approved option regardless of BRAF status.",
+          "citation": "COMBI-AD trial"
+        },
+        {
+          "stem": "Which testing approach is most appropriate to confirm BRAF mutation status before initiating targeted therapy?",
+          "choices": [
+            { "key": "A", "label": "Immunohistochemistry for ER/PR" },
+            { "key": "B", "label": "Validated molecular testing (PCR-based assay or NGS panel) on tumor tissue" },
+            { "key": "C", "label": "Serum tumor marker CA 15-3" },
+            { "key": "D", "label": "Clinical diagnosis alone without molecular confirmation" }
+          ],
+          "correctChoice": "B",
+          "explanation": "BRAF status must be confirmed with a validated molecular assay (targeted PCR or NGS) on tumor tissue before starting BRAF-targeted therapy — clinical features alone are not sufficient, and BRAF inhibitors are contraindicated (and can accelerate disease) in BRAF-wild-type tumors.",
+          "citation": "NCCN Melanoma Guidelines"
+        },
+        {
+          "stem": "A patient on vemurafenib develops multiple new well-differentiated cutaneous squamous cell carcinomas. What is the underlying mechanism?",
+          "choices": [
+            { "key": "A", "label": "Direct DNA mutagenicity of vemurafenib" },
+            { "key": "B", "label": "Paradoxical activation of the MAPK pathway in BRAF-wild-type keratinocytes with pre-existing RAS mutations" },
+            { "key": "C", "label": "Immunosuppression from BRAF inhibition" },
+            { "key": "D", "label": "UV hypersensitivity reaction" }
+          ],
+          "correctChoice": "B",
+          "explanation": "BRAF inhibitor monotherapy can paradoxically activate MAPK signaling in BRAF-wild-type cells harboring RAS mutations, driving keratinocyte proliferation and squamous lesions — this risk is substantially reduced by adding a MEK inhibitor, which is one reason combination therapy is preferred over monotherapy.",
+          "citation": "Su F et al., NEJM — paradoxical MAPK activation"
+        },
+        {
+          "stem": "Which biomarker, if positive, would most directly support use of pembrolizumab in a BRAF-wild-type metastatic melanoma patient?",
+          "choices": [
+            { "key": "A", "label": "PD-L1 status is not required before initiating anti-PD-1 therapy in melanoma" },
+            { "key": "B", "label": "ER positivity" },
+            { "key": "C", "label": "KRAS G12C" },
+            { "key": "D", "label": "HER2 amplification" }
+          ],
+          "correctChoice": "A",
+          "explanation": "Unlike some other tumor types, anti-PD-1 monotherapy is approved and used in melanoma regardless of PD-L1 expression status — PD-L1 testing is not required to initiate pembrolizumab or nivolumab in this setting.",
+          "citation": "NCCN Melanoma Guidelines"
+        },
+        {
+          "stem": "A resident is monitoring a patient on dabrafenib/trametinib and notes new blurred vision. What toxicity should be excluded urgently?",
+          "choices": [
+            { "key": "A", "label": "Retinal vein occlusion / serous retinopathy" },
+            { "key": "B", "label": "Cataracts" },
+            { "key": "C", "label": "Corneal abrasion" },
+            { "key": "D", "label": "Presbyopia" }
+          ],
+          "correctChoice": "A",
+          "explanation": "MEK inhibitors are associated with retinal vein occlusion and MEK-inhibitor-associated retinopathy (serous retinal detachment). New visual symptoms warrant urgent ophthalmologic evaluation and consideration of holding therapy.",
+          "citation": "NCCN Melanoma Guidelines — toxicity management"
+        },
+        {
+          "stem": "Which of the following best describes appropriate trial-eligibility reasoning for a BRAF V600E melanoma patient who has progressed on both BRAF/MEK inhibition and anti-PD-1/CTLA-4 combination therapy?",
+          "choices": [
+            { "key": "A", "label": "The patient has exhausted all reasonable options and clinical trial evaluation (e.g. novel combinations, cellular therapy, bispecifics) is appropriate" },
+            { "key": "B", "label": "The patient should be restarted on first-line BRAF/MEK therapy indefinitely" },
+            { "key": "C", "label": "No further treatment options exist" },
+            { "key": "D", "label": "The patient should receive dacarbazine as the only remaining option" }
+          ],
+          "correctChoice": "A",
+          "explanation": "After progression on both targeted therapy and immunotherapy combinations, clinical trial enrollment (novel agents, TIL/cellular therapy, bispecific T-cell engagers, or investigational combinations) is a guideline-endorsed and often preferred next step over empiric chemotherapy given melanoma's relative chemo-resistance.",
+          "citation": "NCCN Melanoma Guidelines — later-line therapy"
+        }
+      ]
+    },
+    {
+      "title": "NSCLC & EGFR-Directed Therapy",
+      "specialtyTag": "NSCLC",
+      "timeLimitMinutes": 25,
+      "questions": [
+        {
+          "stem": "A treatment-naive patient with metastatic lung adenocarcinoma is found to have an EGFR exon 19 deletion. Which first-line therapy is preferred based on the FLAURA trial?",
+          "choices": [
+            { "key": "A", "label": "Osimertinib" },
+            { "key": "B", "label": "Erlotinib" },
+            { "key": "C", "label": "Carboplatin/pemetrexed alone" },
+            { "key": "D", "label": "Pembrolizumab monotherapy" }
+          ],
+          "correctChoice": "A",
+          "explanation": "The FLAURA trial demonstrated superior progression-free and overall survival with first-line osimertinib (a third-generation EGFR TKI with CNS penetration) compared to first-generation EGFR TKIs (gefitinib/erlotinib), establishing it as the preferred first-line agent for EGFR exon 19 deletion or L858R-mutant NSCLC.",
+          "citation": "FLAURA trial"
+        },
+        {
+          "stem": "A patient on first-generation EGFR TKI (erlotinib) progresses after 13 months. Repeat biopsy/liquid biopsy reveals a T790M mutation. What is the most appropriate next step?",
+          "choices": [
+            { "key": "A", "label": "Switch to osimertinib" },
+            { "key": "B", "label": "Continue erlotinib at a higher dose" },
+            { "key": "C", "label": "Switch to a different first-generation TKI" },
+            { "key": "D", "label": "Initiate immunotherapy monotherapy" }
+          ],
+          "correctChoice": "A",
+          "explanation": "T790M is the classic acquired resistance mutation to first/second-generation EGFR TKIs, and osimertinib (third-generation) was specifically developed to overcome it — this is a guideline-standard sequencing decision, confirmed by the AURA3 trial.",
+          "citation": "AURA3 trial"
+        },
+        {
+          "stem": "Why is combining EGFR TKIs with checkpoint inhibitor immunotherapy generally avoided in EGFR-mutant NSCLC?",
+          "choices": [
+            { "key": "A", "label": "Increased risk of severe immune-related toxicity (including pneumonitis) without clear added efficacy" },
+            { "key": "B", "label": "EGFR TKIs inactivate checkpoint inhibitors pharmacologically" },
+            { "key": "C", "label": "Immunotherapy is contraindicated in all lung cancer" },
+            { "key": "D", "label": "There is no reason to avoid this combination" }
+          ],
+          "correctChoice": "A",
+          "explanation": "Trials combining EGFR TKIs (particularly osimertinib) with checkpoint inhibitors showed unacceptable rates of severe toxicity, notably pneumonitis, without a clear efficacy benefit — EGFR-mutant tumors also tend to have lower response rates to immunotherapy alone, so sequential (not concurrent) use is standard.",
+          "citation": "TATTON trial safety data"
+        },
+        {
+          "stem": "A patient develops new dry cough and dyspnea while on osimertinib, with bilateral ground-glass opacities on CT. What is the priority diagnosis to exclude?",
+          "choices": [
+            { "key": "A", "label": "Drug-induced interstitial lung disease (ILD) / pneumonitis" },
+            { "key": "B", "label": "Simple atelectasis" },
+            { "key": "C", "label": "Musculoskeletal chest pain" },
+            { "key": "D", "label": "Gastroesophageal reflux" }
+          ],
+          "correctChoice": "A",
+          "explanation": "ILD/pneumonitis is a recognized, potentially serious adverse effect of EGFR TKIs including osimertinib. New respiratory symptoms with ground-glass opacities require urgent evaluation, typically holding the drug and considering corticosteroids if ILD is confirmed.",
+          "citation": "NCCN NSCLC Guidelines — toxicity management"
+        },
+        {
+          "stem": "A patient with EGFR exon 19 deletion NSCLC and asymptomatic brain metastases is starting first-line therapy. Which property of osimertinib is most relevant to this scenario?",
+          "choices": [
+            { "key": "A", "label": "Its high CNS penetration and demonstrated intracranial efficacy" },
+            { "key": "B", "label": "Its inability to cross the blood-brain barrier" },
+            { "key": "C", "label": "Its requirement for concurrent whole-brain radiation in all cases" },
+            { "key": "D", "label": "Its lack of any CNS activity data" }
+          ],
+          "correctChoice": "A",
+          "explanation": "Osimertinib has substantially better CNS penetration than earlier-generation EGFR TKIs and demonstrated intracranial response rates in FLAURA, making it particularly appropriate for patients with brain metastases, often allowing deferral of radiation in select asymptomatic cases.",
+          "citation": "FLAURA CNS subgroup analysis"
+        },
+        {
+          "stem": "A patient progresses on first-line osimertinib after 19 months. Repeat NGS shows MET amplification with no new EGFR resistance mutation. What does this suggest about management?",
+          "choices": [
+            { "key": "A", "label": "MET amplification is a bypass-pathway resistance mechanism that may be addressed by adding a MET inhibitor or considering a clinical trial of EGFR+MET combination therapy" },
+            { "key": "B", "label": "This finding is irrelevant to treatment planning" },
+            { "key": "C", "label": "The patient should be switched to a first-generation EGFR TKI" },
+            { "key": "D", "label": "MET amplification indicates the original EGFR mutation was a false positive" }
+          ],
+          "correctChoice": "A",
+          "explanation": "MET amplification is one of the most common bypass-track resistance mechanisms to osimertinib. Combination EGFR + MET inhibitor strategies (often via clinical trial) are a guideline-recognized approach to address this specific resistance pattern.",
+          "citation": "NCCN NSCLC Guidelines — resistance mechanisms"
+        },
+        {
+          "stem": "In a patient with resected stage II EGFR exon 19 deletion NSCLC after adjuvant chemotherapy, which adjuvant targeted therapy is supported by the ADAURA trial?",
+          "choices": [
+            { "key": "A", "label": "Adjuvant osimertinib" },
+            { "key": "B", "label": "Adjuvant erlotinib" },
+            { "key": "C", "label": "Adjuvant bevacizumab" },
+            { "key": "D", "label": "No adjuvant targeted therapy is supported by evidence" }
+          ],
+          "correctChoice": "A",
+          "explanation": "The ADAURA trial demonstrated significantly improved disease-free survival (and later overall survival) with adjuvant osimertinib for resected stage IB-IIIA EGFR-mutant NSCLC, establishing it as a standard adjuvant option after surgery ± chemotherapy.",
+          "citation": "ADAURA trial"
+        },
+        {
+          "stem": "A patient on osimertinib develops a new C797S mutation in cis with the original exon 19 deletion at progression. What is the clinical implication?",
+          "choices": [
+            { "key": "A", "label": "This confers resistance to osimertinib and may respond to first-generation EGFR TKIs or is a target for investigational fourth-generation agents" },
+            { "key": "B", "label": "C797S has no effect on osimertinib sensitivity" },
+            { "key": "C", "label": "This mutation makes the tumor EGFR-negative" },
+            { "key": "D", "label": "The patient should immediately start cytotoxic chemotherapy only, with no other options" }
+          ],
+          "correctChoice": "A",
+          "explanation": "C797S is a recognized osimertinib-resistance mutation. When it occurs in cis with the original activating mutation, the tumor may retain sensitivity to first-generation TKIs (which don't bind the same site) or investigational fourth-generation EGFR inhibitors under trial; when in trans, combination first+third-generation TKI strategies are sometimes explored.",
+          "citation": "Niederst MJ et al., mechanisms of C797S resistance"
+        },
+        {
+          "stem": "Which monitoring strategy is most appropriate for a patient newly started on osimertinib with no baseline cardiac history?",
+          "choices": [
+            { "key": "A", "label": "Baseline and periodic ECG for QTc monitoring" },
+            { "key": "B", "label": "No cardiac monitoring is ever indicated with EGFR TKIs" },
+            { "key": "C", "label": "Daily troponin measurement" },
+            { "key": "D", "label": "Baseline stress echocardiogram in all patients" }
+          ],
+          "correctChoice": "A",
+          "explanation": "Osimertinib carries a risk of QTc prolongation; baseline and periodic ECG monitoring is recommended, particularly in patients with other risk factors for QT prolongation or concurrent QT-prolonging medications.",
+          "citation": "NCCN NSCLC Guidelines — toxicity monitoring"
+        },
+        {
+          "stem": "A patient with EGFR L858R-mutant NSCLC and good performance status asks about clinical trial eligibility after first-line osimertinib failure with no targetable resistance mechanism identified. What is the most appropriate reasoning?",
+          "choices": [
+            { "key": "A", "label": "Platinum-based chemotherapy is the standard next step, and clinical trials of novel agents/combinations should also be considered given the lack of an actionable resistance mechanism" },
+            { "key": "B", "label": "No further treatment is possible" },
+            { "key": "C", "label": "The patient should be restarted on osimertinib at a higher dose" },
+            { "key": "D", "label": "Immunotherapy alone is clearly superior in this setting with strong response rates" }
+          ],
+          "correctChoice": "A",
+          "explanation": "When progression occurs without an identifiable targetable resistance mechanism, platinum-based chemotherapy (often with or without antiangiogenic therapy) is the guideline-standard next step, and clinical trial enrollment for novel combinations or antibody-drug conjugates is appropriate given generally modest response rates to immunotherapy alone in EGFR-mutant disease.",
+          "citation": "NCCN NSCLC Guidelines — post-TKI progression"
+        },
+        {
+          "stem": "Which testing modality is preferred to detect EGFR resistance mutations at the time of progression, particularly when re-biopsy is not feasible?",
+          "choices": [
+            { "key": "A", "label": "Plasma-based liquid biopsy (cell-free DNA NGS)" },
+            { "key": "B", "label": "Chest X-ray" },
+            { "key": "C", "label": "Complete blood count" },
+            { "key": "D", "label": "PET-CT alone" }
+          ],
+          "correctChoice": "A",
+          "explanation": "Liquid biopsy (plasma cfDNA NGS) is a validated, minimally invasive option to detect acquired resistance mutations (e.g. T790M, C797S) at progression when tissue re-biopsy is not feasible or as a first step before proceeding to tissue biopsy if plasma is negative.",
+          "citation": "NCCN NSCLC Guidelines — biomarker testing"
+        },
+        {
+          "stem": "A patient with EGFR exon 19 deletion NSCLC is found to also have a co-occurring TP53 mutation on the original NGS panel. What is the most accurate interpretation?",
+          "choices": [
+            { "key": "A", "label": "Co-occurring TP53 mutations are common in EGFR-mutant NSCLC and are associated with generally shorter response duration to EGFR TKIs, but do not change the first-line treatment choice" },
+            { "key": "B", "label": "TP53 co-mutation means the EGFR mutation is not actionable" },
+            { "key": "C", "label": "TP53 mutation status mandates immediate chemotherapy instead of TKI therapy" },
+            { "key": "D", "label": "TP53 co-mutations are exceedingly rare in this population and should prompt repeat testing" }
+          ],
+          "correctChoice": "A",
+          "explanation": "TP53 co-mutations are found in a substantial proportion of EGFR-mutant NSCLC and have been associated with shorter progression-free survival on EGFR TKIs in several cohorts, but first-line osimertinib remains standard regardless — this is prognostic information to discuss with the patient, not a reason to change the initial regimen.",
+          "citation": "Blakely CM et al., co-occurring mutations in EGFR-mutant NSCLC"
+        }
+      ]
+    }
+  ]
+}

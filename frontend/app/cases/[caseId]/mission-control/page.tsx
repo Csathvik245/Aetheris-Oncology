@@ -19,7 +19,16 @@ import { useAgentPipeline, type AgentState } from "../../../lib/useAgentPipeline
 import { usePacket } from "../../../lib/generatedCase";
 import { buildVcfFromPacket } from "../../../lib/vcf";
 import { savePipelineData } from "../../../lib/pipelineData";
-import { getSubmission, computeAgreement, saveHistoryEntry, caseTitleFor, caseDifficultyFor, formatDisplayDate } from "../../../lib/session";
+import {
+  getSubmission,
+  computeAgreement,
+  computeBiomarkerAgreement,
+  computeToxicityAgreement,
+  saveHistoryEntry,
+  caseTitleFor,
+  caseDifficultyFor,
+  formatDisplayDate,
+} from "../../../lib/session";
 
 const AGENT_META: Record<
   AgentKey,
@@ -148,6 +157,8 @@ export default function MissionControlPage({
       });
       const submission = await getSubmission(caseId);
       const aiDrugNames = (pipeline.plan?.top_treatments ?? []).map((t) => t.drug);
+      const aiGenes = pipeline.mutations.map((m) => m.gene).filter((g): g is string => !!g);
+      const aiAdverseEvents = pipeline.risks.flatMap((r) => r.adverse_events ?? []);
       const [title, difficulty] = await Promise.all([caseTitleFor(caseId, packet), caseDifficultyFor(caseId)]);
       await saveHistoryEntry({
         caseId,
@@ -156,6 +167,26 @@ export default function MissionControlPage({
         agreement: computeAgreement(submission, aiDrugNames),
         difficulty,
       });
+
+      if (submission) {
+        const residentBiomarkers = submission.biomarkerOrder.filter((g) => submission.biomarkerChecks[g]);
+        fetch("/api/mentor/log", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            caseId,
+            biomarkerAgreement: computeBiomarkerAgreement(submission, aiGenes),
+            treatmentAgreement: computeAgreement(submission, aiDrugNames),
+            toxicityAgreement: computeToxicityAgreement(submission, aiAdverseEvents),
+            residentDrugs: submission.drugs.map((d) => d.name),
+            aiDrugs: aiDrugNames,
+            residentBiomarkers,
+            aiGenes,
+          }),
+        }).catch(() => {
+          /* mentor note is a nice-to-have — never block the results screen on it */
+        });
+      }
     })();
   }, [pipeline.complete, pipeline.mutations, pipeline.citations, pipeline.drugScores, pipeline.trials, pipeline.risks, pipeline.plan, caseId, packet]);
 

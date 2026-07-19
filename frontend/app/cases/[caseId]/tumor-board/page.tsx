@@ -2,13 +2,30 @@
 
 import { use, useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { Dna, BookOpen, LineChart, ClipboardList, ShieldAlert, Send, Users, ArrowRight } from "lucide-react";
+import { Dna, BookOpen, LineChart, ClipboardList, ShieldAlert, Send, Users, ArrowRight, GraduationCap } from "lucide-react";
 import { Shell } from "../../../components/shell/Shell";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { usePacket } from "../../../lib/generatedCase";
 import { getPipelineData, type PipelineData } from "../../../lib/pipelineData";
+
+const AUDIENCES = [
+  { value: "standard", label: "Standard" },
+  { value: "medical_student", label: "Explain Like: Medical Student" },
+  { value: "pgy1", label: "Explain Like: PGY-1" },
+  { value: "pgy2", label: "Explain Like: PGY-2" },
+  { value: "fellow", label: "Explain Like: Fellow" },
+  { value: "attending", label: "Explain Like: Attending" },
+  { value: "research_scientist", label: "Explain Like: Research Scientist" },
+];
 
 type PanelKey = "genomic" | "literature" | "outcome" | "trial" | "toxicity";
 
@@ -68,6 +85,7 @@ export default function TumorBoardPage({
   const [agentHistories, setAgentHistories] = useState<Record<PanelKey, ChatMessage[]>>({} as Record<PanelKey, ChatMessage[]>);
   const [pending, setPending] = useState<Set<PanelKey>>(new Set());
   const [input, setInput] = useState("");
+  const [audience, setAudience] = useState("standard");
   const scrollRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -99,6 +117,7 @@ export default function TumorBoardPage({
           agentData: agentDataFor(agentKey, pipelineData),
           caseSummary,
           messages: nextMessages,
+          audience: audience === "standard" ? undefined : audience,
         }),
       })
         .then(async (res) => {
@@ -213,7 +232,22 @@ export default function TumorBoardPage({
                 </div>
               </div>
 
-              <div className="flex gap-2 border-t border-border p-3">
+              <div className="flex items-center gap-2 border-t border-border px-3 pt-2.5">
+                <GraduationCap size={14} className="shrink-0 text-muted-foreground" />
+                <Select value={audience} onValueChange={(v) => v && setAudience(v)}>
+                  <SelectTrigger className="h-8 w-[220px] text-[12px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {AUDIENCES.map((a) => (
+                      <SelectItem key={a.value} value={a.value}>
+                        {a.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex gap-2 p-3 pt-2">
                 <Input
                   value={input}
                   onChange={(e) => setInput(e.target.value)}

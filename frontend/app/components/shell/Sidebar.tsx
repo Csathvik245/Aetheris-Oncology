@@ -14,6 +14,9 @@ import {
   FilePlus2,
   CreditCard,
   LogOut,
+  Route,
+  BrainCircuit,
+  ScrollText,
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { initials } from "@/app/lib/profile";
@@ -23,6 +26,9 @@ const NAV = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard, match: (p: string) => p === "/" },
   { href: "/cases", label: "Case Library", icon: LibraryBig, match: (p: string) => p.startsWith("/cases") },
   { href: "/generator", label: "Case Generator", icon: FlaskConical, match: (p: string) => p.startsWith("/generator") },
+  { href: "/exams", label: "Board Exam Mode", icon: ScrollText, match: (p: string) => p.startsWith("/exams") },
+  { href: "/curriculum", label: "Adaptive Curriculum", icon: Route, match: (p: string) => p.startsWith("/curriculum") },
+  { href: "/mentor", label: "AI Mentor", icon: BrainCircuit, match: (p: string) => p.startsWith("/mentor") },
   { href: "/history", label: "Practice History", icon: History, match: (p: string) => p.startsWith("/history") },
   { href: "/competency", label: "Competency Profile", icon: Radar, match: (p: string) => p.startsWith("/competency") },
 ];

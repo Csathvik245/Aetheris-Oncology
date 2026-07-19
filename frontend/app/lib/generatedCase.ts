@@ -94,10 +94,11 @@ const CASE_ROW_COLUMNS =
 
 // Despite the name (kept for the many existing call sites that gate
 // "fetch this case's packet from Supabase" on it), this also matches
-// faculty-authored case ids ("faculty-...") — both are `cases` table rows
-// fetched the same way, as opposed to a static id from mock.ts.
+// faculty-authored ("faculty-...") and case-variation ("var-...") ids —
+// all three are `cases` table rows fetched the same way, as opposed to a
+// static id from mock.ts.
 export function isGeneratedCaseId(id: string): boolean {
-  return id.startsWith("gen-") || id.startsWith("faculty-");
+  return id.startsWith("gen-") || id.startsWith("faculty-") || id.startsWith("var-");
 }
 
 export async function saveGeneratedCase(c: GeneratedCase) {
@@ -221,7 +222,7 @@ export function usePacket(caseId: string): PatientPacket {
 }
 
 export function generatedCaseToPacket(c: GeneratedCase): PatientPacket {
-  const shortId = c.id.replace(/^gen-/, "G-").replace(/^faculty-/, "F-").slice(0, 10);
+  const shortId = c.id.replace(/^gen-/, "G-").replace(/^faculty-/, "F-").replace(/^var-/, "V-").slice(0, 10);
   return {
     caseId: c.id,
     displayId: `Patient #${shortId}`,
