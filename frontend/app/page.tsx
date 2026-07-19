@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Play, ArrowRight, ClipboardCheck, Percent, Award } from "lucide-react";
 import { Shell } from "./components/shell/Shell";
@@ -8,6 +9,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { CompetencyRadar } from "./components/CompetencyRadar";
+import { LandingPage } from "./components/LandingPage";
 import { CASES, WORKSHEET_STEPS } from "./lib/mock";
 import { useAuth } from "./lib/supabase/AuthProvider";
 import { getGeneratedCase, isGeneratedCaseId } from "./lib/generatedCase";
@@ -32,7 +34,24 @@ async function draftCaseTitle(caseId: string): Promise<string> {
   return `Case ${caseId}`;
 }
 
-export default function DashboardPage() {
+export default function RootPage() {
+  const { user, profile, loading } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!loading && profile && profile.role !== "resident") {
+      router.replace("/faculty/dashboard");
+    }
+  }, [loading, profile, router]);
+
+  if (loading) return null;
+  if (!user) return <LandingPage />;
+  if (profile && profile.role !== "resident") return null;
+
+  return <ResidentDashboard />;
+}
+
+function ResidentDashboard() {
   const { profile } = useAuth();
   const [stats, setStats] = useState<DashboardStats>({ casesCompleted: 0, avgReasoningAgreement: null, advancedCasesCompleted: 0 });
   const [skills, setSkills] = useState<CompetencySkill[]>([]);

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { GraduationCap, ArrowRight, ArrowLeft, Search, Building2, Plus } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -29,6 +29,7 @@ interface InstitutionHit {
 
 export default function SignupPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [step, setStep] = useState<Step>("credentials");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -37,7 +38,10 @@ export default function SignupPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const [authRole, setAuthRole] = useState<AuthRole | null>(null);
+  const [authRole, setAuthRole] = useState<AuthRole | null>(() => {
+    const fromQuery = searchParams.get("role");
+    return fromQuery === "resident" || fromQuery === "faculty" ? fromQuery : null;
+  });
   const [displayRole, setDisplayRole] = useState("");
 
   const [institutionMode, setInstitutionMode] = useState<"join" | "create">("join");
@@ -300,7 +304,7 @@ export default function SignupPage() {
 
           <p className="mt-4 text-center text-[12.5px] text-muted-foreground">
             Already have an account?{" "}
-            <a href="/login" className="font-semibold text-navy hover:underline">
+            <a href={authRole ? `/login?role=${authRole}` : "/login"} className="font-semibold text-navy hover:underline">
               Sign in
             </a>
           </p>

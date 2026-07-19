@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { GraduationCap, ArrowRight } from "lucide-react";
+import { GraduationCap, Stethoscope, Building2, ArrowRight } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,6 +15,10 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+
+  const role = searchParams.get("role");
+  const isFaculty = role === "faculty";
+  const isResident = role === "resident";
 
   async function handleLogin() {
     setError(null);
@@ -41,14 +45,22 @@ export default function LoginPage() {
     <div className="flex min-h-screen items-center justify-center bg-background px-6 py-10">
       <div className="w-full max-w-md">
         <div className="mb-6 text-center">
-          <div className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-navy text-white">
-            <GraduationCap size={22} />
+          <div
+            className={`mx-auto grid h-12 w-12 place-items-center rounded-2xl text-white ${
+              isFaculty ? "bg-teal-deep" : "bg-navy"
+            }`}
+          >
+            {isFaculty ? <Building2 size={22} /> : isResident ? <Stethoscope size={22} /> : <GraduationCap size={22} />}
           </div>
           <h1 className="mt-4 font-heading text-[22px] font-bold tracking-tight text-foreground">
-            Sign in to Aetheris
+            {isFaculty ? "Faculty & Institution Sign In" : isResident ? "Resident Sign In" : "Sign in to Aetheris"}
           </h1>
           <p className="mt-2 text-[13.5px] leading-relaxed text-muted-foreground">
-            Oncology resident training simulator for your residency program.
+            {isFaculty
+              ? "See every resident's competency progression, review submissions, and build training cases."
+              : isResident
+                ? "Practice cases, take board exams, and get a persistent AI mentor."
+                : "Oncology resident training simulator for your residency program."}
           </p>
         </div>
 
@@ -76,17 +88,28 @@ export default function LoginPage() {
           <Button
             onClick={handleLogin}
             disabled={submitting}
-            className="mt-6 w-full gap-1.5 bg-navy py-5 text-white hover:bg-navy/90"
+            className={`mt-6 w-full gap-1.5 py-5 text-white ${isFaculty ? "bg-teal-deep hover:bg-teal-deep/90" : "bg-navy hover:bg-navy/90"}`}
           >
             {submitting ? "Signing in…" : "Sign In"} <ArrowRight size={15} />
           </Button>
           <p className="mt-4 text-center text-[12.5px] text-muted-foreground">
             New here?{" "}
-            <a href="/signup" className="font-semibold text-navy hover:underline">
+            <a
+              href={role ? `/signup?role=${role}` : "/signup"}
+              className="font-semibold text-navy hover:underline"
+            >
               Create an account
             </a>
           </p>
         </Card>
+
+        {!role && (
+          <p className="mt-4 text-center text-[12px] text-muted-foreground">
+            <a href="/" className="hover:underline">
+              ← Back to resident / faculty selection
+            </a>
+          </p>
+        )}
       </div>
     </div>
   );

@@ -18,7 +18,6 @@ import {
   BrainCircuit,
   ScrollText,
   Trophy,
-  Store,
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { initials } from "@/app/lib/profile";
@@ -31,7 +30,6 @@ const NAV = [
   { href: "/exams", label: "Board Exam Mode", icon: ScrollText, match: (p: string) => p.startsWith("/exams") },
   { href: "/curriculum", label: "Adaptive Curriculum", icon: Route, match: (p: string) => p.startsWith("/curriculum") },
   { href: "/mentor", label: "AI Mentor", icon: BrainCircuit, match: (p: string) => p.startsWith("/mentor") },
-  { href: "/marketplace", label: "Case Marketplace", icon: Store, match: (p: string) => p.startsWith("/marketplace") },
   { href: "/leaderboard", label: "Leaderboard", icon: Trophy, match: (p: string) => p.startsWith("/leaderboard") },
   { href: "/history", label: "Practice History", icon: History, match: (p: string) => p.startsWith("/history") },
   { href: "/competency", label: "Competency Profile", icon: Radar, match: (p: string) => p.startsWith("/competency") },
@@ -41,6 +39,7 @@ const FACULTY_NAV = [
   { href: "/faculty/dashboard", label: "Faculty Dashboard", icon: GraduationCap, match: (p: string) => p.startsWith("/faculty/dashboard") },
   { href: "/faculty/review", label: "Review Queue", icon: ClipboardCheck, match: (p: string) => p.startsWith("/faculty/review") },
   { href: "/faculty/cases/new", label: "Case Builder", icon: FilePlus2, match: (p: string) => p.startsWith("/faculty/cases") },
+  { href: "/leaderboard", label: "Leaderboard", icon: Trophy, match: (p: string) => p.startsWith("/leaderboard") },
   { href: "/faculty/billing", label: "Billing", icon: CreditCard, match: (p: string) => p.startsWith("/faculty/billing") },
 ];
 
@@ -66,7 +65,7 @@ export function Sidebar() {
         </div>
 
         <nav className="flex flex-col gap-1">
-          {NAV.map(({ href, label, icon: Icon, match }) => {
+          {(profile?.role === "resident" ? NAV : FACULTY_NAV).map(({ href, label, icon: Icon, match }) => {
             const active = match(pathname);
             return (
               <Link
@@ -84,31 +83,6 @@ export function Sidebar() {
             );
           })}
         </nav>
-
-        {profile && profile.role !== "resident" && (
-          <nav className="flex flex-col gap-1 border-t border-border pt-4">
-            <div className="mb-1 px-3 text-[10.5px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
-              Faculty
-            </div>
-            {FACULTY_NAV.map(({ href, label, icon: Icon, match }) => {
-              const active = match(pathname);
-              return (
-                <Link
-                  key={href}
-                  href={href}
-                  className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-[13.5px] transition-colors ${
-                    active
-                      ? "bg-teal-tint font-semibold text-teal-deep"
-                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                  }`}
-                >
-                  <Icon size={18} strokeWidth={2} />
-                  {label}
-                </Link>
-              );
-            })}
-          </nav>
-        )}
       </div>
 
       <div className="flex flex-col gap-3">
