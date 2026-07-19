@@ -26,6 +26,14 @@ frontend/.turbo/
 frontend/next-env.d.ts
 .eslintcache
 
+# ===== supabase CLI local state =====
+supabase/.temp/
+
+# ===== agent tooling (not project source) =====
+.claude/
+.agents/
+skills-lock.json
+
 # ===== logs / os / editor =====
 *.log
 npm-debug.log*

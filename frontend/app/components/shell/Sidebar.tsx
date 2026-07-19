@@ -1,8 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard,
   LibraryBig,
@@ -10,9 +9,15 @@ import {
   History,
   Radar,
   Settings,
+  GraduationCap,
+  ClipboardCheck,
+  FilePlus2,
+  CreditCard,
+  LogOut,
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { getProfile, initials, type Profile } from "@/app/lib/profile";
+import { initials } from "@/app/lib/profile";
+import { useAuth } from "@/app/lib/supabase/AuthProvider";
 
 const NAV = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard, match: (p: string) => p === "/" },
@@ -22,18 +27,23 @@ const NAV = [
   { href: "/competency", label: "Competency Profile", icon: Radar, match: (p: string) => p.startsWith("/competency") },
 ];
 
+const FACULTY_NAV = [
+  { href: "/faculty/dashboard", label: "Faculty Dashboard", icon: GraduationCap, match: (p: string) => p.startsWith("/faculty/dashboard") },
+  { href: "/faculty/review", label: "Review Queue", icon: ClipboardCheck, match: (p: string) => p.startsWith("/faculty/review") },
+  { href: "/faculty/cases/new", label: "Case Builder", icon: FilePlus2, match: (p: string) => p.startsWith("/faculty/cases") },
+  { href: "/faculty/billing", label: "Billing", icon: CreditCard, match: (p: string) => p.startsWith("/faculty/billing") },
+];
+
 export function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
   const settingsActive = pathname.startsWith("/settings");
-  const [profile, setProfile] = useState<Profile | null>(null);
+  const { profile, signOut } = useAuth();
 
-  useEffect(() => {
-    // Shell already gates on a profile existing before mounting Sidebar,
-    // so this is just the client-side read (localStorage isn't available
-    // during SSR).
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setProfile(getProfile());
-  }, []);
+  async function handleSignOut() {
+    await signOut();
+    router.replace("/login");
+  }
 
   return (
     <aside className="flex h-full w-60 shrink-0 flex-col justify-between border-r border-border bg-background px-4 py-5">
@@ -64,6 +74,31 @@ export function Sidebar() {
             );
           })}
         </nav>
+
+        {profile && profile.role !== "resident" && (
+          <nav className="flex flex-col gap-1 border-t border-border pt-4">
+            <div className="mb-1 px-3 text-[10.5px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+              Faculty
+            </div>
+            {FACULTY_NAV.map(({ href, label, icon: Icon, match }) => {
+              const active = match(pathname);
+              return (
+                <Link
+                  key={href}
+                  href={href}
+                  className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-[13.5px] transition-colors ${
+                    active
+                      ? "bg-teal-tint font-semibold text-teal-deep"
+                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                  }`}
+                >
+                  <Icon size={18} strokeWidth={2} />
+                  {label}
+                </Link>
+              );
+            })}
+          </nav>
+        )}
       </div>
 
       <div className="flex flex-col gap-3">
@@ -78,6 +113,13 @@ export function Sidebar() {
           <Settings size={18} strokeWidth={2} />
           Settings
         </Link>
+        <button
+          onClick={handleSignOut}
+          className="flex items-center gap-3 rounded-xl px-3 py-2 text-[13px] text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+        >
+          <LogOut size={18} strokeWidth={2} />
+          Sign Out
+        </button>
         {profile && (
           <Link
             href="/settings"
@@ -85,12 +127,14 @@ export function Sidebar() {
           >
             <Avatar className="h-9 w-9">
               <AvatarFallback className="bg-navy text-[12px] font-semibold text-white">
-                {initials(profile.name)}
+                {profile.avatar_initials ?? initials(profile.full_name)}
               </AvatarFallback>
             </Avatar>
             <div className="min-w-0">
-              <div className="truncate text-[13px] font-semibold text-foreground">{profile.name}</div>
-              <div className="truncate text-[11.5px] text-muted-foreground">{profile.role}</div>
+              <div className="truncate text-[13px] font-semibold text-foreground">{profile.full_name}</div>
+              <div className="truncate text-[11.5px] text-muted-foreground">
+                {profile.display_role ?? profile.role}
+              </div>
             </div>
           </Link>
         )}

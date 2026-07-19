@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { CompetencyRadar } from "./components/CompetencyRadar";
 import { CASES, WORKSHEET_STEPS } from "./lib/mock";
-import { getProfile, type Profile } from "./lib/profile";
+import { useAuth } from "./lib/supabase/AuthProvider";
 import { getGeneratedCase, isGeneratedCaseId } from "./lib/generatedCase";
 import {
   computeDashboardStats,
@@ -33,7 +33,7 @@ function draftCaseTitle(caseId: string): string {
 }
 
 export default function DashboardPage() {
-  const [profile, setProfile] = useState<Profile | null>(null);
+  const { profile } = useAuth();
   const [stats, setStats] = useState<DashboardStats>({ casesCompleted: 0, avgReasoningAgreement: null, advancedCasesCompleted: 0 });
   const [skills, setSkills] = useState<CompetencySkill[]>([]);
   const [streak, setStreak] = useState(0);
@@ -43,7 +43,6 @@ export default function DashboardPage() {
   useEffect(() => {
     // One-shot bootstrap read from localStorage (unavailable during SSR).
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    setProfile(getProfile());
     setStats(computeDashboardStats());
     setSkills(computeCompetencyProfile());
     setStreak(computeStreakDays());
@@ -71,7 +70,7 @@ export default function DashboardPage() {
     <Shell streakDays={streak > 0 ? streak : undefined}>
       <div className="mx-auto max-w-6xl px-6 py-8">
         <h1 className="font-heading text-[26px] font-bold tracking-tight text-foreground">
-          Welcome{profile ? `, ${profile.name}` : ""}.
+          Welcome{profile ? `, ${profile.full_name.split(" ")[0]}` : ""}.
         </h1>
         <p className="mt-1 text-[14px] text-muted-foreground">
           {stats.casesCompleted > 0

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Inter } from "next/font/google";
+import { AuthProvider } from "./lib/supabase/AuthProvider";
 import "./globals.css";
 
 const geist = Geist({
@@ -40,7 +41,7 @@ export default function RootLayout({
         />
       </head>
       <body className="h-full bg-background font-sans text-foreground antialiased">
-        {children}
+        <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
   );

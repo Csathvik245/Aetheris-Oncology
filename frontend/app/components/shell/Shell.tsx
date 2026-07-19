@@ -1,10 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useAuth } from "../../lib/supabase/AuthProvider";
 import { Sidebar } from "./Sidebar";
 import { TopBar } from "./TopBar";
-import { getProfile } from "../../lib/profile";
 
 export function Shell({
   children,
@@ -15,19 +13,12 @@ export function Shell({
   breadcrumb?: string;
   streakDays?: number;
 }) {
-  const router = useRouter();
-  const [ready, setReady] = useState(false);
+  // proxy.ts already redirects unauthenticated requests to /login before
+  // this ever renders — `loading` here just covers the brief client-side
+  // hydration window while the profile row is fetched.
+  const { loading, profile } = useAuth();
 
-  useEffect(() => {
-    if (getProfile()) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setReady(true);
-    } else {
-      router.replace("/onboarding");
-    }
-  }, [router]);
-
-  if (!ready) return null;
+  if (loading || !profile) return null;
 
   return (
     <div className="flex h-screen w-full bg-background text-foreground">

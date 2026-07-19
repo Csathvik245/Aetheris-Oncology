@@ -14,7 +14,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { getProfile, saveProfile, type Profile } from "../lib/profile";
+import { useAuth } from "../lib/supabase/AuthProvider";
+import { createClient } from "../lib/supabase/client";
 import { getPreferences, savePreferences, type Preferences } from "../lib/preferences";
 import { resetAllProgress } from "../lib/session";
 
@@ -37,28 +38,27 @@ const MONITORING_OPTIONS: { value: Preferences["defaultMonitoring"]; label: stri
 
 export default function SettingsPage() {
   const router = useRouter();
+  const { profile, refreshProfile } = useAuth();
   const [name, setName] = useState("");
   const [role, setRole] = useState("");
   const [profileSaved, setProfileSaved] = useState(false);
   const [prefs, setPrefs] = useState<Preferences>({ defaultCaseDifficulty: "All", defaultMonitoring: "weekly-cbc" });
 
   useEffect(() => {
-    const p = getProfile();
-    if (p) {
-      // One-shot bootstrap read from localStorage (unavailable during SSR).
+    if (profile) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
-      setName(p.name);
-      setRole(p.role);
+      setName(profile.full_name);
+      setRole(profile.display_role ?? "");
     }
     setPrefs(getPreferences());
-  }, []);
+  }, [profile]);
 
-  function saveProfileChanges() {
+  async function saveProfileChanges() {
     const trimmed = name.trim();
-    if (!trimmed || !role) return;
-    const existing = getProfile();
-    const profile: Profile = { name: trimmed, role, createdAt: existing?.createdAt ?? new Date().toISOString() };
-    saveProfile(profile);
+    if (!trimmed || !role || !profile) return;
+    const supabase = createClient();
+    await supabase.from("profiles").update({ full_name: trimmed, display_role: role }).eq("id", profile.id);
+    await refreshProfile();
     setProfileSaved(true);
     setTimeout(() => setProfileSaved(false), 1800);
   }
@@ -83,7 +83,7 @@ export default function SettingsPage() {
       <div className="mx-auto max-w-2xl px-6 py-8">
         <h1 className="font-heading text-[24px] font-bold tracking-tight text-foreground">Settings</h1>
         <p className="mt-1 text-[13.5px] text-muted-foreground">
-          Everything here is stored on this device only — no account server.
+          {profile?.institution?.name ? `Signed in · ${profile.institution.name}` : "Manage your Aetheris account."}
         </p>
 
         <Card className="mt-6 p-6">
