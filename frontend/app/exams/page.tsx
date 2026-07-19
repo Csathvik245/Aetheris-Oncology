@@ -2,10 +2,11 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ScrollText, Clock, ListChecks } from "lucide-react";
+import { ScrollText, Clock, ListChecks, Settings2 } from "lucide-react";
 import { Shell } from "../components/shell/Shell";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { createClient } from "../lib/supabase/client";
 
 interface ExamSummary {
@@ -61,10 +62,15 @@ export default function ExamsPage() {
           <span className="grid h-9 w-9 place-items-center rounded-xl bg-navy text-white">
             <ScrollText size={17} />
           </span>
-          <div>
+          <div className="flex-1">
             <h1 className="font-heading text-[24px] font-bold tracking-tight text-foreground">Board Exam Mode</h1>
             <p className="text-[13px] text-muted-foreground">Timed, no-hints. Full explanations only after you submit.</p>
           </div>
+          <Link href="/exams/custom">
+            <Button variant="outline" className="gap-1.5">
+              <Settings2 size={14} /> Build Your Own Exam
+            </Button>
+          </Link>
         </div>
 
         {!loading && exams.length === 0 && (

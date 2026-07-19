@@ -1,0 +1,330 @@
+{
+  "exams": [
+    {
+      "title": "Breast Cancer — HER2 & Hormone Receptor-Directed Therapy",
+      "specialtyTag": "Breast Cancer",
+      "timeLimitMinutes": 25,
+      "questions": [
+        {
+          "stem": "A 52-year-old with newly diagnosed invasive ductal carcinoma has ER+/PR+/HER2-negative disease, stage II, node-negative. Which class of therapy forms the backbone of adjuvant treatment?",
+          "choices": [
+            { "key": "A", "label": "Endocrine therapy (e.g. tamoxifen or an aromatase inhibitor)" },
+            { "key": "B", "label": "Trastuzumab monotherapy" },
+            { "key": "C", "label": "Single-agent immunotherapy" },
+            { "key": "D", "label": "PARP inhibitor monotherapy" }
+          ],
+          "correctChoice": "A",
+          "explanation": "For hormone receptor-positive, HER2-negative early breast cancer, adjuvant endocrine therapy (tamoxifen premenopausal, aromatase inhibitors postmenopausal) is the backbone of treatment, typically for 5-10 years. HER2-targeted therapy is reserved for HER2-positive disease.",
+          "citation": "NCCN Breast Cancer Guidelines",
+          "difficulty": "Beginner"
+        },
+        {
+          "stem": "A patient with HER2-positive metastatic breast cancer is starting first-line therapy. Which regimen is standard based on the CLEOPATRA trial?",
+          "choices": [
+            { "key": "A", "label": "Trastuzumab + pertuzumab + docetaxel" },
+            { "key": "B", "label": "Tamoxifen alone" },
+            { "key": "C", "label": "Single-agent capecitabine" },
+            { "key": "D", "label": "Letrozole alone" }
+          ],
+          "correctChoice": "A",
+          "explanation": "The CLEOPATRA trial established dual HER2 blockade with trastuzumab + pertuzumab plus a taxane (docetaxel) as standard first-line therapy for HER2-positive metastatic breast cancer, significantly improving overall survival versus trastuzumab + docetaxel alone.",
+          "citation": "CLEOPATRA trial",
+          "difficulty": "Beginner"
+        },
+        {
+          "stem": "A patient on trastuzumab develops a decline in left ventricular ejection fraction from 60% to 45% on routine monitoring, without symptoms. What is the most appropriate next step?",
+          "choices": [
+            { "key": "A", "label": "Hold trastuzumab, initiate cardiology evaluation, and consider cardioprotective therapy before resuming" },
+            { "key": "B", "label": "Continue trastuzumab at the same dose with no changes" },
+            { "key": "C", "label": "Immediately and permanently discontinue all future HER2-directed therapy" },
+            { "key": "D", "label": "Increase the trastuzumab dose to compensate" }
+          ],
+          "correctChoice": "A",
+          "explanation": "Trastuzumab-associated cardiotoxicity is often reversible. Standard practice is to hold the drug, obtain cardiology evaluation, consider ACE inhibitors/beta-blockers, and reassess LVEF before deciding whether to resume — permanent discontinuation is not automatic for an asymptomatic, moderate decline.",
+          "citation": "NCCN Breast Cancer Guidelines — cardiac monitoring",
+          "difficulty": "Intermediate"
+        },
+        {
+          "stem": "A 45-year-old with triple-negative breast cancer is found to carry a germline BRCA1 mutation. Which additional systemic therapy option becomes relevant?",
+          "choices": [
+            { "key": "A", "label": "PARP inhibitor therapy (e.g. olaparib)" },
+            { "key": "B", "label": "Tamoxifen" },
+            { "key": "C", "label": "Trastuzumab" },
+            { "key": "D", "label": "Letrozole" }
+          ],
+          "correctChoice": "A",
+          "explanation": "PARP inhibitors exploit synthetic lethality in BRCA-mutant tumors via impaired homologous recombination DNA repair. Olaparib and talazoparib are approved for BRCA-mutant HER2-negative breast cancer, including triple-negative disease, based on trials like OlympiAD.",
+          "citation": "OlympiAD trial",
+          "difficulty": "Intermediate"
+        },
+        {
+          "stem": "A patient with ER+/HER2-negative metastatic breast cancer progresses on an aromatase inhibitor. Which class of agents, added to endocrine therapy, is standard next-line based on CDK4/6 pathway biology?",
+          "choices": [
+            { "key": "A", "label": "CDK4/6 inhibitors (e.g. palbociclib, ribociclib, abemaciclib)" },
+            { "key": "B", "label": "EGFR tyrosine kinase inhibitors" },
+            { "key": "C", "label": "BRAF inhibitors" },
+            { "key": "D", "label": "Anti-CD20 monoclonal antibodies" }
+          ],
+          "correctChoice": "A",
+          "explanation": "CDK4/6 inhibitors combined with endocrine therapy (aromatase inhibitor or fulvestrant) are standard for ER+/HER2-negative metastatic breast cancer, substantially improving progression-free survival by blocking cell-cycle progression downstream of estrogen receptor signaling.",
+          "citation": "PALOMA, MONALEESA, MONARCH trial programs",
+          "difficulty": "Intermediate"
+        },
+        {
+          "stem": "A patient develops grade 3 diarrhea while on a CDK4/6 inhibitor (abemaciclib). What is the most appropriate management?",
+          "choices": [
+            { "key": "A", "label": "Hold the drug, treat with antidiarrheals, and resume at a reduced dose once resolved to grade ≤1" },
+            { "key": "B", "label": "Continue at full dose without any intervention" },
+            { "key": "C", "label": "Switch immediately to chemotherapy" },
+            { "key": "D", "label": "No dose modification is ever appropriate for CDK4/6 inhibitor toxicity" }
+          ],
+          "correctChoice": "A",
+          "explanation": "Diarrhea is a common, dose-related toxicity of abemaciclib. Standard management follows a hold-treat-resume-at-reduced-dose algorithm for grade ≥3 or persistent grade 2 diarrhea, rather than outright discontinuation.",
+          "citation": "NCCN Breast Cancer Guidelines — toxicity management",
+          "difficulty": "Intermediate"
+        },
+        {
+          "stem": "A patient with HER2-positive metastatic breast cancer progresses after trastuzumab, pertuzumab, and a taxane. Which antibody-drug conjugate is now standard second-line therapy based on the DESTINY-Breast03 trial?",
+          "choices": [
+            { "key": "A", "label": "Trastuzumab deruxtecan" },
+            { "key": "B", "label": "Tamoxifen" },
+            { "key": "C", "label": "Single-agent paclitaxel" },
+            { "key": "D", "label": "Anastrozole" }
+          ],
+          "correctChoice": "A",
+          "explanation": "DESTINY-Breast03 demonstrated superior efficacy of trastuzumab deruxtecan (T-DXd) over trastuzumab emtansine (T-DM1) in the second-line setting, establishing T-DXd as the preferred second-line antibody-drug conjugate for HER2-positive metastatic breast cancer.",
+          "citation": "DESTINY-Breast03 trial",
+          "difficulty": "Advanced"
+        },
+        {
+          "stem": "A patient on trastuzumab deruxtecan develops new dry cough and dyspnea, with ground-glass opacities on CT. What must be urgently excluded?",
+          "choices": [
+            { "key": "A", "label": "Drug-induced interstitial lung disease (ILD) / pneumonitis" },
+            { "key": "B", "label": "Simple viral upper respiratory infection requiring no workup" },
+            { "key": "C", "label": "Musculoskeletal chest wall pain" },
+            { "key": "D", "label": "Normal expected side effect requiring no action" }
+          ],
+          "correctChoice": "A",
+          "explanation": "Trastuzumab deruxtecan carries a boxed warning for interstitial lung disease/pneumonitis, which can be severe or fatal. New respiratory symptoms require urgent evaluation, often holding the drug and initiating corticosteroids if ILD is confirmed.",
+          "citation": "NCCN Breast Cancer Guidelines — ADC toxicity",
+          "difficulty": "Advanced"
+        },
+        {
+          "stem": "A patient with ER+/HER2-negative metastatic breast cancer progresses on a CDK4/6 inhibitor plus aromatase inhibitor. Repeat ctDNA testing reveals an ESR1 mutation. What is the most appropriate next step?",
+          "choices": [
+            { "key": "A", "label": "Switch to an oral selective estrogen receptor degrader (SERD) effective against ESR1-mutant disease, such as elacestrant" },
+            { "key": "B", "label": "Continue the same aromatase inhibitor indefinitely" },
+            { "key": "C", "label": "ESR1 mutation status has no bearing on treatment selection" },
+            { "key": "D", "label": "Immediately start cytotoxic chemotherapy as the only option" }
+          ],
+          "correctChoice": "A",
+          "explanation": "ESR1 mutations are a common mechanism of acquired resistance to aromatase inhibitors, conferring ligand-independent receptor activation. Elacestrant, an oral SERD, is approved specifically for ESR1-mutant, endocrine-resistant metastatic breast cancer based on the EMERALD trial.",
+          "citation": "EMERALD trial",
+          "difficulty": "Advanced"
+        },
+        {
+          "stem": "Which statement about PD-L1 testing in triple-negative breast cancer (TNBC) is most accurate?",
+          "choices": [
+            { "key": "A", "label": "PD-L1 status can determine eligibility for pembrolizumab in combination with chemotherapy in the metastatic/neoadjuvant setting" },
+            { "key": "B", "label": "PD-L1 testing is irrelevant in TNBC" },
+            { "key": "C", "label": "PD-L1 positivity mandates endocrine therapy instead of immunotherapy" },
+            { "key": "D", "label": "PD-L1 testing is only relevant for HER2-positive disease" }
+          ],
+          "correctChoice": "A",
+          "explanation": "In TNBC, PD-L1 combined positive score (CPS) testing determines eligibility for pembrolizumab plus chemotherapy in the metastatic setting (KEYNOTE-355); in the neoadjuvant/early-stage setting (KEYNOTE-522), pembrolizumab is used regardless of PD-L1 status.",
+          "citation": "KEYNOTE-355, KEYNOTE-522 trials",
+          "difficulty": "Advanced"
+        },
+        {
+          "stem": "A patient with early-stage HER2-positive breast cancer completes neoadjuvant chemotherapy plus trastuzumab/pertuzumab but has residual invasive disease at surgery. What is the appropriate adjuvant approach based on the KATHERINE trial?",
+          "choices": [
+            { "key": "A", "label": "Switch to adjuvant trastuzumab emtansine (T-DM1) instead of continuing trastuzumab alone" },
+            { "key": "B", "label": "No further therapy is needed after surgery" },
+            { "key": "C", "label": "Switch to tamoxifen alone regardless of hormone receptor status" },
+            { "key": "D", "label": "Continue the identical neoadjuvant regimen unchanged" }
+          ],
+          "correctChoice": "A",
+          "explanation": "The KATHERINE trial showed that patients with residual invasive disease after HER2-targeted neoadjuvant therapy have improved invasive disease-free survival with adjuvant T-DM1 compared to continuing trastuzumab alone — a practice-changing escalation strategy for incomplete pathologic response.",
+          "citation": "KATHERINE trial",
+          "difficulty": "Advanced"
+        },
+        {
+          "stem": "A 68-year-old with ER+/HER2-negative metastatic breast cancer and visceral crisis (extensive symptomatic liver metastases) needs rapid disease control. Which approach is most appropriate?",
+          "choices": [
+            { "key": "A", "label": "Cytotoxic chemotherapy for rapid cytoreduction, given the urgency of visceral crisis" },
+            { "key": "B", "label": "Endocrine therapy alone, given its favorable toxicity profile" },
+            { "key": "C", "label": "Watchful waiting" },
+            { "key": "D", "label": "Radiation therapy to the liver as the sole treatment" }
+          ],
+          "correctChoice": "A",
+          "explanation": "In visceral crisis — rapidly progressive, symptomatic visceral disease threatening organ function — chemotherapy is preferred over endocrine therapy for its faster onset of response, even in hormone receptor-positive disease, to achieve rapid disease control.",
+          "citation": "NCCN/ESMO Breast Cancer Guidelines — visceral crisis management",
+          "difficulty": "Advanced"
+        }
+      ]
+    },
+    {
+      "title": "Acute Myeloid Leukemia — FLT3 & NPM1-Directed Therapy",
+      "specialtyTag": "AML",
+      "timeLimitMinutes": 25,
+      "questions": [
+        {
+          "stem": "A 58-year-old with newly diagnosed AML has a FLT3-ITD mutation. Which agent, added to standard induction chemotherapy, is supported by the RATIFY trial?",
+          "choices": [
+            { "key": "A", "label": "Midostaurin" },
+            { "key": "B", "label": "Tamoxifen" },
+            { "key": "C", "label": "Trastuzumab" },
+            { "key": "D", "label": "Rituximab" }
+          ],
+          "correctChoice": "A",
+          "explanation": "The RATIFY trial demonstrated improved overall survival when midostaurin, a multi-kinase FLT3 inhibitor, was added to standard 7+3 induction and consolidation chemotherapy in FLT3-mutated AML, establishing it as standard of care.",
+          "citation": "RATIFY trial",
+          "difficulty": "Beginner"
+        },
+        {
+          "stem": "Which mutation, when present without FLT3-ITD, is generally associated with a favorable prognosis in AML?",
+          "choices": [
+            { "key": "A", "label": "NPM1 mutation (in the absence of FLT3-ITD or with low allelic ratio)" },
+            { "key": "B", "label": "TP53 mutation" },
+            { "key": "C", "label": "Complex karyotype" },
+            { "key": "D", "label": "FLT3-ITD with high allelic ratio" }
+          ],
+          "correctChoice": "A",
+          "explanation": "NPM1-mutated AML without FLT3-ITD (or with a low FLT3-ITD allelic ratio) is classified as favorable-risk per ELN criteria, generally associated with better response to chemotherapy and improved outcomes compared to FLT3-ITD-high or TP53-mutated disease.",
+          "citation": "European LeukemiaNet (ELN) risk stratification",
+          "difficulty": "Beginner"
+        },
+        {
+          "stem": "A patient with AML in first complete remission after induction has measurable residual disease (MRD) detected by NPM1-based molecular testing. What is the clinical significance?",
+          "choices": [
+            { "key": "A", "label": "Persistent MRD is associated with higher relapse risk and may prompt consideration of consolidation intensification or allogeneic transplant" },
+            { "key": "B", "label": "MRD positivity has no prognostic significance in NPM1-mutated AML" },
+            { "key": "C", "label": "MRD testing is only relevant prior to induction, never after" },
+            { "key": "D", "label": "A positive MRD result mandates immediate discontinuation of all therapy" }
+          ],
+          "correctChoice": "A",
+          "explanation": "NPM1 mutation is an excellent MRD marker due to its stability and sensitivity of molecular assays. Persistent MRD positivity after consolidation is a strong predictor of relapse and often informs decisions about transplant versus continued chemotherapy consolidation.",
+          "citation": "NCCN AML Guidelines — MRD monitoring",
+          "difficulty": "Intermediate"
+        },
+        {
+          "stem": "A 72-year-old with newly diagnosed AML is deemed unfit for intensive induction chemotherapy. Which regimen is standard based on the VIALE-A trial?",
+          "choices": [
+            { "key": "A", "label": "Venetoclax + azacitidine" },
+            { "key": "B", "label": "Standard 7+3 intensive induction" },
+            { "key": "C", "label": "Single-agent hydroxyurea only" },
+            { "key": "D", "label": "Tamoxifen" }
+          ],
+          "correctChoice": "A",
+          "explanation": "VIALE-A established venetoclax plus azacitidine as standard first-line therapy for older/unfit AML patients ineligible for intensive chemotherapy, showing significantly improved response rates and overall survival compared to azacitidine alone.",
+          "citation": "VIALE-A trial",
+          "difficulty": "Intermediate"
+        },
+        {
+          "stem": "A patient starting venetoclax for AML is at risk for tumor lysis syndrome. What is the most appropriate preventive strategy?",
+          "choices": [
+            { "key": "A", "label": "Gradual dose ramp-up with prophylactic hydration and uric acid-lowering therapy, plus close electrolyte monitoring" },
+            { "key": "B", "label": "Start at the full target dose immediately with no monitoring" },
+            { "key": "C", "label": "Tumor lysis syndrome is not a concern with venetoclax" },
+            { "key": "D", "label": "Avoid all hydration to reduce fluid overload risk" }
+          ],
+          "correctChoice": "A",
+          "explanation": "Venetoclax carries significant tumor lysis syndrome risk, especially with high disease burden. Standard practice is a stepwise dose ramp-up (e.g. 100mg → 200mg → 400mg over days) with prophylactic hydration, allopurinol, and close monitoring of potassium, phosphate, and uric acid.",
+          "citation": "NCCN AML Guidelines — venetoclax initiation protocol",
+          "difficulty": "Intermediate"
+        },
+        {
+          "stem": "A patient with relapsed FLT3-ITD-mutated AML after midostaurin-containing induction is being considered for salvage therapy. Which FLT3 inhibitor is specifically approved for relapsed/refractory FLT3-mutated AML based on the ADMIRAL trial?",
+          "choices": [
+            { "key": "A", "label": "Gilteritinib" },
+            { "key": "B", "label": "Erlotinib" },
+            { "key": "C", "label": "Imatinib" },
+            { "key": "D", "label": "Vemurafenib" }
+          ],
+          "correctChoice": "A",
+          "explanation": "The ADMIRAL trial demonstrated improved overall survival with gilteritinib, a selective and potent FLT3 inhibitor, compared to salvage chemotherapy in relapsed/refractory FLT3-mutated AML, establishing it as standard salvage therapy in this setting.",
+          "citation": "ADMIRAL trial",
+          "difficulty": "Advanced"
+        },
+        {
+          "stem": "A patient with FLT3-ITD AML achieves complete remission after induction with midostaurin. Which consolidation strategy is most strongly considered given FLT3-ITD's adverse prognostic impact?",
+          "choices": [
+            { "key": "A", "label": "Allogeneic hematopoietic stem cell transplantation in first complete remission" },
+            { "key": "B", "label": "No further therapy is needed after achieving remission" },
+            { "key": "C", "label": "Oral maintenance chemotherapy alone is always sufficient" },
+            { "key": "D", "label": "Observation without any consolidation" }
+          ],
+          "correctChoice": "A",
+          "explanation": "FLT3-ITD, particularly with high allelic ratio, confers adverse risk per ELN criteria. Allogeneic transplant in first complete remission is generally recommended for these patients when a suitable donor and adequate performance status exist, given high relapse risk with chemotherapy alone.",
+          "citation": "NCCN AML Guidelines — risk-adapted consolidation",
+          "difficulty": "Advanced"
+        },
+        {
+          "stem": "A patient with AML develops differentiation syndrome (fever, dyspnea, pulmonary infiltrates, weight gain) while on a targeted agent. Which class of AML-directed therapy is classically associated with this syndrome?",
+          "choices": [
+            { "key": "A", "label": "IDH1/IDH2 inhibitors (and historically, ATRA in APL)" },
+            { "key": "B", "label": "Anthracyclines" },
+            { "key": "C", "label": "Cytarabine" },
+            { "key": "D", "label": "Hydroxyurea" }
+          ],
+          "correctChoice": "A",
+          "explanation": "Differentiation syndrome is classically associated with ATRA/arsenic trioxide in acute promyelocytic leukemia, but is also seen with IDH1/IDH2 inhibitors (ivosidenib, enasidenib) in IDH-mutant AML. Management involves corticosteroids and, if severe, holding the differentiating agent.",
+          "citation": "NCCN AML Guidelines — differentiation syndrome management",
+          "difficulty": "Advanced"
+        },
+        {
+          "stem": "Which testing modality is most appropriate to detect FLT3-ITD, FLT3-TKD, NPM1, and other actionable mutations at AML diagnosis?",
+          "choices": [
+            { "key": "A", "label": "Next-generation sequencing (NGS) molecular panel alongside conventional karyotype/cytogenetics" },
+            { "key": "B", "label": "Peripheral blood smear alone" },
+            { "key": "C", "label": "Chest X-ray" },
+            { "key": "D", "label": "Serum protein electrophoresis" }
+          ],
+          "correctChoice": "A",
+          "explanation": "Comprehensive molecular testing via NGS panel (covering FLT3, NPM1, IDH1/2, TP53, and others) combined with conventional cytogenetics is standard at AML diagnosis, since ELN risk stratification and targeted therapy eligibility both depend on this combined molecular/cytogenetic profile.",
+          "citation": "NCCN AML Guidelines — diagnostic workup",
+          "difficulty": "Intermediate"
+        },
+        {
+          "stem": "A patient with newly diagnosed AML and an IDH2 mutation, deemed unfit for intensive chemotherapy, is being considered for targeted monotherapy. Which agent is appropriate?",
+          "choices": [
+            { "key": "A", "label": "Enasidenib" },
+            { "key": "B", "label": "Osimertinib" },
+            { "key": "C", "label": "Dabrafenib" },
+            { "key": "D", "label": "Palbociclib" }
+          ],
+          "correctChoice": "A",
+          "explanation": "Enasidenib is an oral IDH2 inhibitor approved for IDH2-mutant relapsed/refractory AML and used in unfit patients with IDH2-mutant disease, promoting differentiation of leukemic blasts by restoring normal cellular metabolism disrupted by the mutant enzyme.",
+          "citation": "NCCN AML Guidelines — IDH-mutant AML",
+          "difficulty": "Advanced"
+        },
+        {
+          "stem": "A patient with core-binding factor AML (e.g. inv(16) or t(8;21)) is being risk-stratified. How does this cytogenetic finding generally influence prognosis?",
+          "choices": [
+            { "key": "A", "label": "It is generally associated with favorable-risk disease and better response to chemotherapy, though KIT co-mutations can modify this" },
+            { "key": "B", "label": "It always confers the worst possible prognosis regardless of other factors" },
+            { "key": "C", "label": "Cytogenetics have no bearing on AML prognosis" },
+            { "key": "D", "label": "It mandates immediate hospice referral" }
+          ],
+          "correctChoice": "A",
+          "explanation": "Core-binding factor AML (inv(16)/CBFB-MYH11 or t(8;21)/RUNX1-RUNX1T1) is classified as favorable-risk per ELN criteria, generally responding well to high-dose cytarabine consolidation, though co-occurring KIT mutations may modify prognosis and are an area of ongoing risk-refinement.",
+          "citation": "European LeukemiaNet (ELN) risk stratification",
+          "difficulty": "Intermediate"
+        },
+        {
+          "stem": "A patient with relapsed AML has a TP53 mutation identified on NGS panel. What is the most accurate statement about this finding?",
+          "choices": [
+            { "key": "A", "label": "TP53-mutated AML is associated with adverse prognosis and relative chemoresistance, often prompting consideration of clinical trials or novel agents over standard intensive chemotherapy" },
+            { "key": "B", "label": "TP53 mutations are a favorable prognostic marker in AML" },
+            { "key": "C", "label": "TP53 status has no impact on treatment selection" },
+            { "key": "D", "label": "TP53-mutated AML always responds well to standard 7+3 induction" }
+          ],
+          "correctChoice": "A",
+          "explanation": "TP53-mutated AML is classified as adverse-risk per ELN criteria and is characteristically chemoresistant with poor outcomes on standard intensive chemotherapy, making clinical trial enrollment (novel agents, combination approaches) a guideline-supported consideration.",
+          "citation": "NCCN AML Guidelines — adverse-risk disease",
+          "difficulty": "Advanced"
+        }
+      ]
+    }
+  ]
+}

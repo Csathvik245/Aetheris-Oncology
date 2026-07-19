@@ -1,13 +1,14 @@
-// One-off seed script: inserts the 2 hand-written board exams (global,
+// One-off seed script: inserts hand-written board exams (global,
 // institution_id=null) if they don't already exist by title.
-// Run: node scripts/seed-exams.mjs
+// Run: node scripts/seed-exams.mjs [data-file.json]  (defaults to exam-data.json)
 import { createClient } from "@supabase/supabase-js";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const data = JSON.parse(readFileSync(path.join(__dirname, "exam-data.json"), "utf-8"));
+const dataFile = process.argv[2] || "exam-data.json";
+const data = JSON.parse(readFileSync(path.join(__dirname, dataFile), "utf-8"));
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -45,6 +46,7 @@ for (const exam of data.exams) {
     correct_choice: q.correctChoice,
     explanation: q.explanation,
     citation: q.citation ?? null,
+    difficulty: q.difficulty ?? null,
   }));
 
   const { error: questionsError } = await supabase.from("exam_questions").insert(questionRows);
