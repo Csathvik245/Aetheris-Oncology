@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { BrainCircuit, Send } from "lucide-react";
 import { Shell } from "../components/shell/Shell";
 import { Card } from "@/components/ui/card";
@@ -21,9 +22,10 @@ interface MentorNote {
 }
 
 export default function MentorPage() {
+  const searchParams = useSearchParams();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [notes, setNotes] = useState<MentorNote[]>([]);
-  const [input, setInput] = useState("");
+  const [input, setInput] = useState(() => searchParams.get("prompt") ?? "");
   const [pending, setPending] = useState(false);
   const scrollRef = useRef<HTMLDivElement | null>(null);
 

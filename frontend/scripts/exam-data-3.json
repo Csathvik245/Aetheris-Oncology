@@ -1,0 +1,354 @@
+{
+  "exams": [
+    {
+      "title": "Colorectal Cancer — MSI-H & BRAF-Directed Therapy",
+      "specialtyTag": "Colorectal Cancer",
+      "timeLimitMinutes": 25,
+      "questions": [
+        {
+          "stem": "A 61-year-old with newly diagnosed metastatic colorectal cancer has MSI-high (MSI-H) / mismatch repair-deficient (dMMR) tumor testing. Which first-line therapy is supported by the KEYNOTE-177 trial?",
+          "choices": [
+            { "key": "A", "label": "Pembrolizumab monotherapy" },
+            { "key": "B", "label": "FOLFOX alone" },
+            { "key": "C", "label": "Cetuximab monotherapy" },
+            { "key": "D", "label": "Single-agent capecitabine" }
+          ],
+          "correctChoice": "A",
+          "explanation": "KEYNOTE-177 demonstrated superior progression-free survival with first-line pembrolizumab monotherapy compared to standard chemotherapy in MSI-H/dMMR metastatic colorectal cancer, establishing immunotherapy as the preferred first-line approach in this biomarker-defined subgroup.",
+          "citation": "KEYNOTE-177 trial",
+          "difficulty": "Beginner",
+          "topicTags": ["first-line-therapy", "biomarker-testing"]
+        },
+        {
+          "stem": "A patient with metastatic colorectal cancer and a RAS wild-type, left-sided tumor is being considered for first-line therapy. Which targeted agent, added to chemotherapy, is preferred based on RAS/sidedness data?",
+          "choices": [
+            { "key": "A", "label": "An anti-EGFR antibody (e.g. cetuximab or panitumumab)" },
+            { "key": "B", "label": "Bevacizumab is always superior regardless of sidedness or RAS status" },
+            { "key": "C", "label": "Trastuzumab regardless of HER2 status" },
+            { "key": "D", "label": "Single-agent immunotherapy regardless of MSI status" }
+          ],
+          "correctChoice": "A",
+          "explanation": "In RAS wild-type, left-sided metastatic colorectal cancer, anti-EGFR therapy combined with chemotherapy is generally preferred over bevacizumab-based regimens, based on subgroup analyses showing improved outcomes with EGFR blockade in this population — RAS mutation status must be confirmed before considering anti-EGFR therapy, as it is ineffective (and per some data harmful) in RAS-mutant disease.",
+          "citation": "NCCN Colon Cancer Guidelines — biomarker-directed therapy",
+          "difficulty": "Intermediate",
+          "topicTags": ["first-line-therapy", "biomarker-testing"]
+        },
+        {
+          "stem": "A patient with metastatic colorectal cancer is found to have a BRAF V600E mutation. Which combination regimen is standard second-line therapy based on the BEACON trial?",
+          "choices": [
+            { "key": "A", "label": "Encorafenib + cetuximab" },
+            { "key": "B", "label": "Single-agent FOLFIRI" },
+            { "key": "C", "label": "Trastuzumab + pertuzumab" },
+            { "key": "D", "label": "Single-agent bevacizumab" }
+          ],
+          "correctChoice": "A",
+          "explanation": "The BEACON trial established encorafenib (BRAF inhibitor) plus cetuximab (anti-EGFR) as standard therapy for BRAF V600E-mutant metastatic colorectal cancer after progression on first-line therapy — BRAF-mutant colorectal cancer requires dual pathway blockade (unlike melanoma) due to EGFR-mediated feedback reactivation.",
+          "citation": "BEACON CRC trial",
+          "difficulty": "Advanced",
+          "topicTags": ["salvage-therapy", "resistance-mechanisms"]
+        },
+        {
+          "stem": "A patient on anti-EGFR therapy (cetuximab) for colorectal cancer develops a grade 3 acneiform rash. What is the most appropriate management?",
+          "choices": [
+            { "key": "A", "label": "Dose interruption/reduction with topical or oral antibiotics, without necessarily discontinuing therapy" },
+            { "key": "B", "label": "Immediately and permanently discontinue all future anti-EGFR therapy" },
+            { "key": "C", "label": "Continue at full dose with no intervention" },
+            { "key": "D", "label": "Switch immediately to immunotherapy regardless of MSI status" }
+          ],
+          "correctChoice": "A",
+          "explanation": "Acneiform rash is an on-target, dose-related toxicity of anti-EGFR therapy and does not require permanent discontinuation — standard management includes dose modification and topical/oral antibiotics (e.g. doxycycline), often with rash severity correlating with treatment response.",
+          "citation": "NCCN Colon Cancer Guidelines — toxicity management",
+          "difficulty": "Intermediate",
+          "topicTags": ["toxicity-management"]
+        },
+        {
+          "stem": "A patient with resected stage III colon cancer is being considered for adjuvant chemotherapy. Which regimen is standard based on risk stratification?",
+          "choices": [
+            { "key": "A", "label": "Oxaliplatin-based chemotherapy (e.g. FOLFOX or CAPOX), with duration guided by risk (3 vs 6 months per IDEA trial)" },
+            { "key": "B", "label": "No adjuvant therapy is ever indicated after resection" },
+            { "key": "C", "label": "Single-agent immunotherapy regardless of MSI status" },
+            { "key": "D", "label": "Anti-EGFR therapy alone without chemotherapy" }
+          ],
+          "correctChoice": "A",
+          "explanation": "Oxaliplatin-based adjuvant chemotherapy is standard for resected stage III colon cancer. The IDEA collaboration showed that 3 months of CAPOX may be sufficient for lower-risk stage III disease, while higher-risk disease (T4 or N2) benefits from the full 6 months, individualizing duration by risk.",
+          "citation": "IDEA collaboration trial",
+          "difficulty": "Intermediate",
+          "topicTags": ["adjuvant-therapy"]
+        },
+        {
+          "stem": "Which biomarker testing is essential before initiating any anti-EGFR therapy in metastatic colorectal cancer?",
+          "choices": [
+            { "key": "A", "label": "RAS (KRAS/NRAS) and BRAF mutation testing" },
+            { "key": "B", "label": "PD-L1 immunohistochemistry only" },
+            { "key": "C", "label": "No molecular testing is required before anti-EGFR therapy" },
+            { "key": "D", "label": "HER2 amplification testing only" }
+          ],
+          "correctChoice": "A",
+          "explanation": "RAS (KRAS/NRAS) and BRAF mutation testing are mandatory before anti-EGFR therapy in metastatic colorectal cancer — RAS-mutant tumors do not respond to (and may be harmed by) anti-EGFR antibodies, while BRAF V600E status informs prognosis and later-line treatment selection.",
+          "citation": "NCCN Colon Cancer Guidelines — biomarker testing requirements",
+          "difficulty": "Beginner",
+          "topicTags": ["biomarker-testing", "first-line-therapy"]
+        },
+        {
+          "stem": "A patient with metastatic colorectal cancer and HER2 amplification progresses on standard chemotherapy. Which targeted approach is increasingly supported by trial data?",
+          "choices": [
+            { "key": "A", "label": "HER2-directed therapy (e.g. trastuzumab-based combinations)" },
+            { "key": "B", "label": "HER2 status is irrelevant to colorectal cancer treatment" },
+            { "key": "C", "label": "Increased-dose standard chemotherapy alone" },
+            { "key": "D", "label": "Single-agent bevacizumab regardless of HER2 status" }
+          ],
+          "correctChoice": "A",
+          "explanation": "HER2 amplification occurs in a subset of RAS/BRAF wild-type colorectal cancers and is a target for HER2-directed therapy (e.g. trastuzumab + tucatinib, or trastuzumab + pertuzumab), an emerging biomarker-driven approach analogous to HER2-positive breast/gastric cancer.",
+          "citation": "MOUNTAINEER, HERACLES trial programs",
+          "difficulty": "Advanced",
+          "topicTags": ["biomarker-testing", "resistance-mechanisms"]
+        },
+        {
+          "stem": "A patient with MSI-H metastatic colorectal cancer on pembrolizumab develops new-onset watery diarrhea and abdominal pain. What must be considered given the immunotherapy context?",
+          "choices": [
+            { "key": "A", "label": "Immune-related colitis, requiring prompt evaluation and possible corticosteroid therapy" },
+            { "key": "B", "label": "This is always unrelated to therapy and requires no workup" },
+            { "key": "C", "label": "Immunotherapy cannot cause gastrointestinal toxicity" },
+            { "key": "D", "label": "Automatic permanent discontinuation without any evaluation" }
+          ],
+          "correctChoice": "A",
+          "explanation": "Immune checkpoint inhibitors can cause immune-related colitis, which requires prompt recognition, infectious workup, and often corticosteroid therapy depending on severity — this is distinct from chemotherapy-induced diarrhea and managed per immune-related adverse event algorithms, not automatic permanent discontinuation without evaluation.",
+          "citation": "NCCN Guidelines — Management of Immunotherapy-Related Toxicities",
+          "difficulty": "Advanced",
+          "topicTags": ["toxicity-management"]
+        },
+        {
+          "stem": "A patient with resectable colorectal liver metastases is being evaluated for treatment sequencing. Which factor most influences whether neoadjuvant chemotherapy precedes surgery?",
+          "choices": [
+            { "key": "A", "label": "Disease burden, resectability margin, and risk factors for early recurrence" },
+            { "key": "B", "label": "Patient age alone determines sequencing in all cases" },
+            { "key": "C", "label": "Sequencing is never influenced by clinical risk factors" },
+            { "key": "D", "label": "MSI status alone dictates surgical timing" }
+          ],
+          "correctChoice": "A",
+          "explanation": "The decision to use neoadjuvant chemotherapy before resecting colorectal liver metastases depends on factors like number/size of lesions, resectability margins, and clinical risk scores — upfront resection may be preferred for easily resectable, low-risk disease, while neoadjuvant therapy is favored for borderline-resectable or high-risk disease.",
+          "citation": "NCCN Colon Cancer Guidelines — oligometastatic disease",
+          "difficulty": "Advanced",
+          "topicTags": ["first-line-therapy"]
+        },
+        {
+          "stem": "Which statement about universal tumor testing for Lynch syndrome in newly diagnosed colorectal cancer is most accurate?",
+          "choices": [
+            { "key": "A", "label": "Universal MMR/MSI testing at diagnosis is recommended regardless of age, to identify both treatment-relevant biomarkers and possible hereditary Lynch syndrome" },
+            { "key": "B", "label": "MMR/MSI testing is only relevant in patients under 30" },
+            { "key": "C", "label": "Testing is never indicated unless there is a strong family history" },
+            { "key": "D", "label": "MSI testing has no relationship to Lynch syndrome" }
+          ],
+          "correctChoice": "A",
+          "explanation": "Universal tumor testing for mismatch repair deficiency/MSI is now standard at colorectal cancer diagnosis regardless of age or family history — it identifies both immunotherapy-eligible patients and those who should undergo germline testing for Lynch syndrome, which has implications for the patient and their family.",
+          "citation": "NCCN Genetic/Familial High-Risk Assessment Guidelines",
+          "difficulty": "Intermediate",
+          "topicTags": ["biomarker-testing"]
+        },
+        {
+          "stem": "A patient with metastatic colorectal cancer progresses through oxaliplatin, irinotecan, anti-EGFR, and bevacizumab-based regimens. Which oral agent is an appropriate later-line option based on the CORRECT trial?",
+          "choices": [
+            { "key": "A", "label": "Regorafenib" },
+            { "key": "B", "label": "Tamoxifen" },
+            { "key": "C", "label": "Trastuzumab" },
+            { "key": "D", "label": "Dabrafenib monotherapy" }
+          ],
+          "correctChoice": "A",
+          "explanation": "Regorafenib, a multikinase inhibitor, demonstrated an overall survival benefit in heavily pretreated metastatic colorectal cancer in the CORRECT trial, making it a standard later-line option after exhaustion of standard chemotherapy and targeted regimens.",
+          "citation": "CORRECT trial",
+          "difficulty": "Advanced",
+          "topicTags": ["salvage-therapy"]
+        },
+        {
+          "stem": "A 68-year-old with metastatic colorectal cancer and ECOG performance status 3 from rapidly progressive disease is being evaluated for treatment. What is the most appropriate consideration?",
+          "choices": [
+            { "key": "A", "label": "Careful risk-benefit discussion emphasizing goals of care, since poor performance status often limits benefit from aggressive combination chemotherapy" },
+            { "key": "B", "label": "Maximal combination chemotherapy regardless of performance status" },
+            { "key": "C", "label": "Performance status is never relevant to treatment planning" },
+            { "key": "D", "label": "Immediate high-dose immunotherapy regardless of biomarkers or performance status" }
+          ],
+          "correctChoice": "A",
+          "explanation": "ECOG performance status is a key factor in treatment selection — poor performance status (ECOG 3-4) is generally associated with reduced tolerance and benefit from aggressive combination chemotherapy, warranting careful discussion of goals of care, single-agent or best supportive care options, and biomarker-driven therapy where appropriate.",
+          "citation": "NCCN Colon Cancer Guidelines — performance status considerations",
+          "difficulty": "Intermediate",
+          "topicTags": ["monitoring"]
+        }
+      ]
+    },
+    {
+      "title": "Prostate Cancer — Androgen & PARP-Directed Therapy",
+      "specialtyTag": "Prostate Cancer",
+      "timeLimitMinutes": 25,
+      "questions": [
+        {
+          "stem": "A 66-year-old with newly diagnosed high-risk localized prostate cancer is planned for radiation therapy. What is standard concurrent/adjuvant systemic therapy?",
+          "choices": [
+            { "key": "A", "label": "Androgen deprivation therapy (ADT)" },
+            { "key": "B", "label": "Single-agent immunotherapy" },
+            { "key": "C", "label": "PARP inhibitor monotherapy regardless of biomarkers" },
+            { "key": "D", "label": "No systemic therapy is used with radiation in high-risk disease" }
+          ],
+          "correctChoice": "A",
+          "explanation": "Androgen deprivation therapy combined with radiation is standard for high-risk localized prostate cancer, based on multiple trials showing improved biochemical control and survival with the combination compared to radiation alone.",
+          "citation": "NCCN Prostate Cancer Guidelines",
+          "difficulty": "Beginner",
+          "topicTags": ["first-line-therapy"]
+        },
+        {
+          "stem": "A patient with metastatic hormone-sensitive prostate cancer (mHSPC) is starting ADT. Which additional agent, based on trials like LATITUDE and TITAN, improves outcomes when added to ADT?",
+          "choices": [
+            { "key": "A", "label": "An androgen receptor pathway inhibitor (e.g. abiraterone, apalutamide, or enzalutamide)" },
+            { "key": "B", "label": "Single-agent bevacizumab" },
+            { "key": "C", "label": "Trastuzumab regardless of HER2 status" },
+            { "key": "D", "label": "Cetuximab" }
+          ],
+          "correctChoice": "A",
+          "explanation": "Adding an androgen receptor pathway inhibitor (abiraterone, apalutamide, enzalutamide) to ADT significantly improves overall survival in metastatic hormone-sensitive prostate cancer, based on trials like LATITUDE, TITAN, and ENZAMET — doublet or triplet therapy is now standard rather than ADT alone.",
+          "citation": "LATITUDE, TITAN trials",
+          "difficulty": "Intermediate",
+          "topicTags": ["first-line-therapy"]
+        },
+        {
+          "stem": "A patient with metastatic castration-resistant prostate cancer (mCRPC) is found to have a germline BRCA2 mutation. Which class of agents becomes a relevant treatment option?",
+          "choices": [
+            { "key": "A", "label": "PARP inhibitors (e.g. olaparib, rucaparib)" },
+            { "key": "B", "label": "Anti-EGFR antibodies" },
+            { "key": "C", "label": "Single-agent tamoxifen" },
+            { "key": "D", "label": "Trastuzumab" }
+          ],
+          "correctChoice": "A",
+          "explanation": "PARP inhibitors exploit synthetic lethality in BRCA-mutant prostate cancer via impaired homologous recombination repair. Olaparib and rucaparib are approved for BRCA-mutant metastatic castration-resistant prostate cancer based on trials like PROfound, making germline/somatic BRCA testing clinically actionable.",
+          "citation": "PROfound trial",
+          "difficulty": "Intermediate",
+          "topicTags": ["biomarker-testing", "resistance-mechanisms"]
+        },
+        {
+          "stem": "A patient on long-term ADT is being monitored for treatment-related toxicity. Which of the following is a well-recognized long-term risk requiring monitoring?",
+          "choices": [
+            { "key": "A", "label": "Bone density loss/osteoporosis, metabolic syndrome, and cardiovascular risk" },
+            { "key": "B", "label": "ADT has no long-term metabolic or bone health effects" },
+            { "key": "C", "label": "Only hepatotoxicity is a concern with ADT" },
+            { "key": "D", "label": "ADT eliminates all cardiovascular risk" }
+          ],
+          "correctChoice": "A",
+          "explanation": "Long-term androgen deprivation therapy is associated with bone density loss (increasing fracture risk), metabolic syndrome, weight gain, and increased cardiovascular risk — bone density monitoring (DEXA), calcium/vitamin D supplementation, and cardiovascular risk factor management are standard supportive care components.",
+          "citation": "NCCN Prostate Cancer Guidelines — ADT toxicity management",
+          "difficulty": "Intermediate",
+          "topicTags": ["toxicity-management", "monitoring"]
+        },
+        {
+          "stem": "A patient with mCRPC progresses on abiraterone. Which biomarker, if present, would support use of pembrolizumab regardless of PD-L1 status?",
+          "choices": [
+            { "key": "A", "label": "Microsatellite instability-high (MSI-H) or mismatch repair deficiency (dMMR)" },
+            { "key": "B", "label": "PSA level alone, regardless of any molecular testing" },
+            { "key": "C", "label": "Gleason score alone" },
+            { "key": "D", "label": "Age over 70" }
+          ],
+          "correctChoice": "A",
+          "explanation": "MSI-H/dMMR tumors, though uncommon in prostate cancer (~3-5%), are eligible for pembrolizumab based on tumor-agnostic FDA approval, independent of PD-L1 expression — this is why NCCN recommends MMR/MSI testing at some point in the mCRPC disease course.",
+          "citation": "NCCN Prostate Cancer Guidelines — biomarker testing",
+          "difficulty": "Advanced",
+          "topicTags": ["biomarker-testing", "salvage-therapy"]
+        },
+        {
+          "stem": "A patient with mCRPC and bone-predominant metastases develops worsening bone pain. Which radiopharmaceutical, based on the ALSYMPCA trial, is an appropriate option for symptomatic bone metastases without visceral disease?",
+          "choices": [
+            { "key": "A", "label": "Radium-223" },
+            { "key": "B", "label": "External beam radiation to all bones simultaneously" },
+            { "key": "C", "label": "Single-agent bevacizumab" },
+            { "key": "D", "label": "Trastuzumab" }
+          ],
+          "correctChoice": "A",
+          "explanation": "Radium-223, an alpha-emitting radiopharmaceutical, improved overall survival and reduced symptomatic skeletal events in mCRPC patients with bone-predominant metastases and no visceral disease, based on the ALSYMPCA trial.",
+          "citation": "ALSYMPCA trial",
+          "difficulty": "Advanced",
+          "topicTags": ["salvage-therapy", "toxicity-management"]
+        },
+        {
+          "stem": "A patient with mCRPC and PSMA-avid disease on PSMA PET imaging is being considered for a novel targeted radioligand therapy. Which agent, based on the VISION trial, is appropriate?",
+          "choices": [
+            { "key": "A", "label": "Lutetium-177 PSMA-617 (177Lu-PSMA-617)" },
+            { "key": "B", "label": "Standard external beam radiation alone" },
+            { "key": "C", "label": "Trastuzumab deruxtecan" },
+            { "key": "D", "label": "Single-agent chemotherapy without imaging-based selection" }
+          ],
+          "correctChoice": "A",
+          "explanation": "177Lu-PSMA-617 is a PSMA-targeted radioligand therapy that improved overall survival in PSMA PET-positive metastatic castration-resistant prostate cancer after prior androgen receptor pathway inhibitor and taxane therapy, based on the VISION trial — PSMA PET imaging is required to confirm eligibility.",
+          "citation": "VISION trial",
+          "difficulty": "Advanced",
+          "topicTags": ["biomarker-testing", "salvage-therapy"]
+        },
+        {
+          "stem": "A patient starting enzalutamide for mCRPC should be counseled about which class-specific adverse effect?",
+          "choices": [
+            { "key": "A", "label": "Seizure risk (lowers seizure threshold) and fatigue" },
+            { "key": "B", "label": "No monitoring or counseling is needed for androgen receptor inhibitors" },
+            { "key": "C", "label": "Enzalutamide has no recognized adverse effects" },
+            { "key": "D", "label": "Only nephrotoxicity is a concern" }
+          ],
+          "correctChoice": "A",
+          "explanation": "Enzalutamide lowers the seizure threshold and carries a risk of seizures, particularly in patients with predisposing risk factors, along with fatigue as a common adverse effect — this distinguishes its toxicity profile from other androgen receptor pathway inhibitors like apalutamide or abiraterone.",
+          "citation": "NCCN Prostate Cancer Guidelines — ARPI toxicity profiles",
+          "difficulty": "Intermediate",
+          "topicTags": ["toxicity-management"]
+        },
+        {
+          "stem": "A patient with a rising PSA after radical prostatectomy (biochemical recurrence) is being evaluated. Which imaging modality has become increasingly standard for localizing recurrence at low PSA levels?",
+          "choices": [
+            { "key": "A", "label": "PSMA PET/CT" },
+            { "key": "B", "label": "Conventional bone scan alone, which has adequate sensitivity at low PSA" },
+            { "key": "C", "label": "Chest X-ray" },
+            { "key": "D", "label": "No imaging is useful for biochemical recurrence" }
+          ],
+          "correctChoice": "A",
+          "explanation": "PSMA PET/CT has substantially higher sensitivity than conventional imaging (bone scan, CT) for localizing recurrent prostate cancer at low PSA levels, and has become standard for restaging biochemical recurrence to guide salvage therapy decisions.",
+          "citation": "NCCN Prostate Cancer Guidelines — imaging for biochemical recurrence",
+          "difficulty": "Intermediate",
+          "topicTags": ["biomarker-testing", "monitoring"]
+        },
+        {
+          "stem": "A patient with mCRPC and an ATM mutation (but not BRCA1/2) is being considered for PARP inhibitor therapy. What is the most accurate statement?",
+          "choices": [
+            { "key": "A", "label": "Response rates to PARP inhibitors are generally lower in ATM-mutant disease compared to BRCA-mutant disease, though some patients may still respond" },
+            { "key": "B", "label": "ATM mutations predict identical PARP inhibitor response to BRCA2 mutations" },
+            { "key": "C", "label": "ATM mutation status is irrelevant to PARP inhibitor eligibility" },
+            { "key": "D", "label": "ATM mutations are more predictive of response than BRCA2 mutations" }
+          ],
+          "correctChoice": "A",
+          "explanation": "While ATM is included in some homologous recombination repair gene panels for PARP inhibitor eligibility, response rates in ATM-mutant (non-BRCA) prostate cancer are generally more modest than in BRCA1/2-mutant disease, an important nuance in interpreting panel-based biomarker results.",
+          "citation": "PROfound trial subgroup analyses",
+          "difficulty": "Advanced",
+          "topicTags": ["biomarker-testing", "resistance-mechanisms"]
+        },
+        {
+          "stem": "A patient with low-risk, localized prostate cancer (low Gleason score, low PSA, low volume) is being counseled on management options. Which approach is increasingly favored to avoid overtreatment?",
+          "choices": [
+            { "key": "A", "label": "Active surveillance with scheduled PSA monitoring, imaging, and repeat biopsy" },
+            { "key": "B", "label": "Immediate radical prostatectomy in all low-risk patients regardless of preference" },
+            { "key": "C", "label": "Immediate ADT regardless of risk stratification" },
+            { "key": "D", "label": "No follow-up is needed after diagnosis" }
+          ],
+          "correctChoice": "A",
+          "explanation": "Active surveillance is standard for appropriately selected low-risk localized prostate cancer, involving scheduled PSA monitoring, periodic MRI, and repeat biopsy to detect progression, avoiding the side effects of definitive treatment in disease that may never become clinically significant.",
+          "citation": "NCCN Prostate Cancer Guidelines — risk-stratified management",
+          "difficulty": "Beginner",
+          "topicTags": ["monitoring", "first-line-therapy"]
+        },
+        {
+          "stem": "A patient with mCRPC has progressed through abiraterone, enzalutamide, and docetaxel. Which class of agents represents an appropriate later-line consideration if PSMA PET is negative and no HRR mutation is present?",
+          "choices": [
+            { "key": "A", "label": "Cabazitaxel (a later-generation taxane)" },
+            { "key": "B", "label": "Repeating the same androgen receptor pathway inhibitor at a higher dose" },
+            { "key": "C", "label": "PARP inhibitor monotherapy regardless of HRR mutation status" },
+            { "key": "D", "label": "177Lu-PSMA-617 despite a negative PSMA PET" }
+          ],
+          "correctChoice": "A",
+          "explanation": "Cabazitaxel is a standard later-line chemotherapy option for mCRPC that has progressed through docetaxel and androgen receptor pathway inhibitors, particularly when biomarker-directed options (PARP inhibitors for HRR-mutant disease, 177Lu-PSMA-617 for PSMA-avid disease) are not applicable.",
+          "citation": "NCCN Prostate Cancer Guidelines — later-line therapy sequencing",
+          "difficulty": "Advanced",
+          "topicTags": ["salvage-therapy"]
+        }
+      ]
+    }
+  ]
+}

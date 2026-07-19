@@ -12,15 +12,32 @@ interface CompetencySkill {
   score: number;
 }
 
+const TOPIC_TAGS = [
+  "first-line-therapy",
+  "resistance-mechanisms",
+  "toxicity-management",
+  "adjuvant-therapy",
+  "biomarker-testing",
+  "trial-eligibility",
+  "monitoring",
+  "salvage-therapy",
+];
+
 const RESPONSE_SCHEMA_HINT = `Return ONLY a single JSON object with exactly this shape (no markdown, no commentary):
 {
   "weeks": [
     {
       "weekNumber": number,
-      "focusSkill": string,
+      "focusSkill": string,              // a short, human-readable theme title (e.g. "Biomarker Interpretation", "TKI Resistance Patterns") — NOT a topic-tag slug like "biomarker-testing"
       "focusBiomarkers": string[],
       "recommendedCaseIds": string[],   // must be chosen from the AVAILABLE CASES list ids given below, 1-2 per week
-      "rationale": string               // 1-2 sentences, specific to this resident's actual scores
+      "rationale": string,              // 1-2 sentences, specific to this resident's actual scores
+      "examFilter": {
+        "cancerType": string | null,    // must be chosen from AVAILABLE CANCER TYPES, or null for "any"
+        "topics": string[],             // 0-2 values chosen from AVAILABLE TOPICS, matching this week's focus
+        "difficulty": "Beginner" | "Intermediate" | "Advanced" | null
+      },
+      "mentorPrompt": string            // one specific, concrete question this resident should ask their AI Mentor this week, grounded in their actual weakest skill — not generic
     }
   ]
 }`;
@@ -56,13 +73,22 @@ export async function POST(request: Request) {
     tags: c.tags,
   }));
 
+  const { data: examRows } = await supabase.from("exams").select("specialty_tag");
+  const availableCancerTypes = Array.from(new Set((examRows ?? []).map((e) => e.specialty_tag).filter(Boolean)));
+
   const userPrompt = `Build a 4-week adaptive learning path for an oncology resident training on this simulator, based on their real competency scores so far:
 ${skills.length > 0 ? JSON.stringify(skills) : "No completed sessions yet — build a broad foundational path."}
 
 AVAILABLE CASES (only recommend from this list, by id):
 ${JSON.stringify(availableCases)}
 
-Prioritize the resident's weakest skill(s) earliest, and sequence cases so each week builds on the last. Keep rationale grounded in their actual scores (or, if none yet, in typical early-training priorities). Do not invent case ids not in the list.
+AVAILABLE CANCER TYPES (for examFilter.cancerType — use null if the week isn't specific to one):
+${JSON.stringify(availableCancerTypes)}
+
+AVAILABLE TOPICS (for examFilter.topics):
+${JSON.stringify(TOPIC_TAGS)}
+
+Prioritize the resident's weakest skill(s) earliest, and sequence cases so each week builds on the last. Keep rationale grounded in their actual scores (or, if none yet, in typical early-training priorities). Do not invent case ids, cancer types, or topics not in the lists given. Each week's mentorPrompt should be something a resident would genuinely type into a chat with their mentor — specific and actionable, not a restatement of the rationale.
 
 ${RESPONSE_SCHEMA_HINT}`;
 

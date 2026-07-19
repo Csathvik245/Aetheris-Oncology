@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Settings2, ArrowLeft } from "lucide-react";
 import { Shell } from "@/app/components/shell/Shell";
 import { Card } from "@/components/ui/card";
@@ -17,12 +17,31 @@ import { createClient } from "@/app/lib/supabase/client";
 
 const DIFFICULTIES = ["All", "Beginner", "Intermediate", "Advanced"];
 const COUNTS = [5, 10, 15, 20];
+const TOPICS = [
+  { value: "first-line-therapy", label: "First-Line Therapy" },
+  { value: "resistance-mechanisms", label: "Resistance Mechanisms" },
+  { value: "toxicity-management", label: "Toxicity Management" },
+  { value: "adjuvant-therapy", label: "Adjuvant Therapy" },
+  { value: "biomarker-testing", label: "Biomarker Testing" },
+  { value: "trial-eligibility", label: "Trial Eligibility" },
+  { value: "monitoring", label: "Monitoring" },
+  { value: "salvage-therapy", label: "Salvage / Later-Line Therapy" },
+];
 
 export default function CustomExamBuilderPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [cancerTypes, setCancerTypes] = useState<string[]>([]);
-  const [cancerType, setCancerType] = useState("All");
-  const [difficulty, setDifficulty] = useState("All");
+  const [cancerType, setCancerType] = useState(() => searchParams.get("cancerType") ?? "All");
+  const [difficulty, setDifficulty] = useState(() => searchParams.get("difficulty") ?? "All");
+  const [topics, setTopics] = useState<string[]>(() => {
+    const fromQuery = searchParams.get("topics");
+    const knownValues = new Set(TOPICS.map((t) => t.value));
+    // Defensive: a linked-in filter (e.g. from the Adaptive Curriculum) may
+    // suggest a topic slug outside our fixed vocabulary — drop it rather
+    // than silently producing a query that can never match.
+    return fromQuery ? fromQuery.split(",").filter((t) => knownValues.has(t)) : [];
+  });
   const [count, setCount] = useState(10);
   const [availableCount, setAvailableCount] = useState<number | null>(null);
   const [building, setBuilding] = useState(false);
@@ -39,16 +58,21 @@ export default function CustomExamBuilderPage() {
       });
   }, []);
 
+  function toggleTopic(value: string) {
+    setTopics((cur) => (cur.includes(value) ? cur.filter((t) => t !== value) : [...cur, value]));
+  }
+
   useEffect(() => {
     (async () => {
       const supabase = createClient();
-      let query = supabase.from("exam_questions").select("id, exam:exams!inner(specialty_tag)", { count: "exact", head: true });
+      let query = supabase.from("exam_questions").select("id, exams!inner(specialty_tag)", { count: "exact", head: true });
       if (cancerType !== "All") query = query.eq("exams.specialty_tag", cancerType);
       if (difficulty !== "All") query = query.eq("difficulty", difficulty);
+      if (topics.length > 0) query = query.overlaps("topic_tags", topics);
       const { count: total } = await query;
       setAvailableCount(total ?? 0);
     })();
-  }, [cancerType, difficulty]);
+  }, [cancerType, difficulty, topics]);
 
   async function buildExam() {
     setBuilding(true);
@@ -67,6 +91,7 @@ export default function CustomExamBuilderPage() {
     let query = supabase.from("exam_questions").select("id, exams!inner(specialty_tag)");
     if (cancerType !== "All") query = query.eq("exams.specialty_tag", cancerType);
     if (difficulty !== "All") query = query.eq("difficulty", difficulty);
+    if (topics.length > 0) query = query.overlaps("topic_tags", topics);
     const { data: matches, error: matchError } = await query;
 
     if (matchError) {
@@ -82,7 +107,12 @@ export default function CustomExamBuilderPage() {
 
     const shuffled = [...matches].sort(() => Math.random() - 0.5);
     const picked = shuffled.slice(0, Math.min(count, shuffled.length)).map((m) => m.id);
-    const title = `Custom Exam — ${cancerType === "All" ? "All Cancer Types" : cancerType}${difficulty !== "All" ? ` · ${difficulty}` : ""}`;
+    const filterBits = [
+      cancerType !== "All" ? cancerType : null,
+      difficulty !== "All" ? difficulty : null,
+      topics.length > 0 ? `${topics.length} topic${topics.length === 1 ? "" : "s"}` : null,
+    ].filter(Boolean);
+    const title = `Custom Exam — ${filterBits.length > 0 ? filterBits.join(" · ") : "All Cancer Types"}`;
     const timeLimitMinutes = Math.max(10, Math.round(picked.length * 1.8));
 
     const { data: attempt, error: insertError } = await supabase
@@ -119,7 +149,7 @@ export default function CustomExamBuilderPage() {
           </span>
           <div>
             <h1 className="font-heading text-[22px] font-bold tracking-tight text-foreground">Build Your Own Exam</h1>
-            <p className="text-[13px] text-muted-foreground">Filter the full question bank by cancer type, difficulty, and length.</p>
+            <p className="text-[13px] text-muted-foreground">Filter the full question bank by cancer type, topic, difficulty, and length.</p>
           </div>
         </div>
 
@@ -153,6 +183,21 @@ export default function CustomExamBuilderPage() {
             </SelectContent>
           </Select>
 
+          <label className="label mb-1.5 mt-4 block">Topics (optional — leave blank for any)</label>
+          <div className="grid grid-cols-2 gap-2">
+            {TOPICS.map((t) => (
+              <button
+                key={t.value}
+                onClick={() => toggleTopic(t.value)}
+                className={`rounded-lg border px-3 py-2 text-left text-[12.5px] font-medium transition-colors ${
+                  topics.includes(t.value) ? "border-navy bg-navy-tint text-navy" : "border-border text-foreground hover:bg-muted"
+                }`}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
+
           <label className="label mb-1.5 mt-4 block">Number of Questions</label>
           <div className="grid grid-cols-4 gap-2">
             {COUNTS.map((c) => (
@@ -171,6 +216,22 @@ export default function CustomExamBuilderPage() {
           <p className="mt-4 text-[12px] text-muted-foreground">
             {availableCount === null ? "Checking available questions…" : `${availableCount} question${availableCount === 1 ? "" : "s"} match these filters.`}
           </p>
+
+          {availableCount === 0 && (
+            <div className="mt-2 flex items-center justify-between rounded-lg bg-coral-tint px-3 py-2 text-[12px] text-coral-text">
+              <span>No questions match this exact combination.</span>
+              <button
+                onClick={() => {
+                  setCancerType("All");
+                  setDifficulty("All");
+                  setTopics([]);
+                }}
+                className="font-semibold underline"
+              >
+                Clear filters
+              </button>
+            </div>
+          )}
 
           {error && <p className="mt-3 text-[12.5px] text-coral-text">{error}</p>}
 

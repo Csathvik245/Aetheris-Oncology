@@ -47,6 +47,7 @@ for (const exam of data.exams) {
     explanation: q.explanation,
     citation: q.citation ?? null,
     difficulty: q.difficulty ?? null,
+    topic_tags: q.topicTags ?? [],
   }));
 
   const { error: questionsError } = await supabase.from("exam_questions").insert(questionRows);
