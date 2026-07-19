@@ -22,11 +22,11 @@ import {
   type WorksheetDraft,
 } from "./lib/session";
 
-function draftCaseTitle(caseId: string): string {
+async function draftCaseTitle(caseId: string): Promise<string> {
   const mockCase = CASES.find((c) => c.id === caseId);
   if (mockCase) return mockCase.title;
   if (isGeneratedCaseId(caseId)) {
-    const g = getGeneratedCase(caseId);
+    const g = await getGeneratedCase(caseId);
     if (g) return g.title;
   }
   return `Case ${caseId}`;
@@ -38,18 +38,28 @@ export default function DashboardPage() {
   const [skills, setSkills] = useState<CompetencySkill[]>([]);
   const [streak, setStreak] = useState(0);
   const [draft, setDraft] = useState<WorksheetDraft | null>(null);
+  const [draftTitle, setDraftTitle] = useState("");
   const [suggested, setSuggested] = useState<typeof CASES>(CASES.slice(0, 3));
 
   useEffect(() => {
-    // One-shot bootstrap read from localStorage (unavailable during SSR).
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setStats(computeDashboardStats());
-    setSkills(computeCompetencyProfile());
-    setStreak(computeStreakDays());
-    setDraft(listDrafts()[0] ?? null);
-    const done = new Set(listHistoryEntries().map((h) => h.caseId));
-    const remaining = CASES.filter((c) => !done.has(c.id));
-    setSuggested((remaining.length > 0 ? remaining : CASES).slice(0, 3));
+    (async () => {
+      const [dashboardStats, competency, streakDays, drafts, history] = await Promise.all([
+        computeDashboardStats(),
+        computeCompetencyProfile(),
+        computeStreakDays(),
+        listDrafts(),
+        listHistoryEntries(),
+      ]);
+      setStats(dashboardStats);
+      setSkills(competency);
+      setStreak(streakDays);
+      const firstDraft = drafts[0] ?? null;
+      setDraft(firstDraft);
+      if (firstDraft) setDraftTitle(await draftCaseTitle(firstDraft.caseId));
+      const done = new Set(history.map((h) => h.caseId));
+      const remaining = CASES.filter((c) => !done.has(c.id));
+      setSuggested((remaining.length > 0 ? remaining : CASES).slice(0, 3));
+    })();
   }, []);
 
   const STATS = [
@@ -90,7 +100,7 @@ export default function DashboardPage() {
                     <>
                       <Badge className="bg-navy text-white">IN PROGRESS</Badge>
                       <h2 className="mt-3 font-heading text-[19px] font-semibold text-foreground">
-                        {draftCaseTitle(draft.caseId)}
+                        {draftTitle}
                       </h2>
                       <div className="mt-3 flex items-center gap-4 text-[12.5px] text-muted-foreground">
                         <span>

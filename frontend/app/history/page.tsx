@@ -18,10 +18,9 @@ export default function PracticeHistoryPage() {
   const [entries, setEntries] = useState<HistoryEntry[]>([]);
 
   useEffect(() => {
-    const sorted = [...listHistoryEntries()].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-    // One-shot bootstrap read from localStorage (unavailable during SSR).
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setEntries(sorted);
+    listHistoryEntries().then((list) => {
+      setEntries([...list].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
+    });
   }, []);
 
   return (

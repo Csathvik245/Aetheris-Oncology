@@ -11,9 +11,7 @@ export default function CompetencyProfilePage() {
   const [skills, setSkills] = useState<CompetencySkill[]>([]);
 
   useEffect(() => {
-    // One-shot bootstrap read from localStorage (unavailable during SSR).
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setSkills(computeCompetencyProfile());
+    computeCompetencyProfile().then(setSkills);
   }, []);
 
   const sorted = [...skills].sort((a, b) => b.score - a.score);

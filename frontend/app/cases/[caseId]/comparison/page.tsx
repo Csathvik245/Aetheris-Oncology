@@ -59,10 +59,8 @@ export default function ComparisonPage({
   const [submission, setSubmission] = useState<WorksheetSubmission | null>(null);
 
   useEffect(() => {
-    // One-shot bootstrap read from localStorage (unavailable during SSR).
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setPipelineData(getPipelineData(caseId));
-    setSubmission(getSubmission(caseId));
+    getPipelineData(caseId).then(setPipelineData);
+    getSubmission(caseId).then(setSubmission);
   }, [caseId]);
 
   const live = pipelineData !== null;

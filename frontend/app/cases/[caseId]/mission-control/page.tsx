@@ -137,23 +137,26 @@ export default function MissionControlPage({
   useEffect(() => {
     if (!pipeline.complete || historySavedRef.current) return;
     historySavedRef.current = true;
-    savePipelineData(caseId, {
-      mutations: pipeline.mutations,
-      citations: pipeline.citations,
-      drugScores: pipeline.drugScores,
-      trials: pipeline.trials,
-      risks: pipeline.risks,
-      plan: pipeline.plan,
-    });
-    const submission = getSubmission(caseId);
-    const aiDrugNames = (pipeline.plan?.top_treatments ?? []).map((t) => t.drug);
-    saveHistoryEntry({
-      caseId,
-      title: caseTitleFor(caseId, packet),
-      date: formatDisplayDate(new Date()),
-      agreement: computeAgreement(submission, aiDrugNames),
-      difficulty: caseDifficultyFor(caseId),
-    });
+    (async () => {
+      await savePipelineData(caseId, {
+        mutations: pipeline.mutations,
+        citations: pipeline.citations,
+        drugScores: pipeline.drugScores,
+        trials: pipeline.trials,
+        risks: pipeline.risks,
+        plan: pipeline.plan,
+      });
+      const submission = await getSubmission(caseId);
+      const aiDrugNames = (pipeline.plan?.top_treatments ?? []).map((t) => t.drug);
+      const [title, difficulty] = await Promise.all([caseTitleFor(caseId, packet), caseDifficultyFor(caseId)]);
+      await saveHistoryEntry({
+        caseId,
+        title,
+        date: formatDisplayDate(new Date()),
+        agreement: computeAgreement(submission, aiDrugNames),
+        difficulty,
+      });
+    })();
   }, [pipeline.complete, pipeline.mutations, pipeline.citations, pipeline.drugScores, pipeline.trials, pipeline.risks, pipeline.plan, caseId, packet]);
 
   const statusPill = pipeline.anyError

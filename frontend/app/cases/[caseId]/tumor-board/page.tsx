@@ -71,9 +71,7 @@ export default function TumorBoardPage({
   const scrollRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    // One-shot bootstrap read from localStorage (unavailable during SSR).
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setPipelineData(getPipelineData(caseId));
+    getPipelineData(caseId).then(setPipelineData);
   }, [caseId]);
 
   useEffect(() => {

@@ -102,12 +102,12 @@ export default function WorksheetPage({
   }
 
   // Restore a saved draft, if one exists, before anything else runs —
-  // one-shot bootstrap read from localStorage (unavailable during SSR).
+  // one-shot bootstrap read from Supabase.
   useEffect(() => {
-    const draft = getDraft(caseId);
+    (async () => {
+    const draft = await getDraft(caseId);
     if (!draft) return;
     draftLoadedRef.current = true;
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setStep(draft.step);
     setPhase(draft.phase as Phase);
     setDrugs(draft.drugs.map((d) => ({ ...d, key: slugify(d.name) })));
@@ -120,6 +120,7 @@ export default function WorksheetPage({
     setBiomarkerOrder(draft.biomarkerOrder);
     setBiomarkerChecks(draft.biomarkerChecks);
     setLastSavedAt(draft.savedAt);
+    })();
   }, [caseId]);
 
   // No saved draft — apply the resident's preferred default monitoring
@@ -139,17 +140,18 @@ export default function WorksheetPage({
   useEffect(() => {
     if (draftLoadedRef.current) return;
     if (!isGeneratedCaseId(caseId) || packet.caseId !== caseId) return;
-    const g = getGeneratedCase(caseId);
-    if (!g) return;
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setBiomarkerOrder(packet.pathology.genomicProfile);
-    setBiomarkerChecks(Object.fromEntries(packet.pathology.genomicProfile.map((m) => [m, true])));
-    if (g.toxicityConcerns.length > 0) {
-      setToxicityOptions((cur) => Array.from(new Set([...cur, ...g.toxicityConcerns])));
-      setTags(g.toxicityConcerns);
-    }
-    if (g.clinicalPearl) setTip(g.clinicalPearl);
-    if (g.input.objectiveTitles?.length) setObjectiveTitles(g.input.objectiveTitles);
+    (async () => {
+      const g = await getGeneratedCase(caseId);
+      if (!g) return;
+      setBiomarkerOrder(packet.pathology.genomicProfile);
+      setBiomarkerChecks(Object.fromEntries(packet.pathology.genomicProfile.map((m) => [m, true])));
+      if (g.toxicityConcerns.length > 0) {
+        setToxicityOptions((cur) => Array.from(new Set([...cur, ...g.toxicityConcerns])));
+        setTags(g.toxicityConcerns);
+      }
+      if (g.clinicalPearl) setTip(g.clinicalPearl);
+      if (g.input.objectiveTitles?.length) setObjectiveTitles(g.input.objectiveTitles);
+    })();
   }, [caseId, packet]);
 
   function removeDrug(key: string) {
@@ -170,9 +172,9 @@ export default function WorksheetPage({
     setShowCustomTagInput(false);
   }
 
-  function saveDraftNow() {
+  async function saveDraftNow() {
     const savedAt = new Date().toISOString();
-    saveDraft({
+    await saveDraft({
       caseId,
       step,
       phase,
@@ -744,8 +746,8 @@ export default function WorksheetPage({
           <Button
             className="bg-navy text-white hover:bg-navy/90 disabled:opacity-50"
             disabled={!allStepsValid || step !== WORKSHEET_STEPS.length - 1}
-            onClick={() => {
-              saveSubmission({
+            onClick={async () => {
+              await saveSubmission({
                 caseId,
                 phase,
                 drugs: drugs.map((d) => ({ name: d.name, rationale: d.rationale, citation: d.citation })),
@@ -758,7 +760,7 @@ export default function WorksheetPage({
                 biomarkerChecks,
                 submittedAt: new Date().toISOString(),
               });
-              clearDraft(caseId);
+              await clearDraft(caseId);
               router.push(`/cases/${caseId}/mission-control`);
             }}
           >

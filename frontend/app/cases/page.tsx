@@ -108,9 +108,7 @@ export default function CaseLibraryPage() {
 
   const [generatedCases, setGeneratedCases] = useState<GeneratedCase[]>([]);
   useEffect(() => {
-    // One-shot bootstrap read from localStorage (unavailable during SSR).
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setGeneratedCases(listGeneratedCases());
+    listGeneratedCases().then(setGeneratedCases);
   }, []);
 
   return (

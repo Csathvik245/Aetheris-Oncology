@@ -1,13 +1,15 @@
 /**
  * Persists the resident's worksheet submission and completed-session
- * history in localStorage. History entries are only ever written when a
- * real orchestrator run finishes (see mission-control), so "agreement" is
- * computed from actual submitted drugs vs. the actual returned plan —
- * never fabricated.
+ * history via Supabase (case_submissions / worksheet_drafts / history_entries
+ * / pipeline_runs tables, RLS-scoped to the signed-in resident). History
+ * entries are only ever written when a real orchestrator run finishes (see
+ * mission-control), so "agreement" is computed from actual submitted drugs
+ * vs. the actual returned plan — never fabricated.
  */
 import { CASES, type Difficulty, type PatientPacket } from "./mock";
 import { isGeneratedCaseId, getGeneratedCase, clearGeneratedCases } from "./generatedCase";
 import { getPipelineData, clearPipelineData } from "./pipelineData";
+import { createClient } from "./supabase/client";
 
 export interface WorksheetSubmission {
   caseId: string;
@@ -52,78 +54,219 @@ export interface HistoryEntry {
   difficulty: Difficulty;
 }
 
-const SUBMISSION_KEY = "aetheris:submissions";
-const HISTORY_KEY = "aetheris:history";
-const DRAFT_KEY = "aetheris:drafts";
-
-/** Wipes every piece of case-generated/practice data (generated cases,
- * submissions, drafts, history, pipeline runs) so a new account starts
- * completely fresh instead of inheriting the previous profile's data —
- * everything here lives in the same unscoped localStorage. Does NOT touch
- * the profile itself; call this right before creating the new one. */
-export function resetAllProgress() {
-  if (typeof window === "undefined") return;
-  window.localStorage.removeItem(SUBMISSION_KEY);
-  window.localStorage.removeItem(HISTORY_KEY);
-  window.localStorage.removeItem(DRAFT_KEY);
-  clearGeneratedCases();
-  clearPipelineData();
+async function currentUserAndInstitution() {
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { supabase, user: null, institutionId: null as string | null };
+  const { data: profile } = await supabase.from("profiles").select("institution_id").eq("id", user.id).single();
+  return { supabase, user, institutionId: profile?.institution_id ?? null };
 }
 
-function readJson<T>(key: string, fallback: T): T {
-  if (typeof window === "undefined") return fallback;
-  try {
-    const raw = window.localStorage.getItem(key);
-    return raw ? (JSON.parse(raw) as T) : fallback;
-  } catch {
-    return fallback;
-  }
-}
-function writeJson(key: string, value: unknown) {
-  if (typeof window === "undefined") return;
-  window.localStorage.setItem(key, JSON.stringify(value));
-}
-
-export function saveSubmission(sub: WorksheetSubmission) {
-  const store = readJson<Record<string, WorksheetSubmission>>(SUBMISSION_KEY, {});
-  store[sub.caseId] = sub;
-  writeJson(SUBMISSION_KEY, store);
+/** Clears every piece of case-generated/practice data (generated cases,
+ * submissions, drafts, history, pipeline runs) for the signed-in account.
+ * Used by the Settings "Reset Practice Data" action. */
+export async function resetAllProgress() {
+  const { supabase, user } = await currentUserAndInstitution();
+  if (!user) return;
+  await Promise.all([
+    supabase.from("case_submissions").delete().eq("user_id", user.id),
+    supabase.from("worksheet_drafts").delete().eq("user_id", user.id),
+    supabase.from("history_entries").delete().eq("user_id", user.id),
+    clearGeneratedCases(),
+    clearPipelineData(),
+  ]);
 }
 
-export function getSubmission(caseId: string): WorksheetSubmission | null {
-  return readJson<Record<string, WorksheetSubmission>>(SUBMISSION_KEY, {})[caseId] ?? null;
+export async function saveSubmission(sub: WorksheetSubmission) {
+  const { supabase, user, institutionId } = await currentUserAndInstitution();
+  if (!user) return;
+  await supabase.from("case_submissions").upsert({
+    case_id: sub.caseId,
+    user_id: user.id,
+    institution_id: institutionId,
+    phase: sub.phase,
+    drugs: sub.drugs,
+    monitoring: sub.monitoring,
+    dose_modification: sub.doseModification,
+    tags: sub.tags,
+    confidence: sub.confidence,
+    diagnosis_note: sub.diagnosisNote,
+    biomarker_order: sub.biomarkerOrder,
+    biomarker_checks: sub.biomarkerChecks,
+    submitted_at: sub.submittedAt,
+  });
 }
 
-export function saveDraft(draft: WorksheetDraft) {
-  const store = readJson<Record<string, WorksheetDraft>>(DRAFT_KEY, {});
-  store[draft.caseId] = draft;
-  writeJson(DRAFT_KEY, store);
+interface SubmissionRow {
+  case_id: string;
+  phase: string;
+  drugs: WorksheetSubmission["drugs"];
+  monitoring: string;
+  dose_modification: string;
+  tags: string[];
+  confidence: number;
+  diagnosis_note: string;
+  biomarker_order: string[];
+  biomarker_checks: Record<string, boolean>;
+  submitted_at: string;
 }
 
-export function getDraft(caseId: string): WorksheetDraft | null {
-  return readJson<Record<string, WorksheetDraft>>(DRAFT_KEY, {})[caseId] ?? null;
+function rowToSubmission(row: SubmissionRow): WorksheetSubmission {
+  return {
+    caseId: row.case_id,
+    phase: row.phase,
+    drugs: row.drugs,
+    monitoring: row.monitoring,
+    doseModification: row.dose_modification,
+    tags: row.tags,
+    confidence: row.confidence,
+    diagnosisNote: row.diagnosis_note,
+    biomarkerOrder: row.biomarker_order,
+    biomarkerChecks: row.biomarker_checks,
+    submittedAt: row.submitted_at,
+  };
 }
 
-export function clearDraft(caseId: string) {
-  const store = readJson<Record<string, WorksheetDraft>>(DRAFT_KEY, {});
-  delete store[caseId];
-  writeJson(DRAFT_KEY, store);
+export async function getSubmission(caseId: string): Promise<WorksheetSubmission | null> {
+  const { supabase, user } = await currentUserAndInstitution();
+  if (!user) return null;
+  const { data } = await supabase
+    .from("case_submissions")
+    .select("case_id, phase, drugs, monitoring, dose_modification, tags, confidence, diagnosis_note, biomarker_order, biomarker_checks, submitted_at")
+    .eq("case_id", caseId)
+    .eq("user_id", user.id)
+    .maybeSingle<SubmissionRow>();
+  return data ? rowToSubmission(data) : null;
 }
 
-export function listDrafts(): WorksheetDraft[] {
-  return Object.values(readJson<Record<string, WorksheetDraft>>(DRAFT_KEY, {})).sort(
-    (a, b) => new Date(b.savedAt).getTime() - new Date(a.savedAt).getTime()
-  );
+export async function saveDraft(draft: WorksheetDraft) {
+  const { supabase, user } = await currentUserAndInstitution();
+  if (!user) return;
+  await supabase.from("worksheet_drafts").upsert({
+    case_id: draft.caseId,
+    user_id: user.id,
+    step: draft.step,
+    phase: draft.phase,
+    drugs: draft.drugs,
+    monitoring: draft.monitoring,
+    dose_modification: draft.doseModification,
+    toxicity_options: draft.toxicityOptions,
+    tags: draft.tags,
+    confidence: draft.confidence,
+    diagnosis_note: draft.diagnosisNote,
+    biomarker_order: draft.biomarkerOrder,
+    biomarker_checks: draft.biomarkerChecks,
+    saved_at: draft.savedAt,
+  });
 }
 
-export function saveHistoryEntry(entry: HistoryEntry) {
-  const list = readJson<HistoryEntry[]>(HISTORY_KEY, []);
-  list.push(entry);
-  writeJson(HISTORY_KEY, list);
+interface DraftRow {
+  case_id: string;
+  step: number;
+  phase: string;
+  drugs: WorksheetDraft["drugs"];
+  monitoring: string;
+  dose_modification: string;
+  toxicity_options: string[];
+  tags: string[];
+  confidence: number;
+  diagnosis_note: string;
+  biomarker_order: string[];
+  biomarker_checks: Record<string, boolean>;
+  saved_at: string;
 }
 
-export function listHistoryEntries(): HistoryEntry[] {
-  return readJson<HistoryEntry[]>(HISTORY_KEY, []);
+function rowToDraft(row: DraftRow): WorksheetDraft {
+  return {
+    caseId: row.case_id,
+    step: row.step,
+    phase: row.phase,
+    drugs: row.drugs,
+    monitoring: row.monitoring,
+    doseModification: row.dose_modification,
+    toxicityOptions: row.toxicity_options,
+    tags: row.tags,
+    confidence: row.confidence,
+    diagnosisNote: row.diagnosis_note,
+    biomarkerOrder: row.biomarker_order,
+    biomarkerChecks: row.biomarker_checks,
+    savedAt: row.saved_at,
+  };
+}
+
+const DRAFT_COLUMNS =
+  "case_id, step, phase, drugs, monitoring, dose_modification, toxicity_options, tags, confidence, diagnosis_note, biomarker_order, biomarker_checks, saved_at";
+
+export async function getDraft(caseId: string): Promise<WorksheetDraft | null> {
+  const { supabase, user } = await currentUserAndInstitution();
+  if (!user) return null;
+  const { data } = await supabase
+    .from("worksheet_drafts")
+    .select(DRAFT_COLUMNS)
+    .eq("case_id", caseId)
+    .eq("user_id", user.id)
+    .maybeSingle<DraftRow>();
+  return data ? rowToDraft(data) : null;
+}
+
+export async function clearDraft(caseId: string) {
+  const { supabase, user } = await currentUserAndInstitution();
+  if (!user) return;
+  await supabase.from("worksheet_drafts").delete().eq("case_id", caseId).eq("user_id", user.id);
+}
+
+export async function listDrafts(): Promise<WorksheetDraft[]> {
+  const { supabase, user } = await currentUserAndInstitution();
+  if (!user) return [];
+  const { data } = await supabase
+    .from("worksheet_drafts")
+    .select(DRAFT_COLUMNS)
+    .eq("user_id", user.id)
+    .order("saved_at", { ascending: false })
+    .returns<DraftRow[]>();
+  return (data ?? []).map(rowToDraft);
+}
+
+export async function saveHistoryEntry(entry: HistoryEntry) {
+  const { supabase, user, institutionId } = await currentUserAndInstitution();
+  if (!user) return;
+  await supabase.from("history_entries").insert({
+    case_id: entry.caseId,
+    user_id: user.id,
+    institution_id: institutionId,
+    title: entry.title,
+    difficulty: entry.difficulty,
+    agreement: entry.agreement,
+    occurred_at: new Date(entry.date).toISOString(),
+  });
+}
+
+interface HistoryRow {
+  case_id: string;
+  title: string;
+  difficulty: Difficulty;
+  agreement: number;
+  occurred_at: string;
+}
+
+export async function listHistoryEntries(): Promise<HistoryEntry[]> {
+  const { supabase, user } = await currentUserAndInstitution();
+  if (!user) return [];
+  const { data } = await supabase
+    .from("history_entries")
+    .select("case_id, title, difficulty, agreement, occurred_at")
+    .eq("user_id", user.id)
+    .order("occurred_at", { ascending: false })
+    .returns<HistoryRow[]>();
+  return (data ?? []).map((row: HistoryRow) => ({
+    caseId: row.case_id,
+    title: row.title,
+    difficulty: row.difficulty,
+    agreement: row.agreement,
+    date: formatDisplayDate(new Date(row.occurred_at)),
+  }));
 }
 
 export function formatDisplayDate(d: Date): string {
@@ -190,21 +333,21 @@ export function computeTimeToDecision(submittedAt: string, completedAt: string):
   return `${m}m ${s}s`;
 }
 
-export function caseTitleFor(caseId: string, packet: PatientPacket): string {
+export async function caseTitleFor(caseId: string, packet: PatientPacket): Promise<string> {
   const mockCase = CASES.find((c) => c.id === caseId);
   if (mockCase) return mockCase.title;
   if (isGeneratedCaseId(caseId)) {
-    const g = getGeneratedCase(caseId);
+    const g = await getGeneratedCase(caseId);
     if (g) return g.title;
   }
   return packet.pathology.diagnosis;
 }
 
-export function caseDifficultyFor(caseId: string): Difficulty {
+export async function caseDifficultyFor(caseId: string): Promise<Difficulty> {
   const mockCase = CASES.find((c) => c.id === caseId);
   if (mockCase) return mockCase.difficulty;
   if (isGeneratedCaseId(caseId)) {
-    const g = getGeneratedCase(caseId);
+    const g = await getGeneratedCase(caseId);
     if (g) return g.difficulty;
   }
   return "Intermediate";
@@ -212,8 +355,9 @@ export function caseDifficultyFor(caseId: string): Difficulty {
 
 /** Real consecutive-day streak ending today, from actual completed-session
  * dates — 0 if there's no completed session today. */
-export function computeStreakDays(): number {
-  const days = new Set(listHistoryEntries().map((h) => new Date(h.date).toDateString()));
+export async function computeStreakDays(): Promise<number> {
+  const history = await listHistoryEntries();
+  const days = new Set(history.map((h) => new Date(h.date).toDateString()));
   if (days.size === 0) return 0;
   let streak = 0;
   const cursor = new Date();
@@ -232,8 +376,8 @@ export interface DashboardStats {
 
 /** Real counts/averages from completed sessions — zero/null for a fresh
  * account, never a placeholder number. */
-export function computeDashboardStats(): DashboardStats {
-  const history = listHistoryEntries();
+export async function computeDashboardStats(): Promise<DashboardStats> {
+  const history = await listHistoryEntries();
   const agreements = history.map((h) => h.agreement);
   return {
     casesCompleted: history.length,
@@ -251,13 +395,12 @@ export interface CompetencySkill {
 /** Averages the same real per-case agreement scores shown on Comparison
  * Analysis across every completed session — not a fabricated skill matrix.
  * Empty array for a fresh account with no completed runs. */
-export function computeCompetencyProfile(): CompetencySkill[] {
-  const history = listHistoryEntries();
+export async function computeCompetencyProfile(): Promise<CompetencySkill[]> {
+  const history = await listHistoryEntries();
   const buckets = { biomarkers: [] as number[], treatment: [] as number[], toxicity: [] as number[], confidence: [] as number[] };
 
   for (const h of history) {
-    const pd = getPipelineData(h.caseId);
-    const sub = getSubmission(h.caseId);
+    const [pd, sub] = await Promise.all([getPipelineData(h.caseId), getSubmission(h.caseId)]);
     if (!pd || !sub) continue;
     const aiDrugNames = pd.plan?.top_treatments.map((t) => t.drug) ?? [];
     const aiGenes = pd.mutations.map((m) => m.gene).filter((g): g is string => !!g);

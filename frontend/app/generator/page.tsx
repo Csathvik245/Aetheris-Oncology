@@ -176,7 +176,7 @@ export default function CaseGeneratorPage() {
         return;
       }
       const c = toGeneratedCase(data.case, input);
-      saveGeneratedCase(c);
+      await saveGeneratedCase(c);
       setGeneratedCase(c);
     } catch {
       setGenerationError("Could not reach the generation service. Check your connection and try again.");

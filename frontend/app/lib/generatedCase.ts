@@ -2,10 +2,12 @@
  * Live, LLM-generated synthetic training cases (Case Generator output).
  * Unlike `mock.ts`, nothing here is hand-authored — every case is produced
  * by a real call to the generation API (see app/api/generate-case) and
- * persisted client-side in localStorage so it can be reopened and practiced.
+ * persisted in the `cases` table (source='synthetic', owner-scoped via RLS)
+ * so it can be reopened and practiced from any device.
  */
 import { useEffect, useState } from "react";
 import { getPacket, type Difficulty, type PatientPacket } from "./mock";
+import { createClient } from "./supabase/client";
 
 export interface GeneratorInput {
   cancerType: string;
@@ -43,61 +45,142 @@ export interface GeneratedCase {
   clinicalPearl: string;
 }
 
-const STORAGE_KEY = "aetheris:generated-cases";
-
-function readStore(): Record<string, GeneratedCase> {
-  if (typeof window === "undefined") return {};
-  try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    return raw ? (JSON.parse(raw) as Record<string, GeneratedCase>) : {};
-  } catch {
-    return {};
-  }
+interface CaseRow {
+  id: string;
+  created_at: string;
+  generator_input: GeneratorInput;
+  title: string;
+  difficulty: Difficulty;
+  est_minutes: number;
+  stage: string;
+  tags: string[];
+  age: number;
+  sex: string;
+  ecog: number;
+  chief_complaint: string;
+  medical_history: string[];
+  imaging: { study: string; date: string; finding: string }[];
+  pathology: { diagnosis: string; markers: { name: string; value: string }[]; genomicProfile: string[] };
+  candidate_drugs: { name: string; subtitle: string }[];
+  toxicity_concerns: string[];
+  clinical_pearl: string;
 }
 
-function writeStore(store: Record<string, GeneratedCase>) {
-  if (typeof window === "undefined") return;
-  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(store));
+function rowToGeneratedCase(row: CaseRow): GeneratedCase {
+  return {
+    id: row.id,
+    createdAt: row.created_at,
+    input: row.generator_input,
+    title: row.title,
+    difficulty: row.difficulty,
+    estMinutes: row.est_minutes,
+    stage: row.stage,
+    tags: row.tags,
+    age: row.age,
+    sex: row.sex,
+    ecog: row.ecog,
+    chiefComplaint: row.chief_complaint,
+    medicalHistory: row.medical_history,
+    imaging: row.imaging,
+    pathology: row.pathology,
+    candidateDrugs: row.candidate_drugs,
+    toxicityConcerns: row.toxicity_concerns,
+    clinicalPearl: row.clinical_pearl,
+  };
 }
+
+const CASE_ROW_COLUMNS =
+  "id, created_at, generator_input, title, difficulty, est_minutes, stage, tags, age, sex, ecog, chief_complaint, medical_history, imaging, pathology, candidate_drugs, toxicity_concerns, clinical_pearl";
 
 export function isGeneratedCaseId(id: string): boolean {
   return id.startsWith("gen-");
 }
 
-export function saveGeneratedCase(c: GeneratedCase) {
-  const store = readStore();
-  store[c.id] = c;
-  writeStore(store);
+export async function saveGeneratedCase(c: GeneratedCase) {
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return;
+
+  const { data: profile } = await supabase.from("profiles").select("institution_id").eq("id", user.id).single();
+
+  await supabase.from("cases").insert({
+    id: c.id,
+    owner_id: user.id,
+    institution_id: profile?.institution_id ?? null,
+    source: "synthetic",
+    visibility: "private",
+    title: c.title,
+    difficulty: c.difficulty,
+    est_minutes: c.estMinutes,
+    stage: c.stage,
+    tags: c.tags,
+    age: c.age,
+    sex: c.sex,
+    ecog: c.ecog,
+    chief_complaint: c.chiefComplaint,
+    medical_history: c.medicalHistory,
+    imaging: c.imaging,
+    pathology: c.pathology,
+    candidate_drugs: c.candidateDrugs,
+    toxicity_concerns: c.toxicityConcerns,
+    clinical_pearl: c.clinicalPearl,
+    generator_input: c.input,
+    objective_titles: c.input.objectiveTitles ?? [],
+  });
 }
 
-export function getGeneratedCase(id: string): GeneratedCase | null {
-  return readStore()[id] ?? null;
+export async function getGeneratedCase(id: string): Promise<GeneratedCase | null> {
+  const supabase = createClient();
+  const { data } = await supabase.from("cases").select(CASE_ROW_COLUMNS).eq("id", id).maybeSingle<CaseRow>();
+  return data ? rowToGeneratedCase(data) : null;
 }
 
-export function listGeneratedCases(): GeneratedCase[] {
-  return Object.values(readStore()).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+export async function listGeneratedCases(): Promise<GeneratedCase[]> {
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return [];
+
+  const { data } = await supabase
+    .from("cases")
+    .select(CASE_ROW_COLUMNS)
+    .eq("owner_id", user.id)
+    .eq("source", "synthetic")
+    .order("created_at", { ascending: false })
+    .returns<CaseRow[]>();
+
+  return (data ?? []).map(rowToGeneratedCase);
 }
 
-export function clearGeneratedCases() {
-  if (typeof window === "undefined") return;
-  window.localStorage.removeItem(STORAGE_KEY);
+export async function clearGeneratedCases() {
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return;
+  await supabase.from("cases").delete().eq("owner_id", user.id).eq("source", "synthetic");
 }
 
-/** Resolves a caseId to its packet — real generated data from localStorage
- * for `gen-*` ids (loaded client-side after mount), mock data otherwise. */
+/** Resolves a caseId to its packet — real generated data from Supabase for
+ * `gen-*` ids (loaded asynchronously after mount), mock data otherwise. */
 export function usePacket(caseId: string): PatientPacket {
   const [packet, setPacket] = useState<PatientPacket>(() => getPacket(caseId));
 
   useEffect(() => {
-    // One-shot bootstrap read from localStorage (unavailable during SSR) —
-    // not a subscription, so useSyncExternalStore would be overkill here.
+    let cancelled = false;
     if (isGeneratedCaseId(caseId)) {
-      const g = getGeneratedCase(caseId);
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      if (g) setPacket(generatedCaseToPacket(g));
+      getGeneratedCase(caseId).then((g) => {
+        if (!cancelled && g) setPacket(generatedCaseToPacket(g));
+      });
     } else {
       setPacket(getPacket(caseId));
     }
+    return () => {
+      cancelled = true;
+    };
   }, [caseId]);
 
   return packet;

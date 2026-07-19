@@ -69,12 +69,12 @@ export default function SettingsPage() {
     savePreferences(next);
   }
 
-  function resetData() {
+  async function resetData() {
     const confirmed = window.confirm(
-      "This clears every generated case, worksheet submission, saved draft, and practice history on this device. Your profile stays. This can't be undone — continue?"
+      "This clears every generated case, worksheet submission, saved draft, and practice history on your account. Your profile stays. This can't be undone — continue?"
     );
     if (!confirmed) return;
-    resetAllProgress();
+    await resetAllProgress();
     router.push("/");
   }
 
@@ -161,7 +161,7 @@ export default function SettingsPage() {
           <h3 className="font-heading text-[15px] font-semibold text-coral-text">Reset Practice Data</h3>
           <p className="mt-1.5 text-[12.5px] leading-relaxed text-muted-foreground">
             Clears every generated case, worksheet submission, saved draft, and practice history on
-            this device. Your profile is not affected.
+            your account. Your profile is not affected.
           </p>
           <Button
             onClick={resetData}
