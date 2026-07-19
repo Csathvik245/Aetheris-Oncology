@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useState } from "react";
+import { use, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
@@ -14,6 +14,7 @@ import {
   Share2,
   Eye,
   GitBranch,
+  Store,
 } from "lucide-react";
 import { Shell } from "../../components/shell/Shell";
 import { Card } from "@/components/ui/card";
@@ -26,7 +27,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { usePacket } from "../../lib/generatedCase";
+import { usePacket, isGeneratedCaseId } from "../../lib/generatedCase";
+import { createClient } from "../../lib/supabase/client";
 
 const VARIATIONS = [
   { value: "older_patient", label: "Older Patient" },
@@ -58,6 +60,33 @@ export default function PatientPacketPage({
   const [variationType, setVariationType] = useState("");
   const [branching, setBranching] = useState(false);
   const [branchError, setBranchError] = useState<string | null>(null);
+  const [isOwner, setIsOwner] = useState(false);
+  const [visibility, setVisibility] = useState<string | null>(null);
+  const [publishing, setPublishing] = useState(false);
+
+  useEffect(() => {
+    if (!isGeneratedCaseId(caseId)) return;
+    (async () => {
+      const supabase = createClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data } = await supabase.from("cases").select("owner_id, visibility").eq("id", caseId).maybeSingle();
+      if (data) {
+        setIsOwner(data.owner_id === user.id);
+        setVisibility(data.visibility);
+      }
+    })();
+  }, [caseId]);
+
+  async function publishToMarketplace() {
+    setPublishing(true);
+    const supabase = createClient();
+    await supabase.from("cases").update({ visibility: "marketplace" }).eq("id", caseId);
+    setVisibility("marketplace");
+    setPublishing(false);
+  }
 
   async function branchCase() {
     if (!variationType) return;
@@ -135,6 +164,11 @@ export default function PatientPacketPage({
             <Button variant="outline" onClick={branchCase} disabled={!variationType || branching} className="gap-1.5">
               <GitBranch size={15} /> {branching ? "Branching…" : "Branch"}
             </Button>
+            {isOwner && visibility !== "marketplace" && (
+              <Button variant="outline" onClick={publishToMarketplace} disabled={publishing} className="gap-1.5">
+                <Store size={15} /> {publishing ? "Publishing…" : "Publish to Marketplace"}
+              </Button>
+            )}
             <Button variant="outline" className="gap-1.5">
               <Printer size={15} /> Print Packet
             </Button>

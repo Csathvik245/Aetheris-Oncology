@@ -17,6 +17,8 @@ import {
   Route,
   BrainCircuit,
   ScrollText,
+  Trophy,
+  Store,
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { initials } from "@/app/lib/profile";
@@ -29,6 +31,8 @@ const NAV = [
   { href: "/exams", label: "Board Exam Mode", icon: ScrollText, match: (p: string) => p.startsWith("/exams") },
   { href: "/curriculum", label: "Adaptive Curriculum", icon: Route, match: (p: string) => p.startsWith("/curriculum") },
   { href: "/mentor", label: "AI Mentor", icon: BrainCircuit, match: (p: string) => p.startsWith("/mentor") },
+  { href: "/marketplace", label: "Case Marketplace", icon: Store, match: (p: string) => p.startsWith("/marketplace") },
+  { href: "/leaderboard", label: "Leaderboard", icon: Trophy, match: (p: string) => p.startsWith("/leaderboard") },
   { href: "/history", label: "Practice History", icon: History, match: (p: string) => p.startsWith("/history") },
   { href: "/competency", label: "Competency Profile", icon: Radar, match: (p: string) => p.startsWith("/competency") },
 ];

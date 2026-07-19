@@ -114,6 +114,101 @@ export async function cohortCommonTags(institutionId: string): Promise<CohortMis
     .slice(0, 8);
 }
 
+export interface HardestCase {
+  caseId: string;
+  title: string;
+  avgAgreement: number;
+  attempts: number;
+}
+
+/** Cases with the lowest average agreement across the cohort — the
+ * simplest honest "what's hardest" signal from real completed sessions. */
+export async function institutionHardestCases(institutionId: string): Promise<HardestCase[]> {
+  const supabase = createClient();
+  const { data } = await supabase
+    .from("history_entries")
+    .select("case_id, title, agreement")
+    .eq("institution_id", institutionId)
+    .returns<{ case_id: string; title: string; agreement: number }[]>();
+
+  const byCase = new Map<string, { title: string; scores: number[] }>();
+  for (const row of data ?? []) {
+    const entry = byCase.get(row.case_id) ?? { title: row.title, scores: [] };
+    entry.scores.push(row.agreement);
+    byCase.set(row.case_id, entry);
+  }
+
+  return Array.from(byCase.entries())
+    .map(([caseId, v]) => ({
+      caseId,
+      title: v.title,
+      avgAgreement: Math.round(v.scores.reduce((a, b) => a + b, 0) / v.scores.length),
+      attempts: v.scores.length,
+    }))
+    .filter((c) => c.attempts >= 1)
+    .sort((a, b) => a.avgAgreement - b.avgAgreement)
+    .slice(0, 6);
+}
+
+export interface MostReplayedCase {
+  caseId: string;
+  title: string;
+  attempts: number;
+}
+
+export async function institutionMostReplayedCases(institutionId: string): Promise<MostReplayedCase[]> {
+  const cases = await institutionHardestCases(institutionId);
+  return [...cases].sort((a, b) => b.attempts - a.attempts).slice(0, 6).map(({ caseId, title, attempts }) => ({ caseId, title, attempts }));
+}
+
+export interface MissedBiomarker {
+  gene: string;
+  missedCount: number;
+}
+
+/** Biomarkers the AI flagged as actionable that residents did NOT prioritize
+ * in their own submission — a real per-case comparison, not a guess. */
+export async function institutionMostMissedBiomarkers(institutionId: string): Promise<MissedBiomarker[]> {
+  const supabase = createClient();
+  const [{ data: submissions }, { data: runs }] = await Promise.all([
+    supabase.from("case_submissions").select("case_id, user_id, biomarker_order, biomarker_checks").eq("institution_id", institutionId),
+    supabase.from("pipeline_runs").select("case_id, user_id, mutations").eq("institution_id", institutionId),
+  ]);
+
+  const runByKey = new Map((runs ?? []).map((r) => [`${r.case_id}:${r.user_id}`, r.mutations as { gene?: string }[]]));
+  const missCounts = new Map<string, number>();
+
+  for (const sub of submissions ?? []) {
+    const mutations = runByKey.get(`${sub.case_id}:${sub.user_id}`);
+    if (!mutations) continue;
+    const residentGenes = new Set(
+      (sub.biomarker_order as string[]).filter((g) => (sub.biomarker_checks as Record<string, boolean>)[g]).map((g) => g.toLowerCase()),
+    );
+    for (const m of mutations) {
+      if (!m.gene) continue;
+      const flagged = [...residentGenes].some((rg) => rg.includes(m.gene!.toLowerCase()) || m.gene!.toLowerCase().includes(rg.split(" ")[0]));
+      if (!flagged) missCounts.set(m.gene, (missCounts.get(m.gene) ?? 0) + 1);
+    }
+  }
+
+  return Array.from(missCounts.entries())
+    .map(([gene, missedCount]) => ({ gene, missedCount }))
+    .sort((a, b) => b.missedCount - a.missedCount)
+    .slice(0, 8);
+}
+
+/** Faculty review activity — a directional proxy for "time saved" (each
+ * posted review represents a case reviewed through the platform), not a
+ * precisely measured figure. */
+export async function institutionReviewCount(institutionId: string): Promise<number> {
+  const supabase = createClient();
+  const { count } = await supabase
+    .from("review_comments")
+    .select("id", { count: "exact", head: true })
+    .eq("institution_id", institutionId);
+  return count ?? 0;
+}
+
 export interface ReviewQueueItem {
   caseId: string;
   userId: string;

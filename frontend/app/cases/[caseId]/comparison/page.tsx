@@ -2,7 +2,7 @@
 
 import { use, useEffect, useState } from "react";
 import Link from "next/link";
-import { Check, Circle, SearchX, ChevronDown, Users } from "lucide-react";
+import { Check, Circle, SearchX, ChevronDown, Users, Share2 } from "lucide-react";
 import { Shell } from "../../../components/shell/Shell";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -91,12 +91,20 @@ export default function ComparisonPage({
             {live && <Badge className="bg-teal-tint text-teal-deep">Live Agent Data</Badge>}
           </div>
           {live && (
-            <Link
-              href={`/cases/${caseId}/tumor-board`}
-              className="flex items-center gap-1.5 rounded-full border border-navy px-3.5 py-1.5 text-[12.5px] font-semibold text-navy hover:bg-navy-tint"
-            >
-              <Users size={14} /> Ask the Tumor Board
-            </Link>
+            <div className="flex gap-2">
+              <Link
+                href={`/cases/${caseId}/evidence-graph`}
+                className="flex items-center gap-1.5 rounded-full border border-border px-3.5 py-1.5 text-[12.5px] font-semibold text-foreground hover:bg-muted"
+              >
+                <Share2 size={14} /> Evidence Graph
+              </Link>
+              <Link
+                href={`/cases/${caseId}/tumor-board`}
+                className="flex items-center gap-1.5 rounded-full border border-navy px-3.5 py-1.5 text-[12.5px] font-semibold text-navy hover:bg-navy-tint"
+              >
+                <Users size={14} /> Ask the Tumor Board
+              </Link>
+            </div>
           )}
         </div>
         <p className="mb-6 text-[13px] text-muted-foreground">
