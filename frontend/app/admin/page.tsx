@@ -39,6 +39,10 @@ export default function AdminPage() {
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const [requestTier, setRequestTier] = useState<Record<string, PlanTier>>({});
+  const [sendingRequestId, setSendingRequestId] = useState<string | null>(null);
+  const [sendResult, setSendResult] = useState<Record<string, string>>({});
+
   useEffect(() => {
     if (!loading && (!user || !profile?.is_platform_admin)) {
       router.replace("/");
@@ -92,6 +96,31 @@ export default function AdminPage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id, status }),
     });
+    loadAll();
+  }
+
+  async function generateAndSend(r: PilotRequest) {
+    setSendingRequestId(r.id);
+    setSendResult((s) => ({ ...s, [r.id]: "" }));
+    const res = await fetch("/api/admin/pilot-codes", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        planTier: requestTier[r.id] ?? "free_pilot",
+        notes: `Pilot request from ${r.institution_name}`,
+        sendToEmail: r.contact_email,
+        recipientName: r.contact_name,
+        institutionName: r.institution_name,
+      }),
+    });
+    const data = await res.json();
+    setSendingRequestId(null);
+    if (!res.ok) {
+      setSendResult((s) => ({ ...s, [r.id]: data.error ?? "Failed to generate code." }));
+      return;
+    }
+    setSendResult((s) => ({ ...s, [r.id]: data.emailed ? `Sent: ${data.code.code}` : `Generated (email not sent): ${data.code.code}` }));
+    await updateRequestStatus(r.id, "contacted");
     loadAll();
   }
 
@@ -217,20 +246,44 @@ export default function AdminPage() {
         <div className="mt-3 flex flex-col divide-y divide-border">
           {requests.length === 0 && <p className="py-3 text-[12.5px] text-muted-foreground">No requests yet.</p>}
           {requests.map((r) => (
-            <div key={r.id} className="flex items-center justify-between gap-3 py-3">
-              <div className="min-w-0">
-                <p className="truncate text-[13px] font-medium text-foreground">{r.institution_name}</p>
-                <p className="truncate text-[12px] text-muted-foreground">{r.contact_name} · {r.contact_email}{r.phone ? ` · ${r.phone}` : ""}</p>
-                {r.message && <p className="mt-0.5 truncate text-[11.5px] italic text-muted-foreground">"{r.message}"</p>}
+            <div key={r.id} className="flex flex-col gap-2 py-3">
+              <div className="flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="truncate text-[13px] font-medium text-foreground">{r.institution_name}</p>
+                  <p className="truncate text-[12px] text-muted-foreground">{r.contact_name} · {r.contact_email}{r.phone ? ` · ${r.phone}` : ""}</p>
+                  {r.message && <p className="mt-0.5 truncate text-[11.5px] italic text-muted-foreground">"{r.message}"</p>}
+                </div>
+                <Select value={r.status} onValueChange={(v) => v && updateRequestStatus(r.id, v)}>
+                  <SelectTrigger className="w-32 shrink-0"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="new">new</SelectItem>
+                    <SelectItem value="contacted">contacted</SelectItem>
+                    <SelectItem value="closed">closed</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
-              <Select value={r.status} onValueChange={(v) => v && updateRequestStatus(r.id, v)}>
-                <SelectTrigger className="w-32 shrink-0"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="new">new</SelectItem>
-                  <SelectItem value="contacted">contacted</SelectItem>
-                  <SelectItem value="closed">closed</SelectItem>
-                </SelectContent>
-              </Select>
+              <div className="flex items-center gap-2">
+                <Select
+                  value={requestTier[r.id] ?? "free_pilot"}
+                  onValueChange={(v) => v && setRequestTier((s) => ({ ...s, [r.id]: v as PlanTier }))}
+                >
+                  <SelectTrigger className="w-36"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {TIER_OPTIONS.map((t) => (
+                      <SelectItem key={t} value={t}>{t}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Button
+                  variant="outline"
+                  onClick={() => generateAndSend(r)}
+                  disabled={sendingRequestId === r.id}
+                  className="gap-1.5"
+                >
+                  {sendingRequestId === r.id ? "Sending…" : "Generate & Send Code"}
+                </Button>
+                {sendResult[r.id] && <span className="text-[11.5px] text-teal-deep">{sendResult[r.id]}</span>}
+              </div>
             </div>
           ))}
         </div>

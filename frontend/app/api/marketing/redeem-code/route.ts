@@ -47,7 +47,7 @@ export async function POST(request: Request) {
 
     const { data: profile } = await supabase
       .from("profiles")
-      .select("role, institution_id")
+      .select("role, institution_id, institution:institutions(join_code)")
       .eq("id", user.id)
       .single();
 
@@ -81,7 +81,8 @@ export async function POST(request: Request) {
       .update({ redeemed_institution_id: profile.institution_id, redeemed_at: now.toISOString() })
       .eq("id", pilotCode.id);
 
-    return NextResponse.json({ ok: true, institutionId: profile.institution_id });
+    const institutionInfo = Array.isArray(profile.institution) ? profile.institution[0] : profile.institution;
+    return NextResponse.json({ ok: true, institutionId: profile.institution_id, joinCode: institutionInfo?.join_code });
   }
 
   // mode === "new"
@@ -114,7 +115,7 @@ export async function POST(request: Request) {
       free_pilot_started_at: isFreePilot ? now.toISOString() : null,
       free_pilot_expires_at: isFreePilot ? new Date(now.getTime() + FREE_PILOT_DAYS * 24 * 60 * 60 * 1000).toISOString() : null,
     })
-    .select("id")
+    .select("id, join_code")
     .single();
 
   if (instError || !institution) {
@@ -139,5 +140,5 @@ export async function POST(request: Request) {
     .update({ redeemed_institution_id: institution.id, redeemed_at: now.toISOString() })
     .eq("id", pilotCode.id);
 
-  return NextResponse.json({ ok: true, institutionId: institution.id });
+  return NextResponse.json({ ok: true, institutionId: institution.id, joinCode: institution.join_code });
 }

@@ -12,6 +12,7 @@ const PUBLIC_ROUTES = [
   "/redeem",
   "/auth/callback",
   "/api/institutions/search",
+  "/api/institutions/lookup-by-code",
   "/api/marketing/capacity",
   "/api/marketing/pilot-request",
 ];

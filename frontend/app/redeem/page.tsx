@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { KeyRound, CheckCircle2 } from "lucide-react";
+import { KeyRound, CheckCircle2, Copy, Check } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,6 +19,15 @@ export default function RedeemCodePage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [redeemed, setRedeemed] = useState(false);
+  const [residentLink, setResidentLink] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+
+  function copyResidentLink() {
+    if (!residentLink) return;
+    navigator.clipboard.writeText(residentLink);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
+  }
 
   async function redeemForExisting() {
     setError(null);
@@ -38,6 +47,7 @@ export default function RedeemCodePage() {
       setError(data.error ?? "Could not redeem that code.");
       return;
     }
+    if (data.joinCode) setResidentLink(`${window.location.origin}/signup?role=resident&joinCode=${data.joinCode}`);
     setRedeemed(true);
   }
 
@@ -71,6 +81,7 @@ export default function RedeemCodePage() {
       setError(data.error ?? "Could not redeem that code.");
       return;
     }
+    if (data.joinCode) setResidentLink(`${window.location.origin}/signup?role=resident&joinCode=${data.joinCode}`);
     setRedeemed(true);
   }
 
@@ -95,7 +106,25 @@ export default function RedeemCodePage() {
               <CheckCircle2 size={32} className="text-teal-deep" />
               <p className="text-[14px] font-medium text-foreground">Code redeemed</p>
               <p className="text-[12.5px] text-muted-foreground">Your program is now active.</p>
-              <a href="/" className="mt-3 text-[12.5px] font-semibold text-navy hover:underline">Go to Dashboard →</a>
+
+              {residentLink && (
+                <div className="mt-4 w-full rounded-lg border border-border bg-muted/40 p-4 text-left">
+                  <p className="text-[12.5px] font-medium text-foreground">Share this link with your residents</p>
+                  <p className="mt-1 text-[11.5px] text-muted-foreground">
+                    They click it, create their own account, and are linked to your program automatically.
+                  </p>
+                  <div className="mt-2 flex items-center gap-2">
+                    <code className="min-w-0 flex-1 truncate rounded-md bg-card px-2 py-1.5 text-[11.5px] text-foreground">
+                      {residentLink}
+                    </code>
+                    <Button variant="outline" onClick={copyResidentLink} className="shrink-0 gap-1.5">
+                      {copied ? <Check size={14} /> : <Copy size={14} />} {copied ? "Copied" : "Copy"}
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              <a href="/" className="mt-4 text-[12.5px] font-semibold text-navy hover:underline">Go to Dashboard →</a>
             </div>
           ) : (
             <>

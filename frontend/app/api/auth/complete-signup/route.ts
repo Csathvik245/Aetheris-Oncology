@@ -9,7 +9,7 @@ interface CompleteSignupBody {
   role: "resident" | "faculty";
   displayRole: string;
   institutionMode: "join" | "create";
-  institutionId?: string;
+  joinCode?: string;
   institutionName?: string;
 }
 
@@ -29,7 +29,7 @@ export async function POST(request: Request) {
   }
 
   const body = (await request.json()) as CompleteSignupBody;
-  const { fullName, role, displayRole, institutionMode, institutionId, institutionName } = body;
+  const { fullName, role, displayRole, institutionMode, joinCode, institutionName } = body;
 
   if (!fullName?.trim() || !role || !institutionMode) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
@@ -72,18 +72,22 @@ export async function POST(request: Request) {
     // First person to create an institution is its admin, regardless of
     // the "resident/faculty" toggle they picked — someone has to own billing.
   } else {
-    if (!institutionId) {
-      return NextResponse.json({ error: "institutionId is required to join" }, { status: 400 });
+    if (!joinCode?.trim()) {
+      return NextResponse.json({ error: "A join code is required" }, { status: 400 });
     }
+    // Resolve the institution from the code itself — never trust a raw
+    // institutionId from the client, since that would let any authenticated
+    // user join any institution just by guessing/searching its id.
     const { data: institution, error: lookupError } = await admin
       .from("institutions")
       .select("id, learner_seat_limit")
-      .eq("id", institutionId)
+      .eq("join_code", joinCode.trim().toUpperCase())
       .single();
 
     if (lookupError || !institution) {
-      return NextResponse.json({ error: "Institution not found" }, { status: 404 });
+      return NextResponse.json({ error: "That join code isn't valid." }, { status: 404 });
     }
+    const institutionId = institution.id;
 
     if (role === "resident" && institution.learner_seat_limit !== null) {
       const { count } = await admin

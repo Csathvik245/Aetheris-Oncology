@@ -31,12 +31,20 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid JSON body." }, { status: 400 });
   }
 
-  const { data: notes } = await supabase
-    .from("mentor_notes")
-    .select("note_type, body, created_at")
-    .eq("user_id", user.id)
-    .order("created_at", { ascending: false })
-    .limit(20);
+  const [{ data: notes }, { data: history }] = await Promise.all([
+    supabase
+      .from("mentor_notes")
+      .select("note_type, body, related_case_id, created_at")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false })
+      .limit(20),
+    supabase
+      .from("history_entries")
+      .select("case_id, title, difficulty, agreement, occurred_at")
+      .eq("user_id", user.id)
+      .order("occurred_at", { ascending: false })
+      .limit(10),
+  ]);
 
   const recentMessages = (body.messages ?? [])
     .slice(-MAX_TURNS)
@@ -44,13 +52,17 @@ export async function POST(request: Request) {
 
   const systemPrompt = `You are the AI Mentor for an oncology resident training simulator — a persistent coach, not a one-off case chat. You remember this resident's weaknesses, strengths, and mistakes across every case they've completed.
 
-YOUR MEMORY OF THIS RESIDENT (most recent first):
+YOUR MEMORY OF THIS RESIDENT — strengths/weaknesses/mistakes from comparing their actual worksheet answers
+against the AI pipeline's actual findings on each case, most recent first:
 ${JSON.stringify(notes ?? [])}
+
+RECENTLY COMPLETED CASES (most recent first, with % agreement vs. the AI pipeline on that case):
+${JSON.stringify(history ?? [])}
 
 CURRENT COMPETENCY SCORES:
 ${JSON.stringify(body.skills ?? null)}
 
-Be direct, specific, and encouraging. Reference concrete patterns from their memory above when relevant (e.g. "I noticed you consistently underutilize clinical trials" is the kind of observation you should make when the data supports it). If there's no memory yet, focus on what their current scores suggest, or general good habits if there's no data at all. Keep replies to 2-4 sentences unless asked for more detail.`;
+Be direct, specific, and encouraging. Reference concrete patterns from their memory above when relevant (e.g. "I noticed you consistently underutilize clinical trials" is the kind of observation you should make when the data supports it), and feel free to reference a specific completed case by title when it's relevant to what they're asking. If there's no memory yet, focus on what their current scores suggest, or general good habits if there's no data at all. Keep replies to 2-4 sentences unless asked for more detail.`;
 
   let groqRes: Response;
   try {

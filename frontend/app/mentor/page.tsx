@@ -1,13 +1,14 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { BrainCircuit, Send } from "lucide-react";
+import { BrainCircuit, Send, ScrollText } from "lucide-react";
 import { Shell } from "../components/shell/Shell";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { computeCompetencyProfile } from "../lib/session";
+import { computeCompetencyProfile, listHistoryEntries, type HistoryEntry } from "../lib/session";
 import { createClient } from "../lib/supabase/client";
 
 interface ChatMessage {
@@ -25,6 +26,7 @@ export default function MentorPage() {
   const searchParams = useSearchParams();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [notes, setNotes] = useState<MentorNote[]>([]);
+  const [history, setHistory] = useState<HistoryEntry[]>([]);
   const [input, setInput] = useState(() => searchParams.get("prompt") ?? "");
   const [pending, setPending] = useState(false);
   const scrollRef = useRef<HTMLDivElement | null>(null);
@@ -41,6 +43,7 @@ export default function MentorPage() {
         .limit(10);
       setNotes(data ?? []);
     });
+    listHistoryEntries().then(setHistory);
   }, []);
 
   useEffect(() => {
@@ -127,7 +130,7 @@ export default function MentorPage() {
           </Card>
         </div>
 
-        <div className="w-64 shrink-0">
+        <div className="w-64 shrink-0 overflow-y-auto">
           <h3 className="font-heading text-[13px] font-semibold text-foreground">Memory</h3>
           <div className="mt-2 flex flex-col gap-2">
             {notes.length === 0 ? (
@@ -140,6 +143,27 @@ export default function MentorPage() {
                   </span>
                   <p className="mt-1.5 text-[11.5px] leading-relaxed text-foreground">{n.body}</p>
                 </div>
+              ))
+            )}
+          </div>
+
+          <h3 className="mt-5 font-heading text-[13px] font-semibold text-foreground">Completed Cases</h3>
+          <div className="mt-2 flex flex-col gap-2">
+            {history.length === 0 ? (
+              <p className="text-[12px] text-muted-foreground">Complete a case to see it here, with your reasoning compared against the AI.</p>
+            ) : (
+              history.slice(0, 8).map((h, i) => (
+                <Link
+                  key={`${h.caseId}-${i}`}
+                  href={`/cases/${h.caseId}/comparison`}
+                  className="flex items-start gap-2 rounded-lg border border-border bg-card p-2.5 hover:bg-muted"
+                >
+                  <ScrollText size={13} className="mt-0.5 shrink-0 text-muted-foreground" />
+                  <div className="min-w-0">
+                    <p className="truncate text-[11.5px] font-medium text-foreground">{h.title}</p>
+                    <p className="text-[10.5px] text-muted-foreground">{h.date} · {h.agreement}% agreement</p>
+                  </div>
+                </Link>
               ))
             )}
           </div>

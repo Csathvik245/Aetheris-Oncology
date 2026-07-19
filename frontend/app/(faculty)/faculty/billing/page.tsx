@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { CheckCircle2, XCircle, Mail } from "lucide-react";
+import { CheckCircle2, XCircle, Mail, Copy, RefreshCw, Check } from "lucide-react";
 import { Shell } from "@/app/components/shell/Shell";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -39,6 +39,8 @@ export default function BillingPage() {
   const [residentCount, setResidentCount] = useState<number | null>(null);
   const [loadingTier, setLoadingTier] = useState<PlanTier | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [regenerating, setRegenerating] = useState(false);
+  const [copied, setCopied] = useState(false);
   const checkoutResult = searchParams.get("checkout");
 
   const institution = profile?.institution ?? null;
@@ -75,6 +77,20 @@ export default function BillingPage() {
       return;
     }
     window.location.href = data.url;
+  }
+
+  function copyJoinCode() {
+    if (!institution) return;
+    navigator.clipboard.writeText(institution.join_code);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
+  }
+
+  async function regenerateJoinCode() {
+    setRegenerating(true);
+    await fetch("/api/institution/join-code", { method: "POST" });
+    await refreshProfile();
+    setRegenerating(false);
   }
 
   if (!institution) {
@@ -145,6 +161,30 @@ export default function BillingPage() {
             />
           </div>
         </Card>
+
+        {isAdmin && (
+          <Card className="mt-5 p-5">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="font-heading text-[15px] font-semibold text-foreground">Resident Join Code</h3>
+                <p className="mt-1 text-[12.5px] text-muted-foreground">
+                  Share this with your residents/faculty — they enter it at signup to link to {institution.name}.
+                </p>
+              </div>
+            </div>
+            <div className="mt-3 flex items-center gap-2">
+              <code className="rounded-lg bg-navy-tint px-4 py-2 text-[18px] font-bold tracking-[0.2em] text-navy">
+                {institution.join_code}
+              </code>
+              <Button variant="outline" onClick={copyJoinCode} className="gap-1.5">
+                {copied ? <Check size={14} /> : <Copy size={14} />} {copied ? "Copied" : "Copy"}
+              </Button>
+              <Button variant="outline" onClick={regenerateJoinCode} disabled={regenerating} className="gap-1.5">
+                <RefreshCw size={14} className={regenerating ? "animate-spin" : ""} /> Regenerate
+              </Button>
+            </div>
+          </Card>
+        )}
 
         {isAdmin && (
           <>

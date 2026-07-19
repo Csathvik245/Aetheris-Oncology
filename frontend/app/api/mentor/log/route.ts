@@ -8,14 +8,38 @@ const GROQ_MODEL = process.env.GROQ_MODEL || "llama-3.3-70b-versatile";
 
 const RESPONSE_SCHEMA_HINT = `Return ONLY a single JSON object with exactly this shape (no markdown, no commentary):
 {
-  "noteType": "weakness" | "strength" | "mistake" | "suggestion",
-  "body": string   // one specific, concrete sentence about this resident's performance on this case
-}`;
+  "notes": [
+    {
+      "noteType": "strength" | "weakness" | "mistake" | "suggestion",
+      "body": string   // one specific, concrete sentence grounded in exactly what the resident wrote and exactly what the AI pipeline found
+    }
+  ]
+}
+Return 2 to 4 notes: at least one strength (something the resident actually got right, named specifically) and at least one weakness or mistake if one genuinely exists. Do not pad with generic notes if there's nothing more to say.`;
 
-// Called right after a case completes (see mission-control). Summarizes what
-// this specific run revealed about the resident and appends one durable
-// mentor_notes row — synchronous, not a background job, so it's always
-// consistent with the history_entries row written in the same flow.
+interface CaseSubmissionRow {
+  drugs: { name: string; rationale: string; citation: string }[];
+  monitoring: string;
+  dose_modification: string;
+  tags: string[];
+  confidence: number;
+  diagnosis_note: string;
+  biomarker_order: string[];
+  biomarker_checks: Record<string, boolean>;
+}
+
+interface PipelineRunRow {
+  mutations: { gene: string; variant?: string; oncogenic?: boolean; evidence_level?: string; drug?: string | null }[];
+  drug_scores: { drug: string; survival_benefit_score: number; rank: number }[];
+  trials: { nct_id: string; title: string; status: string }[];
+  risks: { drug: string; risk_level: string; adverse_events: string[] }[];
+  plan: { top_treatments?: { drug: string; evidence_level?: string; toxicity_risk?: string }[] } | null;
+}
+
+// Called right after a case completes (see mission-control). Reads the
+// resident's actual worksheet and the AI pipeline's actual output for this
+// case straight from the database — not a lossy client-derived summary —
+// so the mentor can reason about both sides together, not just percentages.
 export async function POST(request: Request) {
   const apiKey = process.env.GROQ_API_KEY;
   if (!apiKey) return NextResponse.json({ error: "GROQ_API_KEY not configured" }, { status: 500 });
@@ -28,32 +52,59 @@ export async function POST(request: Request) {
 
   const { data: profile } = await supabase.from("profiles").select("institution_id").eq("id", user.id).single();
 
-  let body: {
-    caseId: string;
-    biomarkerAgreement: number;
-    treatmentAgreement: number;
-    toxicityAgreement: number;
-    residentDrugs: string[];
-    aiDrugs: string[];
-    residentBiomarkers: string[];
-    aiGenes: string[];
-  };
+  let body: { caseId: string };
   try {
     body = await request.json();
   } catch {
     return NextResponse.json({ error: "Invalid JSON body." }, { status: 400 });
   }
+  if (!body.caseId) return NextResponse.json({ error: "caseId is required" }, { status: 400 });
 
-  const userPrompt = `A resident just completed an oncology training case. Here's what happened, in real terms:
-- Biomarker agreement with the AI: ${body.biomarkerAgreement}%
-- Treatment agreement with the AI: ${body.treatmentAgreement}%
-- Toxicity agreement with the AI: ${body.toxicityAgreement}%
-- Resident's biomarker priorities: ${JSON.stringify(body.residentBiomarkers)}
-- AI's actionable genes: ${JSON.stringify(body.aiGenes)}
-- Resident's drug picks: ${JSON.stringify(body.residentDrugs)}
-- AI's top treatments: ${JSON.stringify(body.aiDrugs)}
+  const [{ data: submission }, { data: pipeline }] = await Promise.all([
+    supabase
+      .from("case_submissions")
+      .select("drugs, monitoring, dose_modification, tags, confidence, diagnosis_note, biomarker_order, biomarker_checks")
+      .eq("case_id", body.caseId)
+      .eq("user_id", user.id)
+      .maybeSingle<CaseSubmissionRow>(),
+    supabase
+      .from("pipeline_runs")
+      .select("mutations, drug_scores, trials, risks, plan")
+      .eq("case_id", body.caseId)
+      .eq("user_id", user.id)
+      .maybeSingle<PipelineRunRow>(),
+  ]);
 
-Identify the single most useful takeaway for their AI Mentor to remember about this resident going forward. If they did well, note the strength. If something was off, be specific about what and why it matters clinically — not just "low score."
+  if (!submission || !pipeline) {
+    return NextResponse.json({ error: "Submission or pipeline data not found for this case." }, { status: 404 });
+  }
+
+  const residentBiomarkers = submission.biomarker_order.filter((g) => submission.biomarker_checks[g]);
+
+  const userPrompt = `A resident just completed an oncology training case. Here is exactly what each side produced —
+compare them and identify what the resident's reasoning shows.
+
+RESIDENT'S WORKSHEET (their own words and choices):
+- Diagnosis/reasoning note: ${submission.diagnosis_note || "(none written)"}
+- Biomarkers they flagged as decision-driving (in priority order): ${JSON.stringify(residentBiomarkers)}
+- Drug picks with their stated rationale:
+${submission.drugs.map((d) => `  - ${d.name}: "${d.rationale}" (citation: ${d.citation || "none"})`).join("\n") || "  (none)"}
+- Monitoring plan: ${submission.monitoring || "(none written)"}
+- Dose modification plan: ${submission.dose_modification || "(none written)"}
+- Self-reported confidence: ${submission.confidence}/100
+- Tags they applied: ${JSON.stringify(submission.tags)}
+
+AI PIPELINE'S OWN ANALYSIS OF THE SAME CASE:
+- Actionable mutations found: ${JSON.stringify(pipeline.mutations.map((m) => ({ gene: m.gene, variant: m.variant, evidence_level: m.evidence_level, drug: m.drug })))}
+- Top treatments ranked by survival benefit: ${JSON.stringify(pipeline.drug_scores)}
+- Matching clinical trials: ${JSON.stringify(pipeline.trials.map((t) => ({ nct_id: t.nct_id, title: t.title })))}
+- Toxicity risk assessment: ${JSON.stringify(pipeline.risks.map((r) => ({ drug: r.drug, risk_level: r.risk_level, adverse_events: r.adverse_events })))}
+- Final treatment plan top pick: ${JSON.stringify(pipeline.plan?.top_treatments?.[0] ?? null)}
+
+Compare the resident's actual reasoning (not just whether the final drug name matched) against the AI's actual findings.
+Where they agree, name the specific overlap as a strength. Where they diverge, name the specific gap — e.g. a
+biomarker the AI flagged that the resident didn't mention, a toxicity risk the resident's monitoring plan doesn't
+cover, or a citation-worthy rationale the resident got right that's worth reinforcing.
 
 ${RESPONSE_SCHEMA_HINT}`;
 
@@ -65,7 +116,11 @@ ${RESPONSE_SCHEMA_HINT}`;
       body: JSON.stringify({
         model: GROQ_MODEL,
         messages: [
-          { role: "system", content: "You write concise, clinically specific coaching notes. Output only strict JSON." },
+          {
+            role: "system",
+            content:
+              "You write concise, clinically specific coaching notes by comparing a resident's actual reasoning against an AI pipeline's actual findings. Output only strict JSON.",
+          },
           { role: "user", content: userPrompt },
         ],
         temperature: 0.4,
@@ -84,21 +139,26 @@ ${RESPONSE_SCHEMA_HINT}`;
   const raw = completion?.choices?.[0]?.message?.content;
   if (typeof raw !== "string") return NextResponse.json({ error: "No content" }, { status: 502 });
 
-  let parsed: { noteType: string; body: string };
+  let parsed: { notes: { noteType: string; body: string }[] };
   try {
     parsed = JSON.parse(raw);
   } catch {
     return NextResponse.json({ error: "Invalid model output" }, { status: 502 });
   }
 
-  await supabase.from("mentor_notes").insert({
-    user_id: user.id,
-    institution_id: profile?.institution_id ?? null,
-    note_type: parsed.noteType,
-    body: parsed.body,
-    related_case_id: body.caseId,
-    source: "auto",
-  });
+  const notes = (parsed.notes ?? []).filter((n) => n.noteType && n.body);
+  if (notes.length === 0) return NextResponse.json({ ok: true, count: 0 });
 
-  return NextResponse.json({ ok: true });
+  await supabase.from("mentor_notes").insert(
+    notes.map((n) => ({
+      user_id: user.id,
+      institution_id: profile?.institution_id ?? null,
+      note_type: n.noteType,
+      body: n.body,
+      related_case_id: body.caseId,
+      source: "auto",
+    })),
+  );
+
+  return NextResponse.json({ ok: true, count: notes.length });
 }

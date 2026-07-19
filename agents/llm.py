@@ -4,6 +4,8 @@ gpt-oss-120b (no Anthropic dependency).
 All helpers return None when the Groq key is missing or the call fails, so every
 caller must have a deterministic fallback (Section 15).
 """
+from __future__ import annotations
+
 import json
 import config
 

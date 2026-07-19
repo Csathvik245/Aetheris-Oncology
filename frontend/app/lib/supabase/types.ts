@@ -13,6 +13,7 @@ export interface Institution {
   slug: string;
   plan_tier: PlanTier;
   status: "active" | "pending_payment";
+  join_code: string;
   stripe_customer_id: string | null;
   stripe_subscription_id: string | null;
   stripe_subscription_status: string | null;

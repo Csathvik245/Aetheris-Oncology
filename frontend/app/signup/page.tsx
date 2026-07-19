@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { GraduationCap, ArrowRight, ArrowLeft, Search, Building2, Plus } from "lucide-react";
+import { GraduationCap, ArrowRight, ArrowLeft, KeyRound, Plus, CheckCircle2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,12 +21,6 @@ const DISPLAY_ROLES = [
 type Step = "credentials" | "role" | "institution";
 type AuthRole = "resident" | "faculty";
 
-interface InstitutionHit {
-  id: string;
-  name: string;
-  slug: string;
-}
-
 export default function SignupPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -40,28 +34,41 @@ export default function SignupPage() {
 
   const [authRole, setAuthRole] = useState<AuthRole | null>(() => {
     const fromQuery = searchParams.get("role");
-    return fromQuery === "resident" || fromQuery === "faculty" ? fromQuery : null;
+    if (fromQuery === "resident" || fromQuery === "faculty") return fromQuery;
+    // A join-code link (e.g. shared by a faculty admin) is always meant for
+    // residents joining that program, even if it didn't carry ?role=.
+    return searchParams.get("joinCode") ? "resident" : null;
   });
   const [displayRole, setDisplayRole] = useState("");
 
   const [institutionMode, setInstitutionMode] = useState<"join" | "create">("join");
-  const [institutionQuery, setInstitutionQuery] = useState("");
-  const [institutionHits, setInstitutionHits] = useState<InstitutionHit[]>([]);
-  const [selectedInstitution, setSelectedInstitution] = useState<InstitutionHit | null>(null);
+  const [joinCode, setJoinCode] = useState(() => searchParams.get("joinCode")?.toUpperCase() ?? "");
+  const [resolvedInstitution, setResolvedInstitution] = useState<{ id: string; name: string } | null>(null);
+  const [checkingCode, setCheckingCode] = useState(false);
   const [newInstitutionName, setNewInstitutionName] = useState("");
 
   useEffect(() => {
-    if (institutionMode !== "join" || institutionQuery.trim().length < 2) {
-      setInstitutionHits([]);
-      return;
-    }
+    setResolvedInstitution(null);
+    if (institutionMode !== "join" || joinCode.trim().length < 6) return;
+    setCheckingCode(true);
     const handle = setTimeout(async () => {
-      const res = await fetch(`/api/institutions/search?q=${encodeURIComponent(institutionQuery.trim())}`);
-      const data = await res.json();
-      setInstitutionHits(data.institutions ?? []);
-    }, 250);
+      try {
+        const res = await fetch(`/api/institutions/lookup-by-code?code=${encodeURIComponent(joinCode.trim())}`);
+        const data = await res.json();
+        if (res.ok) {
+          setResolvedInstitution(data.institution);
+          setError(null);
+        } else {
+          setResolvedInstitution(null);
+        }
+      } catch {
+        setResolvedInstitution(null);
+      } finally {
+        setCheckingCode(false);
+      }
+    }, 300);
     return () => clearTimeout(handle);
-  }, [institutionQuery, institutionMode]);
+  }, [joinCode, institutionMode]);
 
   function goToRoleStep() {
     setError(null);
@@ -80,8 +87,8 @@ export default function SignupPage() {
 
   async function finishSignup() {
     setError(null);
-    if (institutionMode === "join" && !selectedInstitution) {
-      setError("Search for and select your institution, or create a new one.");
+    if (institutionMode === "join" && !resolvedInstitution) {
+      setError("Enter the join code your program admin gave you, or create a new institution.");
       return;
     }
     if (institutionMode === "create" && !newInstitutionName.trim()) {
@@ -110,7 +117,7 @@ export default function SignupPage() {
         role: authRole,
         displayRole,
         institutionMode,
-        institutionId: selectedInstitution?.id,
+        joinCode: joinCode.trim(),
         institutionName: newInstitutionName.trim(),
       }),
     });
@@ -229,7 +236,7 @@ export default function SignupPage() {
                     institutionMode === "join" ? "border-navy bg-navy-tint text-navy" : "border-border text-foreground hover:bg-muted"
                   }`}
                 >
-                  <Search size={14} /> Join existing
+                  <KeyRound size={14} /> Join existing
                 </button>
                 <button
                   onClick={() => setInstitutionMode("create")}
@@ -244,32 +251,22 @@ export default function SignupPage() {
               {institutionMode === "join" ? (
                 <>
                   <Input
-                    value={institutionQuery}
-                    onChange={(e) => {
-                      setInstitutionQuery(e.target.value);
-                      setSelectedInstitution(null);
-                    }}
-                    placeholder="Search by program name…"
+                    value={joinCode}
+                    onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
+                    placeholder="Join code from your program admin"
+                    className="tracking-wider"
                   />
-                  {institutionHits.length > 0 && (
-                    <div className="mt-2 flex flex-col gap-1">
-                      {institutionHits.map((hit) => (
-                        <button
-                          key={hit.id}
-                          onClick={() => setSelectedInstitution(hit)}
-                          className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-left text-[12.5px] transition-colors ${
-                            selectedInstitution?.id === hit.id
-                              ? "border-navy bg-navy-tint text-navy"
-                              : "border-border text-foreground hover:bg-muted"
-                          }`}
-                        >
-                          <Building2 size={14} /> {hit.name}
-                        </button>
-                      ))}
-                    </div>
+                  <p className="mt-2 text-[11.5px] text-muted-foreground">
+                    Ask your faculty admin for your program's join code — it's on their Billing page.
+                  </p>
+                  {checkingCode && <p className="mt-2 text-[11.5px] text-muted-foreground">Checking…</p>}
+                  {!checkingCode && resolvedInstitution && (
+                    <p className="mt-2 flex items-center gap-1.5 text-[11.5px] text-teal-deep">
+                      <CheckCircle2 size={13} /> {resolvedInstitution.name}
+                    </p>
                   )}
-                  {selectedInstitution && (
-                    <p className="mt-2 text-[11.5px] text-teal-deep">Selected: {selectedInstitution.name}</p>
+                  {!checkingCode && joinCode.trim().length >= 6 && !resolvedInstitution && (
+                    <p className="mt-2 text-[11.5px] text-coral-text">That code isn't valid.</p>
                   )}
                 </>
               ) : (
@@ -293,7 +290,7 @@ export default function SignupPage() {
                 </Button>
                 <Button
                   onClick={finishSignup}
-                  disabled={submitting}
+                  disabled={submitting || (institutionMode === "join" && checkingCode)}
                   className="flex-1 gap-1.5 bg-navy py-5 text-white hover:bg-navy/90"
                 >
                   {submitting ? "Creating account…" : "Create Account"} <ArrowRight size={15} />
