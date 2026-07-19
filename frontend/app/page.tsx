@@ -9,7 +9,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { CompetencyRadar } from "./components/CompetencyRadar";
-import { LandingPage } from "./components/LandingPage";
+import { MarketingHome } from "./components/MarketingHome";
 import { CASES, WORKSHEET_STEPS } from "./lib/mock";
 import { useAuth } from "./lib/supabase/AuthProvider";
 import { getGeneratedCase, isGeneratedCaseId } from "./lib/generatedCase";
@@ -45,7 +45,7 @@ export default function RootPage() {
   }, [loading, profile, router]);
 
   if (loading) return null;
-  if (!user) return <LandingPage />;
+  if (!user) return <MarketingHome />;
   if (profile && profile.role !== "resident") return null;
 
   return <ResidentDashboard />;

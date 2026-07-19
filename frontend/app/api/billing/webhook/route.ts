@@ -48,6 +48,7 @@ export async function POST(request: Request) {
       const tier = session.metadata?.plan_tier as keyof typeof TIER_LIMITS | undefined;
       if (institutionId && tier) {
         await applyTierToInstitution(institutionId, tier, {
+          status: "active",
           stripe_customer_id: typeof session.customer === "string" ? session.customer : session.customer?.id,
           stripe_subscription_id: typeof session.subscription === "string" ? session.subscription : session.subscription?.id,
           stripe_subscription_status: "active",
