@@ -28,6 +28,14 @@ exactly 3 options. Each option must include:
 - Matching clinical trial NCT ID if available
 - Toxicity risk level
 
+When a resident's own worksheet reasoning is included in the input, you have
+a second job: write a short, direct response to that resident addressing
+what THEY specifically argued — where their reasoning matches yours (name
+the specific overlap) and where it diverges (name the specific gap: a
+biomarker they didn't weigh, a toxicity their monitoring plan doesn't cover,
+a citation-worthy point they got right). Never a generic "good job" — always
+grounded in their actual stated rationale.
+
 Return ONLY valid JSON matching the treatment plan schema. No prose."""
 
 
@@ -93,10 +101,27 @@ def _coerce_plan(raw: dict, patient_id: str) -> dict:
         "patient_id": _first(raw, "patient_id", "patientId", default=patient_id),
         "generated_at": _first(raw, "generated_at", "generatedAt", default=_now()),
         "top_treatments": coerced_items,
+        "resident_feedback": _first(raw, "resident_feedback", "residentFeedback", default=None),
     }
 
 
-def _deterministic_plan(patient_id, mutations, literature, outcome, trials, toxicity) -> TreatmentPlan:
+def _deterministic_resident_feedback(resident_context: Optional[dict], treatments: List[TopTreatment]) -> Optional[str]:
+    """No-LLM fallback — a factual, non-fabricated comparison only (never
+    invents clinical judgment the way the Groq path can)."""
+    if not resident_context:
+        return None
+    top_drug_names = {t.drug for t in treatments}
+    resident_drugs = {d.get("name") for d in (resident_context.get("drugs") or []) if d.get("name")}
+    overlap = top_drug_names & resident_drugs
+    if overlap:
+        return (f"Your drug picks overlapping with the top-ranked options: {', '.join(sorted(overlap))}. "
+                "(Generated without live model access — this is a factual overlap check only, not clinical commentary.)")
+    return ("None of your drug picks matched the top-ranked options from this run. "
+            "(Generated without live model access — this is a factual overlap check only, not clinical commentary.)")
+
+
+def _deterministic_plan(patient_id, mutations, literature, outcome, trials, toxicity,
+                        resident_context: Optional[dict] = None) -> TreatmentPlan:
     tox_by_drug = {a.drug: a for a in toxicity.risk_assessments}
     top_pmids = [c.pmid for c in literature.citations[:3]]
     treatments: List[TopTreatment] = []
@@ -126,16 +151,39 @@ def _deterministic_plan(patient_id, mutations, literature, outcome, trials, toxi
             )) if tox else "No adverse-event data available (unverified).",
         ))
 
-    return TreatmentPlan(patient_id=patient_id, generated_at=_now(), top_treatments=treatments)
+    return TreatmentPlan(
+        patient_id=patient_id, generated_at=_now(), top_treatments=treatments,
+        resident_feedback=_deterministic_resident_feedback(resident_context, treatments),
+    )
 
 
 async def orchestrator(patient_id: str, cancer_type: str, mutations: List[Mutation],
                        literature: LiteratureOutput, outcome: OutcomeOutput,
                        trials: TrialOutput, toxicity: ToxicityOutput,
-                       emit: Optional[Callable] = None) -> TreatmentPlan:
+                       emit: Optional[Callable] = None,
+                       resident_context: Optional[dict] = None) -> TreatmentPlan:
     if emit:
         await emit("ORCHESTRATOR_START", "orchestrator",
                    "Synthesizing final treatment plan with gpt-oss-120b (Groq)...")
+
+    schema = {
+        "patient_id": "string",
+        "generated_at": "ISO8601 string",
+        "top_treatments": [{
+            "rank": "integer (1-based)",
+            "drug": "string (use a drug from outcome.drug_scores)",
+            "survival_benefit_score": "float (from outcome.drug_scores)",
+            "evidence_level": "string (from genomic mutation, e.g. LEVEL_1)",
+            "supporting_citations": ["pmid strings from literature.citations"],
+            "matching_trial": {"nct_id": "string", "title": "string"},
+            "toxicity_risk": "LOW | MODERATE | HIGH (from toxicity)",
+            "toxicity_notes": "string",
+        }],
+    }
+    instructions = ("Return up to 3 ranked options, best first. Use ONLY drugs that "
+                     "appear in outcome.drug_scores. The top-level JSON key MUST be "
+                     "exactly \"top_treatments\" (a JSON array). Output a single JSON "
+                     "object, no prose.")
 
     payload = {
         "patient_id": patient_id,
@@ -145,25 +193,19 @@ async def orchestrator(patient_id: str, cancer_type: str, mutations: List[Mutati
         "outcome": outcome.model_dump(),
         "trials": trials.model_dump(),
         "toxicity": toxicity.model_dump(),
-        "required_output_schema": {
-            "patient_id": "string",
-            "generated_at": "ISO8601 string",
-            "top_treatments": [{
-                "rank": "integer (1-based)",
-                "drug": "string (use a drug from outcome.drug_scores)",
-                "survival_benefit_score": "float (from outcome.drug_scores)",
-                "evidence_level": "string (from genomic mutation, e.g. LEVEL_1)",
-                "supporting_citations": ["pmid strings from literature.citations"],
-                "matching_trial": {"nct_id": "string", "title": "string"},
-                "toxicity_risk": "LOW | MODERATE | HIGH (from toxicity)",
-                "toxicity_notes": "string",
-            }],
-        },
-        "instructions": ("Return up to 3 ranked options, best first. Use ONLY drugs that "
-                          "appear in outcome.drug_scores. The top-level JSON key MUST be "
-                          "exactly \"top_treatments\" (a JSON array). Output a single JSON "
-                          "object, no prose."),
     }
+
+    if resident_context:
+        payload["resident_worksheet"] = resident_context
+        schema["resident_feedback"] = ("string — your direct response to this specific resident's "
+                                        "reasoning (see system prompt); 2-4 sentences")
+        instructions += (" A resident's own worksheet reasoning is included as "
+                          "\"resident_worksheet\" — you MUST also include a \"resident_feedback\" "
+                          "string in your output responding directly to their specific diagnosis "
+                          "note, biomarker priorities, and drug rationale.")
+
+    payload["required_output_schema"] = schema
+    payload["instructions"] = instructions
 
     plan: Optional[TreatmentPlan] = None
     raw = await groq_json(SYSTEM_PROMPT, json.dumps(payload, indent=2))
@@ -175,7 +217,7 @@ async def orchestrator(patient_id: str, cancer_type: str, mutations: List[Mutati
             print(f"[orchestrator] gpt-oss output invalid, using deterministic ({e})")
 
     if plan is None:
-        plan = _deterministic_plan(patient_id, mutations, literature, outcome, trials, toxicity)
+        plan = _deterministic_plan(patient_id, mutations, literature, outcome, trials, toxicity, resident_context)
 
     if emit:
         await emit("ORCHESTRATOR_COMPLETE", "orchestrator",

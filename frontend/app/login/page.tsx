@@ -92,14 +92,16 @@ export default function LoginPage() {
           >
             {submitting ? "Signing in…" : "Sign In"} <ArrowRight size={15} />
           </Button>
-          <p className="mt-4 text-center text-[12.5px] text-muted-foreground">
-            New here?{" "}
-            <a
-              href={role ? `/signup?role=${role}` : "/signup"}
-              className="font-semibold text-navy hover:underline"
-            >
-              Create an account
+          <p className="mt-4 text-center text-[12px] text-muted-foreground">
+            New program?{" "}
+            <a href="/pricing" className="font-semibold text-navy hover:underline">
+              See plans
+            </a>{" "}
+            or{" "}
+            <a href="/pilot" className="font-semibold text-navy hover:underline">
+              request a pilot
             </a>
+            . Residents need an invite link from their program admin.
           </p>
         </Card>
 

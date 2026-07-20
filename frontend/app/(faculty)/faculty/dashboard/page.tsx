@@ -163,7 +163,11 @@ export default function FacultyDashboardPage() {
             ) : (
               <div className="mt-3 flex flex-col divide-y divide-border">
                 {roster.map((r) => (
-                  <div key={r.id} className="flex items-center gap-4 px-5 py-3">
+                  <Link
+                    key={r.id}
+                    href={`/faculty/resident/${r.id}`}
+                    className="flex items-center gap-4 px-5 py-3 transition-colors hover:bg-muted"
+                  >
                     <div className="min-w-0 flex-1">
                       <div className="truncate text-[13.5px] font-medium text-foreground">{r.fullName}</div>
                       <div className="truncate text-[11.5px] text-muted-foreground">{r.displayRole ?? "Resident"}</div>
@@ -173,7 +177,7 @@ export default function FacultyDashboardPage() {
                       {r.avgAgreement !== null ? `${r.avgAgreement}%` : "—"}
                     </div>
                     <div className="w-16 text-right text-[11.5px] text-muted-foreground">{timeAgo(r.lastActive)}</div>
-                  </div>
+                  </Link>
                 ))}
               </div>
             )}

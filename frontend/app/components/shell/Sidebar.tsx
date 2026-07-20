@@ -38,7 +38,7 @@ const NAV = [
 const FACULTY_NAV = [
   { href: "/faculty/dashboard", label: "Faculty Dashboard", icon: GraduationCap, match: (p: string) => p.startsWith("/faculty/dashboard") },
   { href: "/faculty/review", label: "Review Queue", icon: ClipboardCheck, match: (p: string) => p.startsWith("/faculty/review") },
-  { href: "/faculty/cases/new", label: "Case Builder", icon: FilePlus2, match: (p: string) => p.startsWith("/faculty/cases") },
+  { href: "/faculty/cases", label: "My Cases", icon: FilePlus2, match: (p: string) => p.startsWith("/faculty/cases") },
   { href: "/leaderboard", label: "Leaderboard", icon: Trophy, match: (p: string) => p.startsWith("/leaderboard") },
   { href: "/faculty/billing", label: "Billing", icon: CreditCard, match: (p: string) => p.startsWith("/faculty/billing") },
 ];

@@ -115,7 +115,23 @@ export default function MissionControlPage({
           : await fetch("/demo_patient.vcf")
               .then((r) => r.blob())
               .then((b) => new File([b], "demo_patient.vcf", { type: "text/plain" }));
-        pipeline.runFile(file);
+
+        // If the resident already submitted their worksheet for this case,
+        // send their actual reasoning to the orchestrator so its synthesis
+        // can respond directly to it — not just an independent analysis.
+        const submission = await getSubmission(caseId);
+        const residentContext = submission
+          ? {
+              diagnosisNote: submission.diagnosisNote,
+              biomarkerOrder: submission.biomarkerOrder.filter((g) => submission.biomarkerChecks[g]),
+              drugs: submission.drugs.map((d) => ({ name: d.name, rationale: d.rationale })),
+              monitoring: submission.monitoring,
+              doseModification: submission.doseModification,
+              confidence: submission.confidence,
+            }
+          : undefined;
+
+        pipeline.runFile(file, residentContext);
       } catch {
         /* backend/demo file unavailable — UI still renders idle state */
       }
@@ -295,6 +311,15 @@ export default function MissionControlPage({
         <p className="mt-4 text-center text-[13px] text-muted-foreground">
           Aggregating cross-agent findings to construct treatment recommendation draft.
         </p>
+
+        {pipeline.complete && pipeline.plan?.resident_feedback && (
+          <Card className="mt-4 border-navy/30 bg-navy-tint/40 p-4">
+            <div className="flex items-center gap-1.5 text-[11.5px] font-semibold uppercase tracking-[0.06em] text-navy">
+              <Share2 size={13} /> Orchestrator's Response to Your Reasoning
+            </div>
+            <p className="mt-2 text-[13px] leading-relaxed text-foreground">{pipeline.plan.resident_feedback}</p>
+          </Card>
+        )}
 
         {/* reasoning timeline */}
         <Card className="mt-4 p-0">

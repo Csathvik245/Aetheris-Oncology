@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { GraduationCap, ArrowRight, ArrowLeft, KeyRound, Plus, CheckCircle2 } from "lucide-react";
+import { GraduationCap, ArrowRight, ArrowLeft, CheckCircle2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -41,15 +41,18 @@ export default function SignupPage() {
   });
   const [displayRole, setDisplayRole] = useState("");
 
-  const [institutionMode, setInstitutionMode] = useState<"join" | "create">("join");
+  // A resident invite link (?role=resident&joinCode=X, shared by a faculty
+  // admin) locks both the role and the code — this signup flow only exists
+  // to onboard the resident that link was generated for, not a general
+  // "pick your own role and institution" form.
+  const lockedByLink = searchParams.get("role") === "resident" && !!searchParams.get("joinCode");
   const [joinCode, setJoinCode] = useState(() => searchParams.get("joinCode")?.toUpperCase() ?? "");
   const [resolvedInstitution, setResolvedInstitution] = useState<{ id: string; name: string } | null>(null);
   const [checkingCode, setCheckingCode] = useState(false);
-  const [newInstitutionName, setNewInstitutionName] = useState("");
 
   useEffect(() => {
     setResolvedInstitution(null);
-    if (institutionMode !== "join" || joinCode.trim().length < 6) return;
+    if (joinCode.trim().length < 6) return;
     setCheckingCode(true);
     const handle = setTimeout(async () => {
       try {
@@ -68,7 +71,7 @@ export default function SignupPage() {
       }
     }, 300);
     return () => clearTimeout(handle);
-  }, [joinCode, institutionMode]);
+  }, [joinCode]);
 
   function goToRoleStep() {
     setError(null);
@@ -87,12 +90,8 @@ export default function SignupPage() {
 
   async function finishSignup() {
     setError(null);
-    if (institutionMode === "join" && !resolvedInstitution) {
-      setError("Enter the join code your program admin gave you, or create a new institution.");
-      return;
-    }
-    if (institutionMode === "create" && !newInstitutionName.trim()) {
-      setError("Enter a name for your institution.");
+    if (!resolvedInstitution) {
+      setError("Enter the join code your program admin gave you.");
       return;
     }
 
@@ -116,9 +115,7 @@ export default function SignupPage() {
         fullName: fullName.trim(),
         role: authRole,
         displayRole,
-        institutionMode,
         joinCode: joinCode.trim(),
-        institutionName: newInstitutionName.trim(),
       }),
     });
 
@@ -183,20 +180,28 @@ export default function SignupPage() {
 
           {step === "role" && (
             <>
-              <label className="label mb-1.5 block">I am a…</label>
-              <div className="grid grid-cols-2 gap-2">
-                {(["resident", "faculty"] as const).map((r) => (
-                  <button
-                    key={r}
-                    onClick={() => setAuthRole(r)}
-                    className={`rounded-lg border px-3 py-2.5 text-left text-[12.5px] font-medium transition-colors ${
-                      authRole === r ? "border-navy bg-navy-tint text-navy" : "border-border text-foreground hover:bg-muted"
-                    }`}
-                  >
-                    {r === "resident" ? "Resident / Trainee" : "Faculty / Program Director"}
-                  </button>
-                ))}
-              </div>
+              {lockedByLink ? (
+                <p className="text-[12.5px] text-muted-foreground">
+                  This invite link is for residents joining <strong className="text-foreground">{resolvedInstitution?.name ?? "your program"}</strong>.
+                </p>
+              ) : (
+                <>
+                  <label className="label mb-1.5 block">I am a…</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {(["resident", "faculty"] as const).map((r) => (
+                      <button
+                        key={r}
+                        onClick={() => setAuthRole(r)}
+                        className={`rounded-lg border px-3 py-2.5 text-left text-[12.5px] font-medium transition-colors ${
+                          authRole === r ? "border-navy bg-navy-tint text-navy" : "border-border text-foreground hover:bg-muted"
+                        }`}
+                      >
+                        {r === "resident" ? "Resident / Trainee" : "Faculty / Program Director"}
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
 
               <label className="label mb-1.5 mt-5 block">Training level</label>
               <div className="grid grid-cols-2 gap-2">
@@ -228,58 +233,27 @@ export default function SignupPage() {
 
           {step === "institution" && (
             <>
-              <label className="label mb-1.5 block">Your institution</label>
-              <div className="mb-3 grid grid-cols-2 gap-2">
-                <button
-                  onClick={() => setInstitutionMode("join")}
-                  className={`flex items-center justify-center gap-1.5 rounded-lg border px-3 py-2.5 text-[12.5px] font-medium transition-colors ${
-                    institutionMode === "join" ? "border-navy bg-navy-tint text-navy" : "border-border text-foreground hover:bg-muted"
-                  }`}
-                >
-                  <KeyRound size={14} /> Join existing
-                </button>
-                <button
-                  onClick={() => setInstitutionMode("create")}
-                  className={`flex items-center justify-center gap-1.5 rounded-lg border px-3 py-2.5 text-[12.5px] font-medium transition-colors ${
-                    institutionMode === "create" ? "border-navy bg-navy-tint text-navy" : "border-border text-foreground hover:bg-muted"
-                  }`}
-                >
-                  <Plus size={14} /> Create new
-                </button>
-              </div>
-
-              {institutionMode === "join" ? (
-                <>
-                  <Input
-                    value={joinCode}
-                    onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
-                    placeholder="Join code from your program admin"
-                    className="tracking-wider"
-                  />
-                  <p className="mt-2 text-[11.5px] text-muted-foreground">
-                    Ask your faculty admin for your program's join code — it's on their Billing page.
-                  </p>
-                  {checkingCode && <p className="mt-2 text-[11.5px] text-muted-foreground">Checking…</p>}
-                  {!checkingCode && resolvedInstitution && (
-                    <p className="mt-2 flex items-center gap-1.5 text-[11.5px] text-teal-deep">
-                      <CheckCircle2 size={13} /> {resolvedInstitution.name}
-                    </p>
-                  )}
-                  {!checkingCode && joinCode.trim().length >= 6 && !resolvedInstitution && (
-                    <p className="mt-2 text-[11.5px] text-coral-text">That code isn't valid.</p>
-                  )}
-                </>
-              ) : (
-                <>
-                  <Input
-                    value={newInstitutionName}
-                    onChange={(e) => setNewInstitutionName(e.target.value)}
-                    placeholder="e.g. Riverside Community Residency"
-                  />
-                  <p className="mt-2 text-[11.5px] text-muted-foreground">
-                    You'll become the institution admin on a 45-day free pilot, unlimited seats and usage.
-                  </p>
-                </>
+              <label className="label mb-1.5 block">Your institution's join code</label>
+              <Input
+                value={joinCode}
+                onChange={(e) => !lockedByLink && setJoinCode(e.target.value.toUpperCase())}
+                readOnly={lockedByLink}
+                placeholder="Join code from your program admin"
+                className={`tracking-wider ${lockedByLink ? "cursor-not-allowed bg-muted text-muted-foreground" : ""}`}
+              />
+              <p className="mt-2 text-[11.5px] text-muted-foreground">
+                {lockedByLink
+                  ? "This code came from your invite link and can't be changed."
+                  : "Ask your faculty admin for your program's join code — it's on their Billing page, or in the link they sent you."}
+              </p>
+              {checkingCode && <p className="mt-2 text-[11.5px] text-muted-foreground">Checking…</p>}
+              {!checkingCode && resolvedInstitution && (
+                <p className="mt-2 flex items-center gap-1.5 text-[11.5px] text-teal-deep">
+                  <CheckCircle2 size={13} /> {resolvedInstitution.name}
+                </p>
+              )}
+              {!checkingCode && joinCode.trim().length >= 6 && !resolvedInstitution && (
+                <p className="mt-2 text-[11.5px] text-coral-text">That code isn't valid.</p>
               )}
 
               {error && <p className="mt-3 text-[12.5px] text-coral-text">{error}</p>}
@@ -290,7 +264,7 @@ export default function SignupPage() {
                 </Button>
                 <Button
                   onClick={finishSignup}
-                  disabled={submitting || (institutionMode === "join" && checkingCode)}
+                  disabled={submitting || checkingCode}
                   className="flex-1 gap-1.5 bg-navy py-5 text-white hover:bg-navy/90"
                 >
                   {submitting ? "Creating account…" : "Create Account"} <ArrowRight size={15} />

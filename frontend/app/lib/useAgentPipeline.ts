@@ -13,6 +13,7 @@ import {
   type Trial,
   type RiskAssessment,
   type TreatmentPlan,
+  type ResidentContext,
 } from "./api";
 
 export type AgentState = "IDLE" | "RUNNING" | "DONE" | "ERROR";
@@ -168,13 +169,13 @@ export function useAgentPipeline() {
   );
 
   const runFile = useCallback(
-    async (file: File) => {
+    async (file: File, residentContext?: ResidentContext) => {
       resetRun();
       setBusy(true);
       startedAt.current = Date.now();
       pushEvent("intake", `Uploading ${file.name} → POST /analyze`, "running");
       try {
-        const { job_id } = await postAnalyze(file);
+        const { job_id } = await postAnalyze(file, residentContext);
         setJobId(job_id);
         jobIdRef.current = job_id;
         setOnline(true);

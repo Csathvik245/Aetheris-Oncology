@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Play, ArrowRight, ClipboardCheck, Percent, Award } from "lucide-react";
+import { Play, ArrowRight, ClipboardCheck, Percent, Award, ClipboardList } from "lucide-react";
 import { Shell } from "./components/shell/Shell";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -23,6 +23,7 @@ import {
   type CompetencySkill,
   type WorksheetDraft,
 } from "./lib/session";
+import { listMyAssignments, type CaseAssignment } from "./lib/faculty";
 
 async function draftCaseTitle(caseId: string): Promise<string> {
   const mockCase = CASES.find((c) => c.id === caseId);
@@ -59,15 +60,17 @@ function ResidentDashboard() {
   const [draft, setDraft] = useState<WorksheetDraft | null>(null);
   const [draftTitle, setDraftTitle] = useState("");
   const [suggested, setSuggested] = useState<typeof CASES>(CASES.slice(0, 3));
+  const [assignments, setAssignments] = useState<CaseAssignment[]>([]);
 
   useEffect(() => {
     (async () => {
-      const [dashboardStats, competency, streakDays, drafts, history] = await Promise.all([
+      const [dashboardStats, competency, streakDays, drafts, history, myAssignments] = await Promise.all([
         computeDashboardStats(),
         computeCompetencyProfile(),
         computeStreakDays(),
         listDrafts(),
         listHistoryEntries(),
+        listMyAssignments(),
       ]);
       setStats(dashboardStats);
       setSkills(competency);
@@ -78,6 +81,7 @@ function ResidentDashboard() {
       const done = new Set(history.map((h) => h.caseId));
       const remaining = CASES.filter((c) => !done.has(c.id));
       setSuggested((remaining.length > 0 ? remaining : CASES).slice(0, 3));
+      setAssignments(myAssignments.filter((a) => !a.completed));
     })();
   }, []);
 
@@ -198,6 +202,31 @@ function ResidentDashboard() {
 
           {/* right ~1/3 */}
           <div className="flex flex-col gap-5">
+            {assignments.length > 0 && (
+              <Card className="p-5">
+                <h3 className="flex items-center gap-1.5 font-heading text-[15px] font-semibold text-foreground">
+                  <ClipboardList size={16} /> Assigned to You
+                </h3>
+                <div className="mt-3 flex flex-col gap-2">
+                  {assignments.map((a) => (
+                    <Link
+                      key={a.id}
+                      href={`/cases/${a.caseId}`}
+                      className="flex items-center justify-between gap-2 rounded-lg border border-border p-2.5 hover:bg-muted"
+                    >
+                      <div className="min-w-0">
+                        <p className="truncate text-[12.5px] font-medium text-foreground">{a.caseTitle}</p>
+                        {a.dueAt && (
+                          <p className="text-[11px] text-muted-foreground">Due {new Date(a.dueAt).toLocaleDateString()}</p>
+                        )}
+                      </div>
+                      <ArrowRight size={13} className="shrink-0 text-muted-foreground" />
+                    </Link>
+                  ))}
+                </div>
+              </Card>
+            )}
+
             <Card className="p-5">
               <h3 className="font-heading text-[15px] font-semibold text-foreground">Competency Profile</h3>
               <CompetencyRadar data={skills} />

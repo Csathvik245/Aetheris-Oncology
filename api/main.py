@@ -12,8 +12,9 @@ import sys
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import Optional
 
-from fastapi import FastAPI, UploadFile, File, HTTPException
+from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 
@@ -60,7 +61,7 @@ def _make_emitter(job_id: str):
     return emit
 
 
-async def _run_pipeline(job_id: str, parsed: dict):
+async def _run_pipeline(job_id: str, parsed: dict, resident_context: Optional[dict] = None):
     job = JOBS[job_id]
     emit = _make_emitter(job_id)
     patient_id = parsed.get("patient_id", "UNKNOWN")
@@ -86,9 +87,12 @@ async def _run_pipeline(job_id: str, parsed: dict):
             toxicity_agent(outcome, emit),
         )
 
-        # 4) Orchestrator — sequential; needs all 5
+        # 4) Orchestrator — sequential; needs all 5. Only the orchestrator
+        # (the one agent that reasons, not gathers) ever sees the resident's
+        # worksheet — the sub-agents above stay independent/objective.
         plan = await orchestrator(patient_id, cancer_type, mutations,
-                                  literature, outcome, trials, toxicity, emit)
+                                  literature, outcome, trials, toxicity, emit,
+                                  resident_context=resident_context)
         job["result"] = plan.model_dump()
         await emit("PIPELINE_COMPLETE", "pipeline", "Pipeline complete")
         job["status"] = "complete"
@@ -98,14 +102,22 @@ async def _run_pipeline(job_id: str, parsed: dict):
 
 
 @app.post("/analyze")
-async def analyze(file: UploadFile = File(...)):
+async def analyze(file: UploadFile = File(...), resident_context: Optional[str] = Form(None)):
     raw = (await file.read()).decode("utf-8", errors="replace")
     parsed = parse_vcf(raw)
     if not parsed["mutations"]:
         raise HTTPException(400, "No mutations parsed from VCF")
+
+    resident_ctx = None
+    if resident_context:
+        try:
+            resident_ctx = json.loads(resident_context)
+        except json.JSONDecodeError:
+            resident_ctx = None
+
     job_id = uuid.uuid4().hex[:12]
     JOBS[job_id] = {"events": [], "result": None, "status": "running", "parsed": parsed}
-    asyncio.create_task(_run_pipeline(job_id, parsed))
+    asyncio.create_task(_run_pipeline(job_id, parsed, resident_ctx))
     return {"job_id": job_id, "patient_id": parsed["patient_id"],
             "cancer_type": parsed["cancer_type"], "mutation_count": len(parsed["mutations"])}
 

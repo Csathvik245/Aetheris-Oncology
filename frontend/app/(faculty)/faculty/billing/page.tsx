@@ -79,9 +79,14 @@ export default function BillingPage() {
     window.location.href = data.url;
   }
 
+  function residentLink() {
+    if (!institution) return "";
+    return `${window.location.origin}/signup?role=resident&joinCode=${institution.join_code}`;
+  }
+
   function copyJoinCode() {
     if (!institution) return;
-    navigator.clipboard.writeText(institution.join_code);
+    navigator.clipboard.writeText(residentLink());
     setCopied(true);
     setTimeout(() => setCopied(false), 1500);
   }
@@ -166,20 +171,21 @@ export default function BillingPage() {
           <Card className="mt-5 p-5">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="font-heading text-[15px] font-semibold text-foreground">Resident Join Code</h3>
+                <h3 className="font-heading text-[15px] font-semibold text-foreground">Resident Invite Link</h3>
                 <p className="mt-1 text-[12.5px] text-muted-foreground">
-                  Share this with your residents/faculty — they enter it at signup to link to {institution.name}.
+                  Share this with your residents/faculty — they click it, create their account, and are linked to{" "}
+                  {institution.name} automatically.
                 </p>
               </div>
             </div>
             <div className="mt-3 flex items-center gap-2">
-              <code className="rounded-lg bg-navy-tint px-4 py-2 text-[18px] font-bold tracking-[0.2em] text-navy">
-                {institution.join_code}
+              <code className="min-w-0 flex-1 truncate rounded-lg bg-navy-tint px-3 py-2 text-[12.5px] text-navy">
+                {residentLink()}
               </code>
-              <Button variant="outline" onClick={copyJoinCode} className="gap-1.5">
+              <Button variant="outline" onClick={copyJoinCode} className="shrink-0 gap-1.5">
                 {copied ? <Check size={14} /> : <Copy size={14} />} {copied ? "Copied" : "Copy"}
               </Button>
-              <Button variant="outline" onClick={regenerateJoinCode} disabled={regenerating} className="gap-1.5">
+              <Button variant="outline" onClick={regenerateJoinCode} disabled={regenerating} className="shrink-0 gap-1.5">
                 <RefreshCw size={14} className={regenerating ? "animate-spin" : ""} /> Regenerate
               </Button>
             </div>

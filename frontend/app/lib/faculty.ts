@@ -369,3 +369,76 @@ export async function addReviewComment(params: {
     verdict: params.verdict,
   });
 }
+
+export interface CaseAssignment {
+  id: string;
+  caseId: string;
+  caseTitle: string;
+  note: string | null;
+  dueAt: string | null;
+  createdAt: string;
+  completed: boolean;
+}
+
+export async function assignCase(params: {
+  caseId: string;
+  caseTitle: string;
+  institutionId: string;
+  assignedTo: string;
+  note?: string;
+  dueAt?: string;
+}): Promise<{ error: string | null }> {
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Not authenticated" };
+
+  const { error } = await supabase.from("case_assignments").insert({
+    case_id: params.caseId,
+    case_title: params.caseTitle,
+    institution_id: params.institutionId,
+    assigned_by: user.id,
+    assigned_to: params.assignedTo,
+    note: params.note?.trim() || null,
+    due_at: params.dueAt || null,
+  });
+  return { error: error?.message ?? null };
+}
+
+export async function unassignCase(assignmentId: string) {
+  const supabase = createClient();
+  await supabase.from("case_assignments").delete().eq("id", assignmentId);
+}
+
+export async function listAssignmentsForResident(userId: string): Promise<CaseAssignment[]> {
+  const supabase = createClient();
+  const [{ data: assignments }, { data: completed }] = await Promise.all([
+    supabase
+      .from("case_assignments")
+      .select("id, case_id, case_title, note, due_at, created_at")
+      .eq("assigned_to", userId)
+      .order("created_at", { ascending: false }),
+    supabase.from("history_entries").select("case_id").eq("user_id", userId),
+  ]);
+  const completedIds = new Set((completed ?? []).map((h) => h.case_id));
+  return (assignments ?? []).map((a) => ({
+    id: a.id,
+    caseId: a.case_id,
+    caseTitle: a.case_title,
+    note: a.note,
+    dueAt: a.due_at,
+    createdAt: a.created_at,
+    completed: completedIds.has(a.case_id),
+  }));
+}
+
+/** Own-assignments variant for the signed-in resident (no userId needed). */
+export async function listMyAssignments(): Promise<CaseAssignment[]> {
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return [];
+  return listAssignmentsForResident(user.id);
+}

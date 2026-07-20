@@ -86,6 +86,21 @@ export interface TreatmentPlan {
     survival_model?: string;
     [k: string]: unknown;
   };
+  /** Set only when the resident's own worksheet reasoning was sent along with
+   * the analysis — the orchestrator's direct response to their reasoning. */
+  resident_feedback?: string | null;
+}
+
+/** What actually gets sent to the orchestrator alongside the VCF — a subset
+ * of WorksheetSubmission, kept separate so the wire format stays decoupled
+ * from the full local session type. */
+export interface ResidentContext {
+  diagnosisNote: string;
+  biomarkerOrder: string[];
+  drugs: { name: string; rationale: string }[];
+  monitoring: string;
+  doseModification: string;
+  confidence: number;
 }
 
 export interface AgentCard {
@@ -97,9 +112,10 @@ export interface AgentCard {
   data_sources: string[];
 }
 
-export async function postAnalyze(file: File): Promise<{ job_id: string }> {
+export async function postAnalyze(file: File, residentContext?: ResidentContext): Promise<{ job_id: string }> {
   const fd = new FormData();
   fd.append("file", file);
+  if (residentContext) fd.append("resident_context", JSON.stringify(residentContext));
   const res = await fetch(`${API}/analyze`, { method: "POST", body: fd });
   if (!res.ok) throw new Error(`POST /analyze failed: ${res.status}`);
   return res.json();

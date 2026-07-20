@@ -80,3 +80,7 @@ class TreatmentPlan(BaseModel):
     generated_at: str
     top_treatments: List[TopTreatment]
     model_attribution: ModelAttribution = ModelAttribution()
+    # Set only when the resident's own worksheet reasoning was supplied to
+    # the orchestrator — the orchestrator's direct response to what the
+    # resident specifically argued (not just an agreement percentage).
+    resident_feedback: Optional[str] = None
