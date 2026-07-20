@@ -64,12 +64,17 @@ export default function WorksheetPage({
   const [monitoring, setMonitoring] = useState("weekly-cbc");
   const [doseModification, setDoseModification] = useState("");
   const [toxicityOptions, setToxicityOptions] = useState<string[]>(TOXICITY_TAGS);
-  const [tags, setTags] = useState<string[]>(["Neutropenia", "Pneumonitis"]);
+  // Starts empty — the resident has to actually assess and pick which
+  // toxicities apply to their chosen regimen, not confirm a pre-answered set.
+  const [tags, setTags] = useState<string[]>([]);
   const [confidence, setConfidence] = useState([75]);
   const [diagnosisNote, setDiagnosisNote] = useState("");
   const [biomarkerOrder, setBiomarkerOrder] = useState<string[]>(packet.pathology.genomicProfile);
+  // Starts unchecked — same reasoning as the toxicity tags above: which
+  // biomarkers actually drive the decision is itself part of the exercise,
+  // not something to hand the resident pre-answered.
   const [biomarkerChecks, setBiomarkerChecks] = useState<Record<string, boolean>>(
-    Object.fromEntries(packet.pathology.genomicProfile.map((g) => [g, true]))
+    Object.fromEntries(packet.pathology.genomicProfile.map((g) => [g, false]))
   );
   const [tip, setTip] = useState(WORKSHEET_TIP);
   const [objectiveTitles, setObjectiveTitles] = useState<string[]>([]);
@@ -144,7 +149,7 @@ export default function WorksheetPage({
       const g = await getGeneratedCase(caseId);
       if (!g) return;
       setBiomarkerOrder(packet.pathology.genomicProfile);
-      setBiomarkerChecks(Object.fromEntries(packet.pathology.genomicProfile.map((m) => [m, true])));
+      setBiomarkerChecks(Object.fromEntries(packet.pathology.genomicProfile.map((m) => [m, false])));
       if (g.toxicityConcerns.length > 0) {
         setToxicityOptions((cur) => Array.from(new Set([...cur, ...g.toxicityConcerns])));
         setTags(g.toxicityConcerns);

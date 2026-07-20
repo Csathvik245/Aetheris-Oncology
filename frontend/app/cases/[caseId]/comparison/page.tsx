@@ -2,7 +2,7 @@
 
 import { use, useEffect, useState } from "react";
 import Link from "next/link";
-import { Check, Circle, SearchX, ChevronDown, Users, Share2 } from "lucide-react";
+import { Check, Circle, SearchX, ChevronDown, Users, Share2, Sparkles, BrainCircuit } from "lucide-react";
 import { Shell } from "../../../components/shell/Shell";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -19,6 +19,12 @@ import {
   type WorksheetSubmission,
 } from "../../../lib/session";
 import { AgentChat } from "../../../components/AgentChat";
+import { createClient } from "../../../lib/supabase/client";
+
+interface MentorNote {
+  note_type: string;
+  body: string;
+}
 
 function ScoreCard({ label, value }: { label: string; value: number | null }) {
   const low = value !== null && value < 70;
@@ -57,10 +63,22 @@ export default function ComparisonPage({
   const [whyOpen, setWhyOpen] = useState<"resident" | "ai" | null>(null);
   const [pipelineData, setPipelineData] = useState<PipelineData | null>(null);
   const [submission, setSubmission] = useState<WorksheetSubmission | null>(null);
+  const [mentorNotes, setMentorNotes] = useState<MentorNote[]>([]);
 
   useEffect(() => {
     getPipelineData(caseId).then(setPipelineData);
     getSubmission(caseId).then(setSubmission);
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) return;
+      supabase
+        .from("mentor_notes")
+        .select("note_type, body")
+        .eq("user_id", user.id)
+        .eq("related_case_id", caseId)
+        .order("created_at", { ascending: false })
+        .then(({ data }) => setMentorNotes(data ?? []));
+    });
   }, [caseId]);
 
   const live = pipelineData !== null;
@@ -118,6 +136,38 @@ export default function ComparisonPage({
           <ScoreCard label="Treatment Agreement" value={treatmentScore} />
           <ScoreCard label="Toxicity Analysis" value={toxicityScore} />
         </div>
+
+        {pipelineData?.plan?.resident_feedback && (
+          <Card className="mt-5 border-navy/30 bg-navy-tint/40 p-5">
+            <div className="flex items-center gap-1.5 text-[11.5px] font-semibold uppercase tracking-[0.06em] text-navy">
+              <Sparkles size={14} /> How the AI Read Your Reasoning
+            </div>
+            <p className="mt-2 text-[13.5px] leading-relaxed text-foreground">{pipelineData.plan.resident_feedback}</p>
+          </Card>
+        )}
+
+        {mentorNotes.length > 0 && (
+          <Card className="mt-4 p-5">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1.5 text-[11.5px] font-semibold uppercase tracking-[0.06em] text-teal-deep">
+                <BrainCircuit size={14} /> How to Improve
+              </div>
+              <Link href={`/mentor`} className="text-[12px] font-semibold text-navy hover:underline">
+                Continue in AI Mentor →
+              </Link>
+            </div>
+            <div className="mt-2 flex flex-col gap-2">
+              {mentorNotes.map((n, i) => (
+                <div key={i} className="flex items-start gap-2">
+                  <span className="mt-0.5 shrink-0 rounded-full bg-muted px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                    {n.note_type}
+                  </span>
+                  <p className="text-[13px] leading-relaxed text-foreground">{n.body}</p>
+                </div>
+              ))}
+            </div>
+          </Card>
+        )}
 
         <div className="mt-8 grid grid-cols-2 gap-6">
           <div className="flex items-center gap-2 text-[13px] font-semibold text-foreground">
