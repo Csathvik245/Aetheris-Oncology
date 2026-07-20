@@ -3,6 +3,8 @@ import { NextResponse, type NextRequest } from "next/server";
 
 const PUBLIC_ROUTES = [
   "/",
+  "/manifest.webmanifest",
+  "/sw.js",
   "/login",
   "/signup",
   "/select-role",

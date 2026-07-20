@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Inter } from "next/font/google";
 import { AuthProvider } from "./lib/supabase/AuthProvider";
+import { RegisterServiceWorker } from "./components/RegisterServiceWorker";
 import "./globals.css";
 
 const geist = Geist({
@@ -22,6 +23,18 @@ export const metadata: Metadata = {
   title: "Aetheris — Oncology Training",
   description:
     "AI-powered oncology resident training simulator — case review, structured decision worksheets, and multi-agent feedback for GME programs.",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Aetheris",
+  },
+  icons: {
+    apple: "/icon-192.png",
+  },
+};
+
+export const viewport = {
+  themeColor: "#00327d",
 };
 
 export default function RootLayout({
@@ -42,6 +55,7 @@ export default function RootLayout({
       </head>
       <body className="h-full bg-background font-sans text-foreground antialiased">
         <AuthProvider>{children}</AuthProvider>
+        <RegisterServiceWorker />
       </body>
     </html>
   );
