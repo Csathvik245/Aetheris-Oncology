@@ -127,7 +127,6 @@ export default function MissionControlPage({
               drugs: submission.drugs.map((d) => ({ name: d.name, rationale: d.rationale })),
               monitoring: submission.monitoring,
               doseModification: submission.doseModification,
-              confidence: submission.confidence,
             }
           : undefined;
 

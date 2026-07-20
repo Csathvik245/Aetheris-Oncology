@@ -8,7 +8,6 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Slider } from "@/components/ui/slider";
 import {
   Select,
   SelectContent,
@@ -631,10 +630,6 @@ export default function WorksheetPage({
                       {drugs.map((d) => d.name).join(" + ") || "No drugs selected"}
                     </div>
                   </div>
-                  <div className="rounded-lg border border-border p-3">
-                    <div className="label">Confidence</div>
-                    <div className="mt-1 text-[13.5px] font-semibold text-foreground">{confidence[0]}%</div>
-                  </div>
                 </div>
               </Card>
             )}
@@ -682,27 +677,6 @@ export default function WorksheetPage({
                   <span className="font-semibold">{packet.pathology.genomicProfile[0]}</span>
                 </div>
               </div>
-            </Card>
-
-            <Card className="p-5">
-              <h3 className="font-heading text-[13.5px] font-semibold text-foreground">Resident Confidence</h3>
-              <p className="mt-1 text-[12px] text-muted-foreground">
-                How certain are you that this treatment plan accounts for current resistance markers and patient
-                performance status?
-              </p>
-              <Slider
-                value={confidence}
-                onValueChange={(v) => setConfidence(Array.isArray(v) ? v : [v])}
-                min={0}
-                max={100}
-                step={1}
-                className="mt-5"
-              />
-              <div className="mt-2 flex justify-between text-[10.5px] uppercase tracking-wide text-muted-foreground">
-                <span>Uncertain</span>
-                <span>Absolute</span>
-              </div>
-              <div className="mt-2 text-center font-heading text-2xl font-bold text-navy">{confidence[0]}%</div>
             </Card>
 
             {objectiveTitles.length > 0 && (

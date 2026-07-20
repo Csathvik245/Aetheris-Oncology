@@ -22,7 +22,6 @@ interface CaseSubmissionRow {
   monitoring: string;
   dose_modification: string;
   tags: string[];
-  confidence: number;
   diagnosis_note: string;
   biomarker_order: string[];
   biomarker_checks: Record<string, boolean>;
@@ -63,7 +62,7 @@ export async function POST(request: Request) {
   const [{ data: submission }, { data: pipeline }] = await Promise.all([
     supabase
       .from("case_submissions")
-      .select("drugs, monitoring, dose_modification, tags, confidence, diagnosis_note, biomarker_order, biomarker_checks")
+      .select("drugs, monitoring, dose_modification, tags, diagnosis_note, biomarker_order, biomarker_checks")
       .eq("case_id", body.caseId)
       .eq("user_id", user.id)
       .maybeSingle<CaseSubmissionRow>(),
@@ -91,7 +90,6 @@ RESIDENT'S WORKSHEET (their own words and choices):
 ${submission.drugs.map((d) => `  - ${d.name}: "${d.rationale}" (citation: ${d.citation || "none"})`).join("\n") || "  (none)"}
 - Monitoring plan: ${submission.monitoring || "(none written)"}
 - Dose modification plan: ${submission.dose_modification || "(none written)"}
-- Self-reported confidence: ${submission.confidence}/100
 - Tags they applied: ${JSON.stringify(submission.tags)}
 
 AI PIPELINE'S OWN ANALYSIS OF THE SAME CASE:

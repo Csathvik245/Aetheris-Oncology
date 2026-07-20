@@ -100,7 +100,6 @@ export interface ResidentContext {
   drugs: { name: string; rationale: string }[];
   monitoring: string;
   doseModification: string;
-  confidence: number;
 }
 
 export interface AgentCard {

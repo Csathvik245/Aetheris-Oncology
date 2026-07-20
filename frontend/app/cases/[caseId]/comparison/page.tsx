@@ -394,12 +394,11 @@ export default function ComparisonPage({
         </div>
 
         {/* stat strip */}
-        <Card className="mt-2 grid grid-cols-4 divide-x divide-border p-0">
+        <Card className="mt-2 grid grid-cols-3 divide-x divide-border p-0">
           {[
             ["Time to Decision", timeToDecision],
             ["Evidence Depth", `${pipelineData?.citations.length ?? 0} Citations`],
             ["Conflict Resolution", conflict],
-            ["Resident Confidence", submission ? `${submission.confidence}%` : "—"],
           ].map(([k, v]) => (
             <div key={k} className="p-4 text-center">
               <div className="label">{k}</div>

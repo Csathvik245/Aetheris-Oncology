@@ -3,18 +3,7 @@
 import { use, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import {
-  User,
-  Stethoscope,
-  ImageIcon,
-  FlaskConical,
-  Microscope,
-  Users,
-  Printer,
-  Share2,
-  Eye,
-  GitBranch,
-} from "lucide-react";
+import { Printer, Share2, Eye, GitBranch } from "lucide-react";
 import { Shell } from "../../components/shell/Shell";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -37,15 +26,6 @@ const VARIATIONS = [
   { value: "trial_closed", label: "Trial Closed" },
 ];
 
-const SECTIONS = [
-  { key: "summary", label: "Patient Summary", icon: User },
-  { key: "history", label: "Clinical History", icon: Stethoscope },
-  { key: "imaging", label: "Imaging Findings", icon: ImageIcon },
-  { key: "labs", label: "Laboratory Results", icon: FlaskConical },
-  { key: "pathology", label: "Pathology & Genomics", icon: Microscope },
-  { key: "tumor-board", label: "Tumor Board Notes", icon: Users },
-];
-
 export default function PatientPacketPage({
   params,
 }: {
@@ -54,7 +34,6 @@ export default function PatientPacketPage({
   const { caseId } = use(params);
   const packet = usePacket(caseId);
   const router = useRouter();
-  const [section, setSection] = useState("summary");
   const [variationType, setVariationType] = useState("");
   const [branching, setBranching] = useState(false);
   const [branchError, setBranchError] = useState<string | null>(null);
@@ -146,25 +125,8 @@ export default function PatientPacketPage({
         </div>
         {branchError && <p className="mt-2 text-[12.5px] text-coral-text">{branchError}</p>}
 
-        <div className="mt-8 grid grid-cols-4 gap-6">
-          <nav className="col-span-1 flex flex-col gap-1">
-            {SECTIONS.map(({ key, label, icon: Icon }) => (
-              <button
-                key={key}
-                onClick={() => setSection(key)}
-                className={`flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-left text-[13px] transition-colors ${
-                  section === key
-                    ? "bg-navy-tint font-semibold text-navy"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                }`}
-              >
-                <Icon size={16} />
-                {label}
-              </button>
-            ))}
-          </nav>
-
-          <div className="col-span-3 flex flex-col gap-5">
+        <div className="mt-8">
+          <div className="flex flex-col gap-5">
             <Card className="p-5">
               <h3 className="font-heading text-[15px] font-semibold text-foreground">Clinical Presentation</h3>
               <div className="mt-4 grid grid-cols-2 gap-6">
