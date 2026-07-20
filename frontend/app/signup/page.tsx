@@ -7,6 +7,8 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { createClient } from "@/app/lib/supabase/client";
+import { signInWithGoogle } from "@/app/lib/supabase/oauth";
+import { GoogleIcon } from "@/app/components/GoogleIcon";
 
 const DISPLAY_ROLES = [
   "Medical Student",
@@ -72,6 +74,14 @@ export default function SignupPage() {
     }, 300);
     return () => clearTimeout(handle);
   }, [joinCode]);
+
+  function handleGoogleSignup() {
+    const params = new URLSearchParams();
+    if (authRole) params.set("role", authRole);
+    if (joinCode.trim()) params.set("joinCode", joinCode.trim());
+    const qs = params.toString();
+    signInWithGoogle(qs ? `/?${qs}` : "/");
+  }
 
   function goToRoleStep() {
     setError(null);
@@ -149,6 +159,16 @@ export default function SignupPage() {
         <Card className="p-6">
           {step === "credentials" && (
             <>
+              <Button variant="outline" onClick={handleGoogleSignup} className="w-full gap-2 py-5">
+                <GoogleIcon size={16} /> Continue with Google
+              </Button>
+
+              <div className="my-4 flex items-center gap-3">
+                <div className="h-px flex-1 bg-border" />
+                <span className="text-[11px] uppercase tracking-wide text-muted-foreground">or</span>
+                <div className="h-px flex-1 bg-border" />
+              </div>
+
               <label className="label mb-1.5 block">
                 Full Name <span className="text-coral-text">*</span>
               </label>

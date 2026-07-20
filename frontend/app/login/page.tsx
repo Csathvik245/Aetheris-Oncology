@@ -7,6 +7,8 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { createClient } from "@/app/lib/supabase/client";
+import { signInWithGoogle } from "@/app/lib/supabase/oauth";
+import { GoogleIcon } from "@/app/components/GoogleIcon";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -65,6 +67,20 @@ export default function LoginPage() {
         </div>
 
         <Card className="p-6">
+          <Button
+            variant="outline"
+            onClick={() => signInWithGoogle(searchParams.get("next") || "/")}
+            className="w-full gap-2 py-5"
+          >
+            <GoogleIcon size={16} /> Continue with Google
+          </Button>
+
+          <div className="my-4 flex items-center gap-3">
+            <div className="h-px flex-1 bg-border" />
+            <span className="text-[11px] uppercase tracking-wide text-muted-foreground">or</span>
+            <div className="h-px flex-1 bg-border" />
+          </div>
+
           <label className="label mb-1.5 block">Email</label>
           <Input
             type="email"

@@ -1,6 +1,6 @@
 "use client";
 
-import { Bell, HelpCircle, Flame } from "lucide-react";
+import { Flame } from "lucide-react";
 
 export function TopBar({
   breadcrumb,
@@ -21,12 +21,6 @@ export function TopBar({
             {streakDays} Day Streak
           </span>
         )}
-        <button className="grid h-8 w-8 place-items-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground">
-          <Bell size={17} />
-        </button>
-        <button className="grid h-8 w-8 place-items-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground">
-          <HelpCircle size={17} />
-        </button>
       </div>
     </header>
   );
