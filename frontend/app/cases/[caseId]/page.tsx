@@ -111,13 +111,17 @@ export default function PatientPacketPage({
             {section === "history" && (
               <Card className="p-5">
                 <h3 className="font-heading text-[15px] font-semibold text-foreground">Clinical History</h3>
-                <ul className="mt-4 flex flex-col gap-2">
-                  {packet.medicalHistory.map((h) => (
-                    <li key={h} className="text-[13.5px] text-foreground">
-                      ✓ {h}
-                    </li>
-                  ))}
-                </ul>
+                {packet.medicalHistory.length === 0 ? (
+                  <p className="mt-3 text-[12.5px] text-muted-foreground">No clinical history documented for this case.</p>
+                ) : (
+                  <ul className="mt-4 flex flex-col gap-2">
+                    {packet.medicalHistory.map((h) => (
+                      <li key={h} className="text-[13.5px] text-foreground">
+                        ✓ {h}
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </Card>
             )}
 
@@ -125,21 +129,27 @@ export default function PatientPacketPage({
               <Card className="p-5">
                 <div className="flex items-center justify-between">
                   <h3 className="font-heading text-[15px] font-semibold text-foreground">Imaging Findings</h3>
-                  <span className="flex items-center gap-1 text-[12px] font-medium text-navy">
-                    <Eye size={13} /> View DICOM
-                  </span>
+                  {packet.imaging.length > 0 && (
+                    <span className="flex items-center gap-1 text-[12px] font-medium text-navy">
+                      <Eye size={13} /> View DICOM
+                    </span>
+                  )}
                 </div>
-                <div className="mt-3 flex flex-col gap-3">
-                  {packet.imaging.map((img) => (
-                    <div key={img.study} className="rounded-lg border border-border p-3">
-                      <div className="flex items-center justify-between text-[12px] text-muted-foreground">
-                        <span className="font-semibold text-foreground">{img.study}</span>
-                        <span>{img.date}</span>
+                {packet.imaging.length === 0 ? (
+                  <p className="mt-3 text-[12.5px] text-muted-foreground">No imaging findings documented for this case.</p>
+                ) : (
+                  <div className="mt-3 flex flex-col gap-3">
+                    {packet.imaging.map((img) => (
+                      <div key={img.study} className="rounded-lg border border-border p-3">
+                        <div className="flex items-center justify-between text-[12px] text-muted-foreground">
+                          <span className="font-semibold text-foreground">{img.study}</span>
+                          <span>{img.date}</span>
+                        </div>
+                        <p className="mt-1 text-[12.5px] leading-relaxed text-muted-foreground">{img.finding}</p>
                       </div>
-                      <p className="mt-1 text-[12.5px] leading-relaxed text-muted-foreground">{img.finding}</p>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
               </Card>
             )}
 

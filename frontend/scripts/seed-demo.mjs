@@ -87,7 +87,7 @@ async function backfillHistory(userId, institutionId, profile) {
   console.log(`  backfilled ${rows.length} history entries`);
 }
 
-async function publishMarketplaceCase({ id, ownerId, institutionId, title, chiefComplaint, diagnosis, genomicProfile, stage, difficulty }) {
+async function publishMarketplaceCase({ id, ownerId, institutionId, title, chiefComplaint, diagnosis, genomicProfile, stage, difficulty, medicalHistory = [], imaging = [] }) {
   const { data: existing } = await supabase.from("cases").select("id").eq("id", id).maybeSingle();
   if (existing) {
     console.log(`Case ${id} already exists, skipping`);
@@ -109,8 +109,8 @@ async function publishMarketplaceCase({ id, ownerId, institutionId, title, chief
     sex: "Female",
     ecog: 1,
     chief_complaint: chiefComplaint,
-    medical_history: [],
-    imaging: [],
+    medical_history: medicalHistory,
+    imaging,
     pathology: { diagnosis, markers: [], genomicProfile },
     candidate_drugs: [],
     toxicity_concerns: [],
@@ -211,6 +211,15 @@ async function main() {
     genomicProfile: ["FLT3-ITD", "NPM1 mutation"],
     stage: "Relapsed",
     difficulty: "Advanced",
+    medicalHistory: [
+      "Allogeneic stem cell transplant 6 months prior (matched unrelated donor)",
+      "Prior induction chemotherapy (7+3) with complete remission",
+      "Grade I acute GVHD, resolved with topical steroids",
+    ],
+    imaging: [
+      { study: "Bone Marrow Biopsy", date: "This admission", finding: "Hypercellular marrow with 32% myeloblasts, consistent with relapsed AML." },
+      { study: "PET/CT", date: "This admission", finding: "No extramedullary disease identified." },
+    ],
   });
 
   await publishMarketplaceCase({
@@ -223,6 +232,15 @@ async function main() {
     genomicProfile: ["BRCA1 germline mutation"],
     stage: "IIB",
     difficulty: "Intermediate",
+    medicalHistory: [
+      "Family history: mother with breast cancer age 48, maternal aunt with ovarian cancer age 52",
+      "No prior personal malignancy",
+      "Nulliparous",
+    ],
+    imaging: [
+      { study: "Diagnostic Mammogram + Ultrasound", date: "3 weeks ago", finding: "3.1cm irregular mass in the left upper outer quadrant with associated axillary lymphadenopathy." },
+      { study: "Breast MRI", date: "2 weeks ago", finding: "Confirms 3.1cm mass, no additional foci; ipsilateral axillary node 1.8cm, suspicious morphology." },
+    ],
   });
 
   console.log("\nSeed complete. Demo accounts (all password: DemoPass1234!):");
