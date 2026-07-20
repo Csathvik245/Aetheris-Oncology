@@ -1,0 +1,1 @@
+web: python mcp_servers/oncokb_server.py & python mcp_servers/clinvar_server.py & python mcp_servers/trials_server.py & python mcp_servers/fda_server.py & sleep 2 && python -m uvicorn api.main:app --host 0.0.0.0 --port $PORT
