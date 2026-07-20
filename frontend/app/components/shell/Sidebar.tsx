@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
   LibraryBig,
@@ -13,7 +13,6 @@ import {
   ClipboardCheck,
   FilePlus2,
   CreditCard,
-  LogOut,
   Route,
   BrainCircuit,
   ScrollText,
@@ -45,14 +44,8 @@ const FACULTY_NAV = [
 
 export function Sidebar() {
   const pathname = usePathname();
-  const router = useRouter();
   const settingsActive = pathname.startsWith("/settings");
-  const { profile, signOut } = useAuth();
-
-  async function handleSignOut() {
-    await signOut();
-    router.replace("/login");
-  }
+  const { profile } = useAuth();
 
   return (
     <aside className="flex h-full w-60 shrink-0 flex-col justify-between border-r border-border bg-background px-4 py-5">
@@ -97,13 +90,6 @@ export function Sidebar() {
           <Settings size={18} strokeWidth={2} />
           Settings
         </Link>
-        <button
-          onClick={handleSignOut}
-          className="flex items-center gap-3 rounded-xl px-3 py-2 text-[13px] text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-        >
-          <LogOut size={18} strokeWidth={2} />
-          Sign Out
-        </button>
         {profile && (
           <Link
             href="/settings"

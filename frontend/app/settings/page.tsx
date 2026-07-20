@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Check, Trash2 } from "lucide-react";
+import { Check, Trash2, LogOut } from "lucide-react";
 import { Shell } from "../components/shell/Shell";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -38,7 +38,7 @@ const MONITORING_OPTIONS: { value: Preferences["defaultMonitoring"]; label: stri
 
 export default function SettingsPage() {
   const router = useRouter();
-  const { profile, refreshProfile } = useAuth();
+  const { profile, refreshProfile, signOut } = useAuth();
   const [name, setName] = useState("");
   const [role, setRole] = useState("");
   const [profileSaved, setProfileSaved] = useState(false);
@@ -67,6 +67,11 @@ export default function SettingsPage() {
     const next = { ...prefs, ...patch };
     setPrefs(next);
     savePreferences(next);
+  }
+
+  async function handleSignOut() {
+    await signOut();
+    router.replace("/login");
   }
 
   async function resetData() {
@@ -155,6 +160,16 @@ export default function SettingsPage() {
             Pre-selected in Treatment Planning for new worksheets (a saved draft&rsquo;s own
             monitoring choice still wins).
           </p>
+        </Card>
+
+        <Card className="mt-5 p-6">
+          <h3 className="font-heading text-[15px] font-semibold text-foreground">Account</h3>
+          <p className="mt-1.5 text-[12.5px] leading-relaxed text-muted-foreground">
+            Sign out of Aetheris on this device.
+          </p>
+          <Button onClick={handleSignOut} variant="outline" className="mt-4 gap-1.5">
+            <LogOut size={14} /> Sign Out
+          </Button>
         </Card>
 
         <Card className="mt-5 border-coral-ring p-6">

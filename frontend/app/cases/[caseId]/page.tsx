@@ -1,30 +1,22 @@
 "use client";
 
 import { use, useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Printer, Share2, Eye, GitBranch } from "lucide-react";
+import { User, Stethoscope, ImageIcon, Microscope, Share2, Eye } from "lucide-react";
 import { Shell } from "../../components/shell/Shell";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { usePacket } from "../../lib/generatedCase";
 
-const VARIATIONS = [
-  { value: "older_patient", label: "Older Patient" },
-  { value: "new_mutation", label: "New Resistance Mutation" },
-  { value: "pregnancy", label: "Pregnancy" },
-  { value: "renal_failure", label: "Renal Failure" },
-  { value: "brain_mets", label: "New Brain Metastases" },
-  { value: "trial_closed", label: "Trial Closed" },
-];
+const SECTIONS = [
+  { key: "summary", label: "Patient Summary", icon: User },
+  { key: "history", label: "Clinical History", icon: Stethoscope },
+  { key: "imaging", label: "Imaging Findings", icon: ImageIcon },
+  { key: "pathology", label: "Pathology & Genomics", icon: Microscope },
+] as const;
+
+type SectionKey = (typeof SECTIONS)[number]["key"];
 
 export default function PatientPacketPage({
   params,
@@ -33,38 +25,7 @@ export default function PatientPacketPage({
 }) {
   const { caseId } = use(params);
   const packet = usePacket(caseId);
-  const router = useRouter();
-  const [variationType, setVariationType] = useState("");
-  const [branching, setBranching] = useState(false);
-  const [branchError, setBranchError] = useState<string | null>(null);
-  async function branchCase() {
-    if (!variationType) return;
-    setBranching(true);
-    setBranchError(null);
-    const res = await fetch("/api/case-variations", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        baseCaseId: caseId,
-        variationType,
-        packet: {
-          age: packet.age,
-          sex: packet.sex,
-          ecog: packet.ecog,
-          chiefComplaint: packet.chiefComplaint,
-          medicalHistory: packet.medicalHistory,
-          pathology: packet.pathology,
-        },
-      }),
-    });
-    const data = await res.json();
-    setBranching(false);
-    if (!res.ok) {
-      setBranchError(data.error ?? "Could not create variation.");
-      return;
-    }
-    router.push(`/cases/${data.caseId}`);
-  }
+  const [section, setSection] = useState<SectionKey>("summary");
 
   return (
     <Shell breadcrumb="Patient Packet">
@@ -98,24 +59,6 @@ export default function PatientPacketPage({
             </div>
           </div>
           <div className="flex shrink-0 items-center gap-2">
-            <Select value={variationType} onValueChange={(v) => v && setVariationType(v)}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Branch this case…" />
-              </SelectTrigger>
-              <SelectContent>
-                {VARIATIONS.map((v) => (
-                  <SelectItem key={v.value} value={v.value}>
-                    {v.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Button variant="outline" onClick={branchCase} disabled={!variationType || branching} className="gap-1.5">
-              <GitBranch size={15} /> {branching ? "Branching…" : "Branch"}
-            </Button>
-            <Button variant="outline" className="gap-1.5">
-              <Printer size={15} /> Print Packet
-            </Button>
             <Link href={`/cases/${caseId}/worksheet`}>
               <Button className="gap-1.5 bg-navy text-white hover:bg-navy/90">
                 <Share2 size={15} /> Refer to Board
@@ -123,34 +66,65 @@ export default function PatientPacketPage({
             </Link>
           </div>
         </div>
-        {branchError && <p className="mt-2 text-[12.5px] text-coral-text">{branchError}</p>}
 
-        <div className="mt-8">
-          <div className="flex flex-col gap-5">
-            <Card className="p-5">
-              <h3 className="font-heading text-[15px] font-semibold text-foreground">Clinical Presentation</h3>
-              <div className="mt-4 grid grid-cols-2 gap-6">
-                <div>
-                  <div className="label">Chief Complaint</div>
-                  <p className="mt-1.5 text-[13.5px] leading-relaxed text-foreground">{packet.chiefComplaint}</p>
-                </div>
-                <div>
-                  <div className="label">Medical History</div>
-                  <ul className="mt-1.5 flex flex-col gap-1.5">
-                    {packet.medicalHistory.map((h) => (
-                      <li key={h} className="text-[13.5px] text-foreground">
-                        ✓ {h}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-            </Card>
+        <div className="mt-8 grid grid-cols-4 gap-6">
+          <nav className="col-span-1 flex flex-col gap-1">
+            {SECTIONS.map(({ key, label, icon: Icon }) => (
+              <button
+                key={key}
+                onClick={() => setSection(key)}
+                className={`flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-left text-[13px] transition-colors ${
+                  section === key
+                    ? "bg-navy-tint font-semibold text-navy"
+                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                }`}
+              >
+                <Icon size={16} />
+                {label}
+              </button>
+            ))}
+          </nav>
 
-            <div className="grid grid-cols-2 gap-5">
+          <div className="col-span-3 flex flex-col gap-5">
+            {section === "summary" && (
+              <Card className="p-5">
+                <h3 className="font-heading text-[15px] font-semibold text-foreground">Patient Summary</h3>
+                <div className="mt-4 grid grid-cols-2 gap-6">
+                  <div>
+                    <div className="label">Chief Complaint</div>
+                    <p className="mt-1.5 text-[13.5px] leading-relaxed text-foreground">{packet.chiefComplaint}</p>
+                  </div>
+                  <div className="flex flex-col gap-3">
+                    <div>
+                      <div className="label">Diagnosis</div>
+                      <p className="mt-1.5 text-[13.5px] font-semibold text-foreground">{packet.pathology.diagnosis}</p>
+                    </div>
+                    <div>
+                      <div className="label">Status</div>
+                      <p className="mt-1.5 text-[13.5px] font-semibold text-teal-deep">{packet.status}</p>
+                    </div>
+                  </div>
+                </div>
+              </Card>
+            )}
+
+            {section === "history" && (
+              <Card className="p-5">
+                <h3 className="font-heading text-[15px] font-semibold text-foreground">Clinical History</h3>
+                <ul className="mt-4 flex flex-col gap-2">
+                  {packet.medicalHistory.map((h) => (
+                    <li key={h} className="text-[13.5px] text-foreground">
+                      ✓ {h}
+                    </li>
+                  ))}
+                </ul>
+              </Card>
+            )}
+
+            {section === "imaging" && (
               <Card className="p-5">
                 <div className="flex items-center justify-between">
-                  <h3 className="font-heading text-[14px] font-semibold text-foreground">Imaging Findings</h3>
+                  <h3 className="font-heading text-[15px] font-semibold text-foreground">Imaging Findings</h3>
                   <span className="flex items-center gap-1 text-[12px] font-medium text-navy">
                     <Eye size={13} /> View DICOM
                   </span>
@@ -167,9 +141,11 @@ export default function PatientPacketPage({
                   ))}
                 </div>
               </Card>
+            )}
 
+            {section === "pathology" && (
               <Card className="p-5">
-                <h3 className="font-heading text-[14px] font-semibold text-foreground">Pathology</h3>
+                <h3 className="font-heading text-[15px] font-semibold text-foreground">Pathology</h3>
                 <div className="mt-3 flex items-center gap-2">
                   <span className="text-[15px] font-bold text-coral-text">{packet.pathology.diagnosis}</span>
                   {packet.pathology.confirmed && <Badge className="bg-teal-tint text-teal-deep">CONFIRMED</Badge>}
@@ -204,7 +180,7 @@ export default function PatientPacketPage({
                   </div>
                 </div>
               </Card>
-            </div>
+            )}
           </div>
         </div>
       </div>
